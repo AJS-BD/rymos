@@ -149,7 +149,7 @@ export default function ProductCard({ product }: { product: Product }) {
             animate={{ opacity: 0, scale: 0.8 }}
             whileHover={{ scale: 1.15 }}
             whileTap={{ scale: 0.9 }}
-            className="absolute top-2 right-2 sm:top-3 sm:right-3 p-2 sm:p-2.5 bg-white/90 backdrop-blur-sm rounded-full shadow-md opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300 hover:bg-red-50 min-w-[44px] min-h-[44px] flex items-center justify-center" />
+            className="absolute top-2 right-2 sm:top-3 sm:right-3 p-2 sm:p-2.5 bg-white/90 backdrop-blur-sm rounded-full shadow-md opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300 hover:bg-red-50 min-w-[44px] min-h-[44px] flex items-center justify-center"
           >
             <Heart className="h-4 w-4 text-gray-400 hover:text-red-500 transition-colors" />
           </motion.button>
