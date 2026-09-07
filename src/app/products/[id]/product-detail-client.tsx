@@ -1,7 +1,10 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { ImageSkeleton } from "@/components/ui/skeleton";
+import { useRef } from "react";
+import { motion, useScroll, useTransform, useInView } from "framer-motion";
+import Link from "next/link";
+import { ChevronRight } from "lucide-react";
+import { useCart } from "@/context/cart-context";
 
 interface Product {
   id: string;
@@ -22,6 +25,7 @@ interface RelatedProduct {
   name: string;
   price: number;
   category: string;
+  images?: string[];
 }
 
 /* ------------------------------------------------------------------ */
@@ -84,12 +88,6 @@ function FadeInWhenVisible({ children, delay = 0, className = "" }: { children: 
   );
 }
 
-import { useRef, useState } from "react";
-import { useScroll, useTransform, useInView } from "framer-motion";
-import Link from "next/link";
-import { ChevronRight } from "lucide-react";
-import { useCart } from "@/context/cart-context";
-
 export default function ProductDetailClient({
   product,
   related,
@@ -105,7 +103,6 @@ export default function ProductDetailClient({
   const heroImageY = useTransform(scrollYProgress, [0, 1], [0, 150]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
-  const [selectedColor, setSelectedColor] = useState(0);
   const { addItem } = useCart();
 
   const imageUrl = product.images?.[0] || productImages[product.name] || fallbackImage;
@@ -113,7 +110,7 @@ export default function ProductDetailClient({
     ? Math.round(((product.original_price - product.price) / product.original_price) * 100)
     : 0;
 
-  const colors = product.colors || [];
+  const specs = product.specs ? Object.entries(product.specs) : [];
 
   const handleAddToCart = () => {
     addItem({
@@ -127,17 +124,20 @@ export default function ProductDetailClient({
     });
   };
 
-  const specs = product.specs ? Object.entries(product.specs) : [];
-
   return (
     <div className="min-h-screen bg-white">
-      {/* Hero Section with Parallax */}
-      <section ref={heroRef} className="relative w-full h-[50vh] sm:h-[70vh] lg:h-[85vh] overflow-hidden">
+      {/* ================================================================ */}
+      {/*  HERO SECTION - Side by side on desktop, stacked on mobile         */}
+      {/* ================================================================ */}
+      <section
+        ref={heroRef}
+        className="relative w-full min-h-[60vh] lg:min-h-[85vh] flex flex-col lg:flex-row"
+      >
+        {/* Product Image - 60% on desktop */}
         <motion.div
           style={{ y: heroImageY, opacity: heroOpacity }}
-          className="absolute inset-0"
+          className="relative w-full lg:w-[60%] h-[50vh] lg:h-[85vh] overflow-hidden order-1 lg:order-1"
         >
-          {/* Blur placeholder */}
           <img
             src={blurDataUri}
             alt=""
@@ -149,96 +149,129 @@ export default function ProductDetailClient({
             alt={product.name}
             className="w-full h-[120%] object-cover object-center relative z-[1]"
           />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
         </motion.div>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-8 lg:p-16">
+
+        {/* Product Info - 40% on desktop, centered */}
+        <div className="w-full lg:w-[40%] flex items-center justify-center px-6 sm:px-10 lg:px-16 py-10 lg:py-20 order-2 lg:order-2 bg-white">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="max-w-4xl mx-auto text-center text-white"
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="max-w-lg text-center lg:text-left"
           >
             {product.brand && (
-              <p className="text-xs sm:text-sm font-light tracking-widest uppercase mb-1 sm:mb-2 opacity-80">
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                className="text-xs sm:text-sm font-light tracking-widest uppercase text-gray-400 mb-3"
+              >
                 {product.brand}
-              </p>
+              </motion.p>
             )}
-            <h1 className="text-2xl sm:text-4xl lg:text-6xl xl:text-7xl font-semibold tracking-tight leading-none">
+
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.45 }}
+              className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-semibold text-gray-900 tracking-tight leading-tight"
+            >
               {product.name}
-            </h1>
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.55 }}
+              className="mt-4 sm:mt-6 text-base sm:text-lg text-gray-500 font-light leading-relaxed"
+            >
+              {product.description || "Experience the perfect blend of innovation and design. Crafted with precision for those who demand the best."}
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.65 }}
+              className="mt-6 sm:mt-8 flex items-center justify-center lg:justify-start gap-3 flex-wrap"
+            >
+              <span className="text-2xl sm:text-3xl font-semibold text-gray-900 tracking-tight">
+                ৳{product.price.toLocaleString()}
+              </span>
+              {product.original_price && product.original_price > product.price && (
+                <span className="text-base sm:text-lg text-gray-400 line-through">
+                  ৳{product.original_price.toLocaleString()}
+                </span>
+              )}
+            </motion.div>
+
+            {discount > 0 && (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.75 }}
+                className="mt-2 text-xs sm:text-sm text-green-600 font-medium"
+              >
+                Save {discount}%
+              </motion.p>
+            )}
+
+            {/* Stock Status */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.8 }}
+              className="mt-3"
+            >
+              {product.stock > 0 ? (
+                <p className="text-xs sm:text-sm text-green-600">In stock</p>
+              ) : (
+                <p className="text-xs sm:text-sm text-red-500">Out of stock</p>
+              )}
+            </motion.div>
+
+            {/* Minimal CTA - Text Link Only */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.85 }}
+              className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 sm:gap-6"
+            >
+              <button
+                onClick={handleAddToCart}
+                className="text-[#0071E3] text-base sm:text-lg font-normal hover:underline inline-flex items-center gap-1 transition-colors group"
+              >
+                Add to Bag
+                <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+              </button>
+              <Link
+                href="#specs"
+                className="text-[#0071E3] text-sm sm:text-base font-normal hover:underline inline-flex items-center gap-1 transition-colors group"
+              >
+                View specs
+                <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+              </Link>
+            </motion.div>
           </motion.div>
         </div>
       </section>
 
-      {/* Product Info Section */}
-      <section className="py-8 sm:py-16 lg:py-24 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-3xl mx-auto text-center">
-          <FadeInWhenVisible>
-            <p className="text-sm sm:text-lg lg:text-xl text-gray-500 font-light leading-relaxed max-w-2xl mx-auto">
-              {product.description || "Experience the perfect blend of innovation and design. Crafted with precision for those who demand the best."}
-            </p>
-          </FadeInWhenVisible>
-
-          <FadeInWhenVisible delay={0.15}>
-            <div className="mt-6 sm:mt-10 flex items-center justify-center gap-3 sm:gap-4 flex-wrap">
-              <span className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-900 tracking-tight">
-                ৳{product.price.toLocaleString()}
-              </span>
-              {product.original_price && product.original_price > product.price && (
-                <span className="text-base sm:text-lg lg:text-xl text-gray-400 line-through">
-                  ৳{product.original_price.toLocaleString()}
-                </span>
-              )}
-            </div>
-            {discount > 0 && (
-              <p className="mt-2 text-xs sm:text-sm text-green-600 font-medium">
-                Save {discount}%
-              </p>
-            )}
-          </FadeInWhenVisible>
-
-          {/* Color Options */}
-          {colors.length > 0 && (
-            <FadeInWhenVisible delay={0.25}>
-              <div className="mt-8 sm:mt-12">
-                <p className="text-xs sm:text-sm text-gray-500 mb-3 sm:mb-4">
-                  Color: <span className="text-gray-900">{colors[selectedColor]?.name}</span>
-                </p>
-                <div className="flex items-center justify-center gap-2 sm:gap-3">
-                  {colors.map((color, idx) => (
-                    <button
-                      key={color.name}
-                      onClick={() => setSelectedColor(idx)}
-                      className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 transition-all duration-200 flex items-center justify-center ${
-                        selectedColor === idx
-                          ? "border-[#0071E3] scale-110"
-                          : "border-gray-200 hover:border-gray-400"
-                      }`}
-                      style={{ backgroundColor: color.hex }}
-                      aria-label={color.name}
-                    />
-                  ))}
-                </div>
-              </div>
-            </FadeInWhenVisible>
-          )}
-        </div>
-      </section>
-
-      {/* Specifications Grid */}
+      {/* ================================================================ */}
+      {/*  SPECIFICATIONS SECTION - Large image cards                        */}
+      {/* ================================================================ */}
       {specs.length > 0 && (
-        <section className="py-8 sm:py-16 lg:py-24 bg-gray-50">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section id="specs" className="py-16 sm:py-24 lg:py-32 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <FadeInWhenVisible>
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-center text-gray-900 tracking-tight mb-8 sm:mb-12 lg:mb-16">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-center text-gray-900 tracking-tight mb-12 sm:mb-16">
                 Specifications
               </h2>
             </FadeInWhenVisible>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
               {specs.map(([key, value], idx) => (
                 <FadeInWhenVisible key={key} delay={idx * 0.08}>
-                  <div className="bg-white rounded-xl sm:rounded-2xl p-5 sm:p-6 lg:p-8 text-center shadow-sm hover:shadow-md transition-shadow duration-300 h-full flex flex-col justify-center">
-                    <p className="text-xs sm:text-sm text-gray-500 uppercase tracking-wider mb-2 sm:mb-3 font-medium">
+                  <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-10 text-center shadow-sm hover:shadow-md transition-shadow duration-300 h-full flex flex-col justify-center min-h-[140px] sm:min-h-[180px]">
+                    <p className="text-xs sm:text-sm text-gray-400 uppercase tracking-wider mb-3 font-medium">
                       {key.replace(/_/g, " ")}
                     </p>
                     <p className="text-base sm:text-lg lg:text-xl font-semibold text-gray-900">
@@ -252,13 +285,14 @@ export default function ProductDetailClient({
         </section>
       )}
 
-      {/* Feature Highlight Section */}
-      <section className="py-8 sm:py-16 lg:py-24">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* ================================================================ */}
+      {/*  FEATURED IMAGE SECTION                                            */}
+      {/* ================================================================ */}
+      <section className="py-16 sm:py-24 lg:py-32">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 xl:gap-20 items-center">
             <FadeInWhenVisible>
               <div className="aspect-[4/3] rounded-2xl sm:rounded-3xl overflow-hidden bg-gray-100 relative">
-                {/* Blur placeholder */}
                 <img
                   src={blurDataUri}
                   alt=""
@@ -282,10 +316,10 @@ export default function ProductDetailClient({
                   intuitive interface, this is technology that feels as good as it looks.
                 </p>
                 <Link
-                  href="#purchase"
+                  href="/products"
                   className="inline-flex items-center gap-1 mt-6 sm:mt-8 text-[#0071E3] text-sm sm:text-base lg:text-lg hover:underline"
                 >
-                  Learn more
+                  Explore more
                   <ChevronRight className="w-4 h-4" />
                 </Link>
               </div>
@@ -294,77 +328,47 @@ export default function ProductDetailClient({
         </div>
       </section>
 
-      {/* Purchase Section */}
-      <section id="purchase" className="py-8 sm:py-16 lg:py-24 bg-gray-50">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <FadeInWhenVisible>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-900 tracking-tight">
-              Ready to order?
-            </h2>
-            <p className="mt-3 sm:mt-4 text-lg sm:text-xl text-gray-500 font-light">
-              ৳{product.price.toLocaleString()}
-            </p>
-            {product.stock > 0 ? (
-              <p className="mt-2 text-xs sm:text-sm text-green-600">In stock</p>
-            ) : (
-              <p className="mt-2 text-xs sm:text-sm text-red-500">Out of stock</p>
-            )}
-          </FadeInWhenVisible>
-
-          <FadeInWhenVisible delay={0.15}>
-            <div className="mt-6 sm:mt-10">
-              <button
-                onClick={handleAddToCart}
-                className="w-full sm:w-auto px-8 py-3 text-[#0071E3] text-base sm:text-lg border-2 border-[#0071E3] rounded-lg hover:bg-[#0071E3] hover:text-white transition-colors inline-flex items-center justify-center gap-1 min-h-[48px]"
-              >
-                Add to Cart
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          </FadeInWhenVisible>
-        </div>
-      </section>
-
-      {/* Related Products - Horizontal Scroll */}
+      {/* ================================================================ */}
+      {/*  RELATED PRODUCTS - Horizontal Scroll                              */}
+      {/* ================================================================ */}
       {related.length > 0 && (
-        <section className="py-8 sm:py-16 lg:py-24 overflow-hidden">
+        <section className="py-16 sm:py-24 lg:py-32 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <FadeInWhenVisible>
-              <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-900 tracking-tight mb-6 sm:mb-10">
+              <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-900 tracking-tight mb-8 sm:mb-12">
                 You may also like
               </h2>
             </FadeInWhenVisible>
-            <div className="flex gap-4 sm:gap-6 overflow-x-auto pb-4 sm:pb-6 snap-x snap-mandatory scrollbar-hide -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
-              {related.map((p, idx) => (
-                <FadeInWhenVisible key={p.id} delay={idx * 0.1}>
-                  <Link
-                    href={`/products/${p.id}`}
-                    className="flex-shrink-0 w-48 sm:w-64 lg:w-72 snap-start group"
-                  >
-                    <div className="aspect-square bg-gray-100 rounded-xl sm:rounded-2xl overflow-hidden relative">
-                      {/* Blur placeholder */}
-                      <img
-                        src={blurDataUri}
-                        alt=""
-                        aria-hidden="true"
-                        className="absolute inset-0 w-full h-full object-cover scale-110 blur-xl"
-                      />
-                      <img
-                        src={relatedImages[p.name] || "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&q=80"}
-                        alt={p.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 relative z-[1]"
-                      />
-                    </div>
-                    <h3 className="mt-3 sm:mt-4 text-sm sm:text-base font-medium text-gray-900 group-hover:text-[#0071E3] transition-colors">
-                      {p.name}
-                    </h3>
-                    <p className="mt-1 text-xs sm:text-sm text-gray-500">
-                      ৳{p.price.toLocaleString()}
-                    </p>
-                  </Link>
-                </FadeInWhenVisible>
-              ))}
-            </div>
+          </div>
+          <div className="flex gap-4 sm:gap-6 overflow-x-auto pb-4 sm:pb-6 snap-x snap-mandatory scrollbar-hide px-4 sm:px-6 lg:px-8">
+            {related.map((p, idx) => (
+              <FadeInWhenVisible key={p.id} delay={idx * 0.1}>
+                <Link
+                  href={`/products/${p.id}`}
+                  className="flex-shrink-0 w-56 sm:w-72 lg:w-80 snap-start group"
+                >
+                  <div className="aspect-square bg-white rounded-2xl sm:rounded-3xl overflow-hidden relative shadow-sm">
+                    <img
+                      src={blurDataUri}
+                      alt=""
+                      aria-hidden="true"
+                      className="absolute inset-0 w-full h-full object-cover scale-110 blur-xl"
+                    />
+                    <img
+                      src={relatedImages[p.name] || "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&q=80"}
+                      alt={p.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 relative z-[1]"
+                    />
+                  </div>
+                  <h3 className="mt-4 text-sm sm:text-base font-medium text-gray-900 group-hover:text-[#0071E3] transition-colors">
+                    {p.name}
+                  </h3>
+                  <p className="mt-1 text-xs sm:text-sm text-gray-500">
+                    ৳{p.price.toLocaleString()}
+                  </p>
+                </Link>
+              </FadeInWhenVisible>
+            ))}
           </div>
         </section>
       )}

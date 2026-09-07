@@ -2,10 +2,7 @@
 
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
-import AnimatedSection from "@/components/ui/animated-section";
-import ProductScroll from "@/components/home/product-scroll";
-import FeaturedShowcase from "@/components/home/featured-showcase";
-import TestimonialsScroll from "@/components/home/testimonials-scroll";
+import Link from "next/link";
 
 export default function HomePage() {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -16,62 +13,61 @@ export default function HomePage() {
 
   const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
   const heroScale = useTransform(scrollYProgress, [0, 0.5], [1, 0.95]);
-  const heroY = useTransform(scrollYProgress, [0, 0.5], [0, 50]);
 
   return (
     <main className="flex-1">
       {/* Hero */}
       <motion.section
         ref={heroRef}
-        style={{ opacity: heroOpacity, scale: heroScale, y: heroY }}
-        className="relative h-[80vh] sm:h-[90vh] flex items-center justify-center bg-gradient-to-b from-[#f5f5f7] to-white overflow-hidden"
+        style={{ opacity: heroOpacity, scale: heroScale }}
+        className="relative h-screen flex items-center justify-center bg-black overflow-hidden"
       >
-        <div className="max-w-5xl mx-auto px-4 text-center">
+        <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
           <motion.h1
-            initial={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="text-3xl sm:text-5xl md:text-7xl font-semibold tracking-tight text-[var(--color-text)]"
+            className="text-5xl sm:text-6xl md:text-8xl font-semibold tracking-tight text-white"
           >
             Technology,<br />Made Yours
           </motion.h1>
           <motion.p
-            initial={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.5 }}
-            className="mt-3 sm:mt-6 text-base sm:text-xl md:text-2xl font-normal text-[var(--color-text-muted)]"
+            className="mt-6 sm:mt-8 text-xl sm:text-2xl md:text-3xl font-normal text-gray-400 max-w-2xl mx-auto"
           >
             Discover the latest smartphones and premium accessories.
           </motion.p>
           <motion.div
-            initial={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.7 }}
-            className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6"
+            className="mt-10 flex items-center justify-center gap-8"
           >
-            <a
+            <Link
               href="/products"
-              className="w-full sm:w-auto px-6 py-3 text-[var(--color-primary)] border border-[var(--color-primary)] rounded-lg hover:bg-[var(--color-primary)] hover:text-white text-sm sm:text-base font-normal transition-colors text-center"
+              className="text-blue-400 hover:text-blue-300 text-lg sm:text-xl font-normal transition-colors"
             >
               Shop Now →
-            </a>
-            <a
+            </Link>
+            <Link
               href="/about"
-              className="w-full sm:w-auto px-6 py-3 text-[var(--color-text-muted)] hover:text-[var(--color-text)] text-sm sm:text-base font-normal transition-colors text-center"
+              className="text-gray-400 hover:text-white text-lg sm:text-xl font-normal transition-colors"
             >
               Learn More
-            </a>
+            </Link>
           </motion.div>
         </div>
 
         {/* Hero Image */}
         <motion.div
-          initial={{ opacity: 0.3, scale: 1 }}
-          animate={{ opacity: 0.3, scale: 1 }}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1, delay: 0.8 }}
-          className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[300px] sm:w-[400px] lg:w-[600px] h-[200px] sm:h-[300px] lg:h-[400px] opacity-30"
+          className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[500px] sm:w-[600px] lg:w-[800px] h-[300px] sm:h-[400px] lg:h-[500px]"
           style={{
-            backgroundImage: "url(https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=800&q=80)",
+            backgroundImage: "url(https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=1200&q=85)",
             backgroundSize: "contain",
             backgroundPosition: "center bottom",
             backgroundRepeat: "no-repeat",
@@ -79,24 +75,108 @@ export default function HomePage() {
         />
       </motion.section>
 
-      {/* Product Scroll */}
-      <ProductScroll />
+      {/* Product Showcase */}
+      <section className="py-20 sm:py-32 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight text-gray-900 text-center mb-4">
+            The latest.
+          </h2>
+          <p className="text-xl sm:text-2xl text-gray-500 text-center mb-16 sm:mb-24">
+            Take a look at what&apos;s new.
+          </p>
 
-      {/* Featured Showcase */}
-      <FeaturedShowcase />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+              { name: "iPhone 15 Pro Max", price: "From ৳164,999", img: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=500&q=85" },
+              { name: "Samsung Galaxy S24 Ultra", price: "From ৳129,999", img: "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=500&q=85" },
+              { name: "OnePlus 12", price: "From ৳79,999", img: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=500&q=85" },
+              { name: "Xiaomi 14 Ultra", price: "From ৳54,999", img: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500&q=85" },
+            ].map((product, index) => (
+              <motion.div
+                key={product.name}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className="group text-center"
+              >
+                <div className="aspect-square bg-gray-50 rounded-2xl overflow-hidden mb-6">
+                  <img
+                    src={product.img}
+                    alt={product.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                </div>
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-1">
+                  {product.name}
+                </h3>
+                <p className="text-base text-gray-500">
+                  {product.price}
+                </p>
+                <Link
+                  href="/products"
+                  className="inline-block mt-3 text-blue-500 hover:text-blue-600 text-sm font-normal"
+                >
+                  Buy →
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Product */}
+      <section className="py-20 sm:py-32 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+            <div>
+              <p className="text-sm font-medium text-blue-500 uppercase tracking-wider mb-3">
+                Featured
+              </p>
+              <h2 className="text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight text-gray-900 mb-6">
+                iPhone 16 Pro
+              </h2>
+              <p className="text-xl sm:text-2xl text-gray-500 mb-10 max-w-lg">
+                The most powerful iPhone ever. A18 Pro chip. 48MP Fusion camera. Titanium design.
+              </p>
+              <div className="flex items-center gap-8">
+                <Link
+                  href="/products"
+                  className="text-blue-500 hover:text-blue-600 text-lg font-normal"
+                >
+                  Learn more →
+                </Link>
+                <Link
+                  href="/products"
+                  className="text-blue-500 hover:text-blue-600 text-lg font-normal"
+                >
+                  Buy
+                </Link>
+              </div>
+            </div>
+            <div className="aspect-square bg-white rounded-3xl overflow-hidden shadow-sm">
+              <img
+                src="https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=800&q=85"
+                alt="iPhone 16 Pro"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Spec Highlights */}
-      <AnimatedSection className="py-12 sm:py-16 lg:py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-[var(--color-text)] text-center mb-8 sm:mb-12">
-            Built for everything
+      <section className="py-20 sm:py-32 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight text-gray-900 text-center mb-16 sm:mb-24">
+            Built for everything.
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {[
-              { title: "200MP Pro-grade Camera", img: "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=600&q=80" },
-              { title: "5000mAh All-day Battery", img: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=600&q=80" },
-              { title: "120Hz Dynamic AMOLED", img: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=600&q=80" },
-              { title: "256GB Storage", img: "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=600&q=80" },
+              { title: "200MP Pro-grade Camera", img: "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=600&q=85" },
+              { title: "5000mAh All-day Battery", img: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=600&q=85" },
+              { title: "120Hz Dynamic AMOLED", img: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=600&q=85" },
+              { title: "256GB Storage", img: "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=600&q=85" },
             ].map((spec, index) => (
               <motion.div
                 key={spec.title}
@@ -104,51 +184,75 @@ export default function HomePage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="relative aspect-[16/10] sm:aspect-video bg-[var(--color-bg-alt)] rounded-xl sm:rounded-2xl overflow-hidden group"
+                className="relative aspect-video bg-gray-50 rounded-2xl overflow-hidden group"
               >
                 <img
                   src={spec.img}
                   alt={spec.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
-                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors" />
-                <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 right-3 sm:right-4">
-                  <p className="text-white text-xs sm:text-base lg:text-lg font-medium leading-tight">{spec.title}</p>
+                <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors" />
+                <div className="absolute bottom-4 left-4">
+                  <p className="text-white text-lg font-medium drop-shadow-lg">{spec.title}</p>
                 </div>
               </motion.div>
             ))}
           </div>
         </div>
-      </AnimatedSection>
+      </section>
 
-      {/* Testimonials Scroll */}
-      <TestimonialsScroll />
-
-      {/* App Download CTA */}
-      <AnimatedSection className="py-12 sm:py-16 lg:py-20 bg-[var(--color-dark-banner)] text-white">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-2xl sm:text-3xl lg:text-5xl font-semibold tracking-tight mb-3 sm:mb-4">
-            Your Store. In Your Pocket.
+      {/* Testimonials */}
+      <section className="py-20 sm:py-32 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-6">
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight text-gray-900 text-center mb-16">
+            What people are saying.
           </h2>
-          <p className="text-sm sm:text-lg lg:text-xl text-gray-400 mb-6 sm:mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              { name: "Rahim Ahmed", location: "Dhaka", content: "Amazing service! Got my iPhone 15 Pro Max delivered same day." },
+              { name: "Fatima Rahman", location: "Chattogram", content: "Best phone shop in Bangladesh. Genuine products, fast delivery." },
+              { name: "Karim Hossain", location: "Sylhet", content: "Great prices and the COD option is very convenient." },
+            ].map((testimonial, index) => (
+              <motion.div
+                key={testimonial.name}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className="bg-white p-8 rounded-2xl shadow-sm"
+              >
+                <p className="text-lg text-gray-900 leading-relaxed mb-6">
+                  &ldquo;{testimonial.content}&rdquo;
+                </p>
+                <div className="border-t border-gray-100 pt-4">
+                  <p className="font-semibold text-gray-900">{testimonial.name}</p>
+                  <p className="text-sm text-gray-500">{testimonial.location}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="py-20 sm:py-32 bg-black text-white">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight mb-6">
+            Your Store.<br />In Your Pocket.
+          </h2>
+          <p className="text-xl sm:text-2xl text-gray-400 mb-10">
             Shop anywhere, anytime with the RYmos mobile app.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6">
-            <a
-              href="#"
-              className="w-full sm:w-auto px-6 py-3 text-[var(--color-primary)] border border-[var(--color-primary)] rounded-lg hover:bg-[var(--color-primary)] hover:text-white text-sm sm:text-base font-normal transition-colors text-center min-h-[44px] flex items-center justify-center"
-            >
+          <div className="flex items-center justify-center gap-8">
+            <a href="#" className="text-blue-400 hover:text-blue-300 text-lg font-normal">
               Download for iOS →
             </a>
-            <a
-              href="#"
-              className="w-full sm:w-auto px-6 py-3 text-[var(--color-primary)] border border-[var(--color-primary)] rounded-lg hover:bg-[var(--color-primary)] hover:text-white text-sm sm:text-base font-normal transition-colors text-center min-h-[44px] flex items-center justify-center"
-            >
+            <a href="#" className="text-blue-400 hover:text-blue-300 text-lg font-normal">
               Download for Android →
             </a>
           </div>
         </div>
-      </AnimatedSection>
+      </section>
     </main>
   );
 }
