@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Cpu, Camera, Battery, Smartphone } from "lucide-react";
+import { Cpu, Camera, Battery, Smartphone } from "lucide-react";
 
 const heroSlides = [
   {
@@ -50,10 +50,6 @@ export default function HeroBanner() {
     setCurrent((prev) => (prev + 1) % heroSlides.length);
   }, []);
 
-  const prev = useCallback(() => {
-    setCurrent((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
-  }, []);
-
   useEffect(() => {
     const timer = setInterval(next, 6000);
     return () => clearInterval(timer);
@@ -64,7 +60,7 @@ export default function HeroBanner() {
   if (!isClient) return null;
 
   return (
-    <section className="relative overflow-hidden min-h-[600px]">
+    <section className="relative w-full h-[500px] sm:h-[600px] overflow-hidden">
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={current}
@@ -83,8 +79,8 @@ export default function HeroBanner() {
         </motion.div>
       </AnimatePresence>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-32">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center w-full">
           <AnimatePresence mode="wait">
             <motion.div
               key={current}
@@ -135,31 +131,6 @@ export default function HeroBanner() {
 
           <div className="hidden lg:block" />
         </div>
-      </div>
-
-      <button
-        onClick={prev}
-        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-colors"
-      >
-        <ChevronLeft className="h-6 w-6" />
-      </button>
-      <button
-        onClick={next}
-        className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-colors"
-      >
-        <ChevronRight className="h-6 w-6" />
-      </button>
-
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-2">
-        {heroSlides.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => setCurrent(index)}
-            className={`h-3 rounded-full transition-all duration-300 ${
-              index === current ? "bg-white w-8" : "bg-white/50 w-3"
-            }`}
-          />
-        ))}
       </div>
     </section>
   );

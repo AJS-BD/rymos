@@ -1,11 +1,13 @@
-import { supabase, isConfigured } from "@/lib/supabase";
+import { getSupabase, isConfigured } from "@/lib/supabase";
 import ProductCard from "@/components/products/product-card";
 
 async function getBestSellers() {
-  if (!isConfigured) {
+  if (!isConfigured()) {
     console.warn("Supabase not configured — returning empty products");
     return [];
   }
+
+  const supabase = getSupabase();
 
   const { data, error } = await supabase
     .from("products")

@@ -1,11 +1,30 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
-const supabaseUrl = process.env.RYMOS_SUPABASE_URL;
-const supabaseAnonKey = process.env.RYMOS_SUPABASE_ANON_KEY;
+// Create client lazily to avoid build-time errors
+let _client: SupabaseClient | null = null;
 
-export const isConfigured = Boolean(supabaseUrl && supabaseAnonKey);
+export function getSupabase(): SupabaseClient {
+  if (_client) return _client;
 
-export const supabase = createClient(
-  supabaseUrl || "https://placeholder.supabase.co",
-  supabaseAnonKey || "placeholder-key"
-);
+  const url = process.env.RYMOS_SUPABASE_URL;
+  const key = process.env.RYMOS_SUPABASE_ANON_KEY;
+
+  if (!url || !key) {
+    console.warn("Supabase env vars not set — using placeholder");
+  }
+
+  _client = createClient(
+    url || "https://placeholder.supabase.co",
+    key || "placeholder-key"
+  );
+
+  return _client;
+}
+
+// Check at call time, not module load time
+export function isConfigured(): boolean {
+  return Boolean(
+    process.env.RYMOS_SUPABASE_URL &&
+    process.env.RYMOS_SUPABASE_ANON_KEY
+  );
+}
