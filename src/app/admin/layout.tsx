@@ -9,6 +9,8 @@ import {
   Settings,
   LogOut,
   Wallet,
+  Tag,
+  Star,
 } from "lucide-react";
 
 const navItems = [
@@ -16,6 +18,8 @@ const navItems = [
   { href: "/admin/pos", label: "POS", icon: ShoppingCart },
   { href: "/admin/products", label: "Products", icon: Package },
   { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
+  { href: "/admin/reviews", label: "Reviews", icon: Star },
+  { href: "/admin/coupons", label: "Coupons", icon: Tag },
   { href: "/admin/customers", label: "Customers", icon: Users },
   { href: "/admin/credit-applications", label: "Credit", icon: CreditCard },
   { href: "/admin/installments", label: "কিস্তি বাকি", icon: Wallet },

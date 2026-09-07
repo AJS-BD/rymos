@@ -1,4 +1,5 @@
 import { getSupabase, isConfigured } from "@/lib/supabase";
+import ProductReviews from "@/components/reviews/product-reviews";
 
 async function getProduct(id: string) {
   if (!isConfigured()) return null;
@@ -36,8 +37,9 @@ const productImages: Record<string, string> = {
   "POCO X6 Pro 5G": "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=600&q=80",
 };
 
-export default async function ProductDetail({ params }: { params: { id: string } }) {
-  const product = await getProduct(params.id);
+export default async function ProductDetail({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const product = await getProduct(id);
 
   if (!product) {
     return (
@@ -146,6 +148,9 @@ export default async function ProductDetail({ params }: { params: { id: string }
           </div>
         </div>
       </div>
+
+      {/* Product Reviews Section */}
+      <ProductReviews productId={product.id} />
 
       {/* Related Products */}
       {related.length > 0 && (

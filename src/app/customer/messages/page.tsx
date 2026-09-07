@@ -73,7 +73,7 @@ export default function CustomerMessages() {
 
     // Realtime subscription
     const channel = getSupabase()
-      .channel("customer-messages")
+      .channel(`customer-messages-${customerId}`)
       .on(
         "postgres_changes",
         {
@@ -83,7 +83,27 @@ export default function CustomerMessages() {
           filter: `customer_id=eq.${customerId}`,
         },
         (payload) => {
-          setMessages((prev) => [...prev, payload.new as Message]);
+          const newMessage = payload.new as Message;
+          setMessages((prev) => {
+            // Prevent duplicates when we sent the message ourselves
+            if (prev.some((m) => m.id === newMessage.id)) return prev;
+            return [...prev, newMessage];
+          });
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "messages",
+          filter: `customer_id=eq.${customerId}`,
+        },
+        (payload) => {
+          const updated = payload.new as Message;
+          setMessages((prev) =>
+            prev.map((m) => (m.id === updated.id ? updated : m))
+          );
         }
       )
       .subscribe();
@@ -114,7 +134,11 @@ export default function CustomerMessages() {
       .single();
 
     if (data) {
-      setMessages((prev) => [...prev, data as Message]);
+      setMessages((prev) => {
+        // Avoid duplicates if subscription already delivered it
+        if (prev.some((m) => m.id === data.id)) return prev;
+        return [...prev, data as Message];
+      });
     }
     setSending(false);
   };

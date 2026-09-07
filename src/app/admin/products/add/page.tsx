@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle, AlertCircle, ArrowLeft, Save } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
+import ProductImageUpload from "@/components/ProductImageUpload";
 
 interface Category {
   id: number;
@@ -17,6 +18,7 @@ export default function AddProduct() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [images, setImages] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     name: "",
     brand: "",
@@ -65,6 +67,7 @@ export default function AddProduct() {
           description: formData.description || null,
           is_featured: formData.is_featured,
           is_new_arrival: formData.is_new_arrival,
+          images: images,
         },
       ]);
 
@@ -208,6 +211,12 @@ export default function AddProduct() {
             placeholder="Product description..."
           />
         </div>
+
+        <ProductImageUpload
+          images={images}
+          onChange={setImages}
+          disabled={loading}
+        />
 
         <div className="flex items-center gap-4">
           <label className="flex items-center gap-2">

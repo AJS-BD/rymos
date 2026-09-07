@@ -5,9 +5,18 @@ import Link from "next/link";
 import { useCart } from "@/context/cart-context";
 import { formatBDT, generateOrderNumber } from "@/lib/utils";
 import { getSupabase, isConfigured } from "@/lib/supabase";
-import { MapPin, Store, CreditCard, Truck, CheckCircle, Loader2, Package } from "lucide-react";
+import { MapPin, Store, CreditCard, Truck, CheckCircle, Loader2, Package, Tag, X, Check } from "lucide-react";
 
 type OrderType = "cod" | "pickup" | "credit";
+
+interface CouponInfo {
+  id: number;
+  code: string;
+  discount_type: "percentage" | "fixed";
+  discount_value: number;
+  min_order_amount: number | null;
+  max_discount: number | null;
+}
 
 export default function CheckoutPage() {
   const { items, subtotal, clearCart } = useCart();
@@ -17,6 +26,107 @@ export default function CheckoutPage() {
   const [isPlacing, setIsPlacing] = useState(false);
   const [error, setError] = useState("");
   const [placedOrder, setPlacedOrder] = useState<{ orderNumber: string } | null>(null);
+
+  // Coupon state
+  const [couponCode, setCouponCode] = useState("");
+  const [coupon, setCoupon] = useState<CouponInfo | null>(null);
+  const [couponError, setCouponError] = useState("");
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponApplied, setCouponApplied] = useState(false);
+
+  const calculateDiscount = (): number => {
+    if (!coupon) return 0;
+    if (coupon.min_order_amount && subtotal < coupon.min_order_amount) return 0;
+
+    let discount = 0;
+    if (coupon.discount_type === "percentage") {
+      discount = (subtotal * coupon.discount_value) / 100;
+      if (coupon.max_discount) {
+        discount = Math.min(discount, coupon.max_discount);
+      }
+    } else {
+      discount = coupon.discount_value;
+    }
+    return Math.min(discount, subtotal);
+  };
+
+  const discount = calculateDiscount();
+  const total = subtotal - discount;
+
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) {
+      setCouponError("Please enter a coupon code");
+      return;
+    }
+
+    setCouponLoading(true);
+    setCouponError("");
+    setCouponApplied(false);
+
+    try {
+      const supabase = getSupabase();
+      const { data, error: fetchError } = await supabase
+        .from("coupons")
+        .select("*")
+        .eq("code", couponCode.toUpperCase().trim())
+        .single();
+
+      if (fetchError || !data) {
+        setCouponError("Invalid coupon code");
+        setCouponLoading(false);
+        return;
+      }
+
+      const couponData = data as CouponInfo & { is_active: boolean; starts_at: string; expires_at: string; usage_limit: number | null; usage_count: number };
+
+      // Validate coupon
+      if (!couponData.is_active) {
+        setCouponError("This coupon is not active");
+        setCouponLoading(false);
+        return;
+      }
+
+      const now = new Date();
+      if (new Date(couponData.starts_at) > now) {
+        setCouponError("This coupon is not yet valid");
+        setCouponLoading(false);
+        return;
+      }
+
+      if (new Date(couponData.expires_at) < now) {
+        setCouponError("This coupon has expired");
+        setCouponLoading(false);
+        return;
+      }
+
+      if (couponData.usage_limit && couponData.usage_count >= couponData.usage_limit) {
+        setCouponError("This coupon has reached its usage limit");
+        setCouponLoading(false);
+        return;
+      }
+
+      if (couponData.min_order_amount && subtotal < couponData.min_order_amount) {
+        setCouponError(`Minimum order amount is ${formatBDT(couponData.min_order_amount)}`);
+        setCouponLoading(false);
+        return;
+      }
+
+      setCoupon(couponData);
+      setCouponApplied(true);
+      setCouponError("");
+    } catch (err: any) {
+      setCouponError(err?.message || "Failed to apply coupon");
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setCoupon(null);
+    setCouponCode("");
+    setCouponApplied(false);
+    setCouponError("");
+  };
 
   const handlePlaceOrder = async () => {
     setError("");
@@ -81,13 +191,21 @@ export default function CheckoutPage() {
         order_type: schemaOrderType,
         items: orderItems,
         subtotal: subtotal,
-        total: subtotal,
+        total: total,
+        discount: discount,
+        coupon_id: coupon?.id || null,
+        coupon_code: coupon?.code || null,
         payment_method: orderType === "credit" ? "credit" : "cod",
         shipping_address: shippingAddressObj,
         pickup_note: orderType === "pickup" ? pickupNote.trim() || null : null,
       });
 
       if (insertError) throw insertError;
+
+      // Increment coupon usage count if coupon was applied
+      if (coupon) {
+        await supabase.rpc("increment_coupon_usage", { coupon_id: coupon.id });
+      }
 
       // Clear cart and show confirmation
       clearCart();
@@ -265,6 +383,71 @@ export default function CheckoutPage() {
               </Link>
             </div>
           )}
+
+          {/* Coupon Code Section */}
+          <div className="bg-white rounded-lg border p-4">
+            <h2 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <Tag className="h-4 w-4" />
+              Coupon Code
+            </h2>
+
+            {couponApplied && coupon ? (
+              <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg p-3">
+                <div className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-green-600" />
+                  <div>
+                    <p className="text-sm font-medium text-green-800 font-mono">{coupon.code}</p>
+                    <p className="text-xs text-green-600">
+                      {coupon.discount_type === "percentage"
+                        ? `${coupon.discount_value}% off`
+                        : `৳${coupon.discount_value} off`}
+                      {coupon.max_discount && coupon.discount_type === "percentage"
+                        ? ` (max ৳${coupon.max_discount})`
+                        : ""}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleRemoveCoupon}
+                  className="p-1 hover:bg-green-100 rounded transition-colors"
+                >
+                  <X className="h-4 w-4 text-green-600" />
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                    placeholder="Enter coupon code"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black font-mono uppercase"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleApplyCoupon();
+                      }
+                    }}
+                  />
+                  <button
+                    onClick={handleApplyCoupon}
+                    disabled={couponLoading}
+                    className="px-4 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    {couponLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      "Apply"
+                    )}
+                  </button>
+                </div>
+                {couponError && (
+                  <p className="text-xs text-red-600">{couponError}</p>
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Right - Order Summary */}
@@ -289,13 +472,19 @@ export default function CheckoutPage() {
               <span className="text-gray-600">Subtotal</span>
               <span>{formatBDT(subtotal)}</span>
             </div>
+            {discount > 0 && (
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Discount</span>
+                <span className="text-green-600">-{formatBDT(discount)}</span>
+              </div>
+            )}
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Delivery</span>
               <span className="text-green-600">Free</span>
             </div>
             <div className="flex justify-between font-bold text-lg border-t pt-2">
               <span>Total</span>
-              <span>{formatBDT(subtotal)}</span>
+              <span>{formatBDT(total)}</span>
             </div>
           </div>
 
