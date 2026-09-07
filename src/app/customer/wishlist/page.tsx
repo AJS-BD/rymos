@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { getSupabase, isConfigured } from "@/lib/supabase";
 import { formatBDT } from "@/lib/utils";
+import Header from "@/components/layout/header";
+import Footer from "@/components/layout/footer";
 import {
   Heart,
   Trash2,
@@ -166,9 +168,15 @@ export default function WishlistPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-      </div>
+      <>
+        <Header />
+        <main className="flex-1">
+          <div className="flex items-center justify-center h-64">
+            <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+          </div>
+        </main>
+        <Footer />
+      </>
     );
   }
 
@@ -187,11 +195,14 @@ export default function WishlistPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">My Wishlist</h1>
-        <p className="text-gray-500">{wishlistItems.length} items saved</p>
-      </div>
+    <>
+      <Header />
+      <main className="flex-1">
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-gray-900">My Wishlist</h1>
+            <p className="text-gray-500">{wishlistItems.length} items saved</p>
+          </div>
 
       {error && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-center gap-2">
@@ -293,6 +304,9 @@ export default function WishlistPage() {
           })}
         </div>
       )}
-    </div>
+        </div>
+      </main>
+      <Footer />
+    </>
   );
 }

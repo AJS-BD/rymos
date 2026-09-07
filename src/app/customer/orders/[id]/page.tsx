@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback, use } from "react";
 import { getSupabase, isConfigured } from "@/lib/supabase";
 import { formatBDT } from "@/lib/utils";
 import Link from "next/link";
+import Header from "@/components/layout/header";
+import Footer from "@/components/layout/footer";
 import {
   ArrowLeft,
   Package,
@@ -148,30 +150,45 @@ export default function CustomerOrderDetail({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-      </div>
+      <>
+        <Header />
+        <main className="flex-1">
+          <div className="flex items-center justify-center h-64">
+            <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+          </div>
+        </main>
+        <Footer />
+      </>
     );
   }
 
   if (error || !order) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-16 text-center">
-        <AlertCircle className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-        <p className="text-gray-500">{error || "Order not found."}</p>
-        <Link
-          href="/customer/orders"
-          className="text-black font-medium hover:underline mt-2 inline-block"
-        >
-          ← Back to orders
-        </Link>
-      </div>
+      <>
+        <Header />
+        <main className="flex-1">
+          <div className="max-w-2xl mx-auto px-4 py-16 text-center">
+            <AlertCircle className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+            <p className="text-gray-500">{error || "Order not found."}</p>
+            <Link
+              href="/customer/orders"
+              className="text-black font-medium hover:underline mt-2 inline-block"
+            >
+              ← Back to orders
+            </Link>
+          </div>
+        </main>
+        <Footer />
+      </>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      {/* Header */}
+    <>
+      <Header />
+      <main className="flex-1">
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div className="flex items-start gap-4">
           <Link
@@ -464,6 +481,9 @@ export default function CustomerOrderDetail({
           </div>
         </div>
       </div>
-    </div>
+        </div>
+      </main>
+      <Footer />
+    </>
   );
 }

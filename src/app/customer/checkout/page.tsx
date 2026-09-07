@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useCart } from "@/context/cart-context";
 import { formatBDT, generateOrderNumber } from "@/lib/utils";
 import { getSupabase, isConfigured } from "@/lib/supabase";
+import Header from "@/components/layout/header";
+import Footer from "@/components/layout/footer";
 import { MapPin, Store, CreditCard, Truck, CheckCircle, Loader2, Package, Tag, X, Check } from "lucide-react";
 
 type OrderType = "cod" | "pickup" | "credit";
@@ -219,59 +221,74 @@ export default function CheckoutPage() {
 
   if (placedOrder) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-16 text-center">
-        <div className="bg-white rounded-2xl border p-8 shadow-sm">
-          <div className="h-20 w-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6">
-            <CheckCircle className="h-10 w-10 text-green-500" />
+      <>
+        <Header />
+        <main className="flex-1">
+          <div className="max-w-2xl mx-auto px-4 py-16 text-center">
+            <div className="bg-white rounded-2xl border p-8 shadow-sm">
+              <div className="h-20 w-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6">
+                <CheckCircle className="h-10 w-10 text-green-500" />
+              </div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">Order Placed Successfully!</h1>
+              <p className="text-gray-500 mb-6">
+                Thank you for your order. We&apos;ll contact you soon with delivery updates.
+              </p>
+              <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                <p className="text-sm text-gray-500 mb-1">Order Number</p>
+                <p className="text-xl font-mono font-bold text-gray-900">
+                  {placedOrder.orderNumber}
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Link
+                  href="/products"
+                  className="px-6 py-3 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
+                >
+                  Continue Shopping
+                </Link>
+                <Link
+                  href="/customer/messages"
+                  className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+                >
+                  <Package className="h-4 w-4" />
+                  Contact Support
+                </Link>
+              </div>
+            </div>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Order Placed Successfully!</h1>
-          <p className="text-gray-500 mb-6">
-            Thank you for your order. We&apos;ll contact you soon with delivery updates.
-          </p>
-          <div className="bg-gray-50 rounded-lg p-4 mb-6">
-            <p className="text-sm text-gray-500 mb-1">Order Number</p>
-            <p className="text-xl font-mono font-bold text-gray-900">
-              {placedOrder.orderNumber}
-            </p>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link
-              href="/products"
-              className="px-6 py-3 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
-            >
-              Continue Shopping
-            </Link>
-            <Link
-              href="/customer/messages"
-              className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
-            >
-              <Package className="h-4 w-4" />
-              Contact Support
-            </Link>
-          </div>
-        </div>
-      </div>
+        </main>
+        <Footer />
+      </>
     );
   }
 
   if (items.length === 0) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-16 text-center">
-        <h1 className="text-2xl font-bold text-gray-900">Cart is Empty</h1>
-        <p className="text-gray-500 mt-2">Add some products to checkout.</p>
-        <Link
-          href="/products"
-          className="inline-block mt-6 px-6 py-3 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
-        >
-          Shop Now
-        </Link>
-      </div>
+      <>
+        <Header />
+        <main className="flex-1">
+          <div className="max-w-2xl mx-auto px-4 py-16 text-center">
+            <h1 className="text-2xl font-bold text-gray-900">Cart is Empty</h1>
+            <p className="text-gray-500 mt-2">Add some products to checkout.</p>
+            <Link
+              href="/products"
+              className="inline-block mt-6 px-6 py-3 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
+            >
+              Shop Now
+            </Link>
+          </div>
+        </main>
+        <Footer />
+      </>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Checkout</h1>
+    <>
+      <Header />
+      <main className="flex-1">
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          <h1 className="text-2xl font-bold text-gray-900 mb-6">Checkout</h1>
 
       {error && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
@@ -505,5 +522,8 @@ export default function CheckoutPage() {
         </div>
       </div>
     </div>
+      </main>
+      <Footer />
+    </>
   );
 }

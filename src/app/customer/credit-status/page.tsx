@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { CreditCard, Clock, CheckCircle, XCircle, AlertCircle, Calendar, DollarSign, Loader2 } from "lucide-react";
 import { getSupabase, isConfigured } from "@/lib/supabase";
 import { formatBDT } from "@/lib/utils";
+import Header from "@/components/layout/header";
+import Footer from "@/components/layout/footer";
 
 interface Application {
   id: string;
@@ -149,12 +151,15 @@ export default function CreditStatus() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Credit Application Status</h1>
-          <p className="text-gray-600 mt-1">Check your application status and installment schedule</p>
-        </div>
+    <>
+      <Header />
+      <main className="flex-1">
+        <div className="min-h-screen bg-gray-50 py-8 px-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-gray-900">Credit Application Status</h1>
+              <p className="text-gray-600 mt-1">Check your application status and installment schedule</p>
+            </div>
 
         {/* Search */}
         <form onSubmit={searchApplications} className="bg-white rounded-xl shadow-sm border p-6 mb-6">
@@ -336,6 +341,9 @@ export default function CreditStatus() {
           </div>
         )}
       </div>
-    </div>
+        </div>
+      </main>
+      <Footer />
+    </>
   );
 }

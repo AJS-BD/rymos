@@ -1,4 +1,6 @@
 import { getSupabase, isConfigured } from "@/lib/supabase";
+import Header from "@/components/layout/header";
+import Footer from "@/components/layout/footer";
 import ProductReviews from "@/components/reviews/product-reviews";
 
 async function getProduct(id: string) {
@@ -43,10 +45,16 @@ export default async function ProductDetail({ params }: { params: Promise<{ id: 
 
   if (!product) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-16 text-center">
-        <h1 className="text-2xl font-bold text-gray-900">Product Not Found</h1>
-        <p className="text-gray-500 mt-2">The product you're looking for doesn't exist.</p>
-      </div>
+      <>
+        <Header />
+        <main className="flex-1">
+          <div className="max-w-7xl mx-auto px-4 py-16 text-center">
+            <h1 className="text-2xl font-bold text-gray-900">Product Not Found</h1>
+            <p className="text-gray-500 mt-2">The product you're looking for doesn't exist.</p>
+          </div>
+        </main>
+        <Footer />
+      </>
     );
   }
 
@@ -57,8 +65,11 @@ export default async function ProductDetail({ params }: { params: Promise<{ id: 
     : 0;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Breadcrumb */}
+    <>
+      <Header />
+      <main className="flex-1">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6">
         <a href="/" className="hover:text-gray-700">Home</a>
         <span>/</span>
@@ -172,7 +183,10 @@ export default async function ProductDetail({ params }: { params: Promise<{ id: 
             ))}
           </div>
         </div>
-      )}
-    </div>
+        )}
+        </div>
+      </main>
+      <Footer />
+    </>
   );
 }

@@ -4,6 +4,8 @@ import { useState, useRef } from "react";
 import { Upload, FileText, CreditCard, User, Phone, MapPin, Briefcase, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import { getSupabase, isConfigured } from "@/lib/supabase";
 import { formatBDT } from "@/lib/utils";
+import Header from "@/components/layout/header";
+import Footer from "@/components/layout/footer";
 
 interface FormState {
   // Personal Info
@@ -182,31 +184,40 @@ export default function CreditApplication() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full text-center">
-          <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Application Submitted!</h2>
-          <p className="text-gray-600 mb-6">
-            Your credit application has been received. We will review it and update the status within 24-48 hours.
-          </p>
-          <a
-            href="/customer/credit-status"
-            className="inline-block bg-black text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors"
-          >
-            Check Application Status
-          </a>
-        </div>
-      </div>
+      <>
+        <Header />
+        <main className="flex-1">
+          <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full text-center">
+              <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Application Submitted!</h2>
+              <p className="text-gray-600 mb-6">
+                Your credit application has been received. We will review it and update the status within 24-48 hours.
+              </p>
+              <a
+                href="/customer/credit-status"
+                className="inline-block bg-black text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors"
+              >
+                Check Application Status
+              </a>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-3xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Credit Application</h1>
-          <p className="text-gray-600 mt-1">Apply for installment-based purchase (কিস্তি)</p>
-        </div>
+    <>
+      <Header />
+      <main className="flex-1">
+        <div className="min-h-screen bg-gray-50 py-8 px-4">
+          <div className="max-w-3xl mx-auto">
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-gray-900">Credit Application</h1>
+              <p className="text-gray-600 mt-1">Apply for installment-based purchase (কিস্তি)</p>
+            </div>
 
         {error && (
           <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
@@ -587,7 +598,10 @@ export default function CreditApplication() {
             )}
           </button>
         </form>
-      </div>
-    </div>
+          </div>
+        </div>
+      </main>
+      <Footer />
+    </>
   );
 }
