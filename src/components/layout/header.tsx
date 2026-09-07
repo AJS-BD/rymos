@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Search, Menu, X, User } from "lucide-react";
 import { motion, useScroll, useMotionValueEvent, useTransform, AnimatePresence } from "framer-motion";
+import { useAuth } from "@/context/auth-context";
 
 const navLinks = [
   { label: "Products", href: "/products" },
@@ -14,18 +15,12 @@ const navLinks = [
 
 export default function Header() {
   const router = useRouter();
+  const { isLoggedIn, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [scrolled, setScrolled] = useState(false);
   const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  // Check if user is logged in
-  useEffect(() => {
-    const customerId = localStorage.getItem("rymos_customer_id");
-    setIsLoggedIn(!!customerId);
-  }, []);
 
   const { scrollY } = useScroll();
 
@@ -53,7 +48,7 @@ export default function Header() {
         { label: "Profile", href: "/customer/profile" },
         { label: "Track Order", href: "/track-order" },
         { label: "Messages", href: "/customer/messages" },
-        { label: "Sign Out", href: "/auth/login" },
+        { label: "Sign Out", href: "/auth/login", action: logout },
       ]
     : [
         { label: "Sign In", href: "/auth/login" },
@@ -140,7 +135,12 @@ export default function Header() {
                         <Link
                           key={item.label}
                           href={item.href}
-                          onClick={() => setAccountDropdownOpen(false)}
+                          onClick={() => {
+                            setAccountDropdownOpen(false);
+                            if (item.action) {
+                              item.action();
+                            }
+                          }}
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
                           style={{ fontFamily: "var(--font-sans)" }}
                         >
@@ -178,30 +178,30 @@ export default function Header() {
                 )}
               </motion.button>
             </div>
-          </div>
 
-          {/* Search Bar */}
-          {searchOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-              className="overflow-hidden"
-            >
-              <div className="pb-3">
-                <input
-                  type="text"
-                  placeholder="Search rymos.com"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-4 py-2.5 text-sm bg-[var(--color-bg-alt)] rounded-lg border-none focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30"
-                  style={{ fontFamily: "var(--font-sans)" }}
-                  autoFocus
-                />
-              </div>
-            </motion.div>
-          )}
+            {/* Search Bar */}
+            {searchOpen && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="overflow-hidden"
+              >
+                <div className="pb-3">
+                  <input
+                    type="text"
+                    placeholder="Search rymos.com"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full px-4 py-2.5 text-sm bg-[var(--color-bg-alt)] rounded-lg border-none focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30"
+                    style={{ fontFamily: "var(--font-sans)" }}
+                    autoFocus
+                  />
+                </div>
+              </motion.div>
+            )}
+          </div>
         </div>
       </motion.header>
 
@@ -245,7 +245,12 @@ export default function Header() {
                 >
                   <Link
                     href={item.href}
-                    onClick={() => setMobileMenuOpen(false)}
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      if (item.action) {
+                        item.action();
+                      }
+                    }}
                     className="block text-center text-lg font-light text-[var(--color-text)] hover:text-[var(--color-text-muted)] transition-colors duration-200 py-2"
                     style={{ fontFamily: "var(--font-sans)" }}
                   >
