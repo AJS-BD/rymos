@@ -1,9 +1,8 @@
-import type { Metadata } from "next";
+import { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/context/cart-context";
 import LoadingScreen from "@/components/ui/loading-screen";
-import PageTransition from "@/components/ui/page-transition";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
 
@@ -47,11 +46,8 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <LoadingScreen />
         <CartProvider>
-          {/* Persistent header — does NOT re-animate on route changes */}
           <Header />
-          {/* Only the main content gets page transition animations */}
-          <PageTransition>{children}</PageTransition>
-          {/* Persistent footer — does NOT re-animate on route changes */}
+          {children}
           <Footer />
         </CartProvider>
       </body>

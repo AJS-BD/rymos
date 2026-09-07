@@ -5,8 +5,6 @@ import Link from "next/link";
 import { useCart } from "@/context/cart-context";
 import { formatBDT, generateOrderNumber } from "@/lib/utils";
 import { getSupabase, isConfigured } from "@/lib/supabase";
-import Header from "@/components/layout/header";
-import Footer from "@/components/layout/footer";
 import { motion, AnimatePresence } from "framer-motion";
 import { Truck, Store, CreditCard, MapPin, Loader2 } from "lucide-react";
 
@@ -102,9 +100,7 @@ export default function CheckoutPage() {
 
   if (placedOrder) {
     return (
-      <>
-        <Header />
-        <main className="flex-1">
+      <><main className="flex-1">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -137,17 +133,13 @@ export default function CheckoutPage() {
               Continue Shopping
             </Link>
           </motion.div>
-        </main>
-        <Footer />
-      </>
+        </main></>
     );
   }
 
   if (items.length === 0) {
     return (
-      <>
-        <Header />
-        <main className="flex-1">
+      <><main className="flex-1">
           <div className="max-w-[640px] mx-auto px-4 sm:px-6 py-16 sm:py-24 lg:py-32 text-center">
             <p className="text-xl sm:text-2xl lg:text-[28px] font-semibold text-[#1d1d1f] mb-2 sm:mb-3">Your bag is empty.</p>
             <p className="text-sm sm:text-base lg:text-[19px] text-[#86868b] mb-6 sm:mb-10">
@@ -160,16 +152,12 @@ export default function CheckoutPage() {
               Shop now
             </Link>
           </div>
-        </main>
-        <Footer />
-      </>
+        </main></>
     );
   }
 
   return (
-    <>
-      <Header />
-      <main className="flex-1 bg-[#fbfbfd]">
+    <><main className="flex-1 bg-[#fbfbfd]">
         <div className="max-w-[640px] mx-auto px-4 sm:px-6 py-8 sm:py-12 lg:py-20">
           {/* Title */}
           <motion.h1
@@ -411,14 +399,12 @@ export default function CheckoutPage() {
           <div className="mt-6 sm:mt-10 text-center">
             <Link
               href="/customer/cart"
-              className="text-sm sm:text-base lg:text-[15px] text-[#86868b] hover:text-[#0071E3] transition-colors duration-200"
+              className="text-sm sm:text-base lg:text-[15px] text-[#86868b] hover:text-[#0071E3] transition-colors duration-200 py-2 inline-block min-h-[44px]"
             >
               ← Return to Bag
             </Link>
           </div>
         </div>
-      </main>
-      <Footer />
-    </>
+      </main></>
   );
 }

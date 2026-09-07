@@ -58,10 +58,10 @@ export default function AccessoriesDeals() {
                     key={item.label}
                     className="w-11 h-11 sm:w-14 sm:h-14 bg-white/20 backdrop-blur-sm rounded-lg flex flex-col items-center justify-center"
                   >
-                    <span className="text-sm sm:text-lg font-bold text-white">
+                    <span className="text-base sm:text-lg font-bold text-white leading-none">
                       {item.value}
                     </span>
-                    <span className="text-[10px] sm:text-xs text-gray-300">
+                    <span className="text-xs sm:text-xs text-gray-300 leading-none">
                       {item.label}
                     </span>
                   </div>

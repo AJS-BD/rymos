@@ -2,8 +2,6 @@
 
 import { useState } from "react";
 import { getSupabase, isConfigured } from "@/lib/supabase";
-import Header from "@/components/layout/header";
-import Footer from "@/components/layout/footer";
 import {
   Search,
   Package,
@@ -194,9 +192,7 @@ export default function TrackOrderPage() {
   const currentStatus = order ? statusConfig[order.status] || statusConfig.pending : null;
 
   return (
-    <>
-      <Header />
-      <main className="flex-1">
+    <><main className="flex-1">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
           <div className="text-center mb-8">
@@ -444,8 +440,6 @@ export default function TrackOrderPage() {
             </div>
           )}
         </div>
-      </main>
-      <Footer />
-    </>
+      </main></>
   );
 }

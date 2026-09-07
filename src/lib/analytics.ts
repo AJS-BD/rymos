@@ -12,7 +12,11 @@ type EventName =
   | "purchase"
   | "search"
   | "wishlist_add"
-  | "share";
+  | "share"
+  | "sign_up"
+  | "login"
+  | "filter_products"
+  | "sort_products";
 
 interface EventProperties {
   [key: string]: string | number | boolean | undefined;
@@ -44,7 +48,7 @@ interface CartProperties extends EventProperties {
 const isProduction = process.env.NODE_ENV === "production";
 
 // Check if analytics is enabled (can be disabled for development)
-const isAnalyticsEnabled = () => {
+const isAnalyticsEnabled = (): boolean => {
   if (typeof window === "undefined") return false;
   // Disable in development unless explicitly enabled
   if (!isProduction && process.env.NEXT_PUBLIC_ENABLE_ANALYTICS !== "true") {
@@ -53,12 +57,21 @@ const isAnalyticsEnabled = () => {
   return true;
 };
 
+// Queue for events before initialization
+let eventQueue: Array<{ name: EventName; properties?: EventProperties }> = [];
+let isInitialized = false;
+
 /**
  * Track a custom event
  */
 export function trackEvent(name: EventName, properties?: EventProperties): void {
   if (!isAnalyticsEnabled()) {
     console.log(`[Analytics] Event: ${name}`, properties);
+    return;
+  }
+
+  if (!isInitialized) {
+    eventQueue.push({ name, properties });
     return;
   }
 
@@ -154,6 +167,48 @@ export function trackShare(properties: {
 }
 
 /**
+ * Track user sign up
+ */
+export function trackSignUp(properties: {
+  method?: string;
+  user_id?: string;
+}): void {
+  trackEvent("sign_up", properties);
+}
+
+/**
+ * Track user login
+ */
+export function trackLogin(properties: {
+  method?: string;
+  user_id?: string;
+}): void {
+  trackEvent("login", properties);
+}
+
+/**
+ * Track product filtering
+ */
+export function trackFilterProducts(properties: {
+  category?: string;
+  price_min?: number;
+  price_max?: number;
+  brand?: string;
+}): void {
+  trackEvent("filter_products", properties);
+}
+
+/**
+ * Track product sorting
+ */
+export function trackSortProducts(properties: {
+  sort_by: string;
+  order?: string;
+}): void {
+  trackEvent("sort_products", properties);
+}
+
+/**
  * Initialize analytics — call once in root layout or app component
  */
 export function initAnalytics(): void {
@@ -162,9 +217,17 @@ export function initAnalytics(): void {
     return;
   }
 
+  isInitialized = true;
+
+  // Flush queued events
+  eventQueue.forEach(({ name, properties }) => {
+    console.log(`[Analytics] Event: ${name}`, properties);
+  });
+  eventQueue = [];
+
   console.log("[Analytics] Initialized");
 
-  // Future: Initialize GA4, Plaushtag, or PostHog here
+  // Future: Initialize GA4, Plausetag, or PostHog here
   // const script = document.createElement("script");
   // script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`;
   // script.async = true;
@@ -184,6 +247,30 @@ export function identifyUser(userId: string, traits?: Record<string, string | nu
   console.log(`[Analytics] Identify: ${userId}`, traits);
 }
 
+/**
+ * Track web vitals (LCP, FID, CLS, FCP, TTFB)
+ */
+export function trackWebVitals(metric: {
+  name: string;
+  value: number;
+  id: string;
+  delta?: number;
+}): void {
+  if (!isAnalyticsEnabled()) {
+    console.log(`[Web Vitals] ${metric.name}: ${metric.value}`, metric);
+    return;
+  }
+
+  // Future: Send to analytics service
+  // window.gtag?.("event", metric.name, {
+  //   value: Math.round(metric.name === "CLS" ? metric.value * 1000 : metric.value),
+  //   metric_id: metric.id,
+  //   metric_delta: metric.delta,
+  // });
+
+  console.log(`[Web Vitals] ${metric.name}: ${metric.value}`, metric);
+}
+
 export default {
   trackEvent,
   trackPageView,
@@ -195,6 +282,11 @@ export default {
   trackSearch,
   trackWishlistAdd,
   trackShare,
+  trackSignUp,
+  trackLogin,
+  trackFilterProducts,
+  trackSortProducts,
+  trackWebVitals,
   initAnalytics,
   identifyUser,
 };

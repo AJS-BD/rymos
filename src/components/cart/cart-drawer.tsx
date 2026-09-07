@@ -16,11 +16,11 @@ export default function CartDrawer() {
       {/* Cart Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className="p-2 text-gray-700 hover:text-black relative hidden sm:block"
+        className="p-2 text-gray-700 hover:text-black relative"
       >
-        <ShoppingCart className="h-5 w-5" />
+        <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5" />
         {itemCount > 0 && (
-          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+          <span className="absolute -top-1 -right-1 bg-[var(--color-primary)] text-white text-[10px] rounded-full h-3.5 w-3.5 flex items-center justify-center sm:h-4 sm:w-4 sm:text-xs">
             {itemCount}
           </span>
         )}

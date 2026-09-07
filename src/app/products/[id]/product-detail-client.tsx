@@ -209,7 +209,7 @@ export default function ProductDetailClient({
                     <button
                       key={color.name}
                       onClick={() => setSelectedColor(idx)}
-                      className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 transition-all duration-200 ${
+                      className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 transition-all duration-200 flex items-center justify-center ${
                         selectedColor === idx
                           ? "border-[#0071E3] scale-110"
                           : "border-gray-200 hover:border-gray-400"

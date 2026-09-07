@@ -149,7 +149,7 @@ export default function ProductCard({ product }: { product: Product }) {
             animate={{ opacity: 0, scale: 0.8 }}
             whileHover={{ scale: 1.15 }}
             whileTap={{ scale: 0.9 }}
-            className="absolute top-2 right-2 sm:top-3 sm:right-3 p-2 sm:p-2.5 bg-white/90 backdrop-blur-sm rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-red-50 min-w-[44px] min-h-[44px] flex items-center justify-center"
+            className="absolute top-2 right-2 sm:top-3 sm:right-3 p-2 sm:p-2.5 bg-white/90 backdrop-blur-sm rounded-full shadow-md opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300 hover:bg-red-50 min-w-[44px] min-h-[44px] flex items-center justify-center" />
           >
             <Heart className="h-4 w-4 text-gray-400 hover:text-red-500 transition-colors" />
           </motion.button>
@@ -162,7 +162,7 @@ export default function ProductCard({ product }: { product: Product }) {
           </h3>
 
           {product.specs && (
-            <p className="text-xs sm:text-sm text-[var(--color-text-muted)] mt-1 line-clamp-1">
+            <p className="text-[10px] sm:text-xs md:text-sm text-[var(--color-text-muted)] mt-1 line-clamp-1 leading-tight">
               {product.specs}
             </p>
           )}
@@ -171,7 +171,7 @@ export default function ProductCard({ product }: { product: Product }) {
           {product.rating && (
             <div className="flex items-center gap-1.5 sm:gap-2 mt-1.5 sm:mt-2">
               <StarRating rating={product.rating} />
-              <span className="text-[10px] sm:text-xs text-[var(--color-text-muted)]">
+              <span className="text-[10px] sm:text-xs text-[var(--color-text-muted)] leading-none">
                 ({product.reviewCount})
               </span>
             </div>

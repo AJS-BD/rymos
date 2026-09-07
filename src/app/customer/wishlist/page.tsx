@@ -3,8 +3,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { getSupabase, isConfigured } from "@/lib/supabase";
 import { formatBDT } from "@/lib/utils";
-import Header from "@/components/layout/header";
-import Footer from "@/components/layout/footer";
 import {
   Heart,
   Trash2,
@@ -168,15 +166,11 @@ export default function WishlistPage() {
 
   if (loading) {
     return (
-      <>
-        <Header />
-        <main className="flex-1">
+      <><main className="flex-1">
           <div className="flex items-center justify-center h-64">
             <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
           </div>
-        </main>
-        <Footer />
-      </>
+        </main></>
     );
   }
 
@@ -195,9 +189,7 @@ export default function WishlistPage() {
   }
 
   return (
-    <>
-      <Header />
-      <main className="flex-1">
+    <><main className="flex-1">
         <div className="max-w-4xl mx-auto px-4 py-8">
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-gray-900">My Wishlist</h1>
@@ -305,8 +297,6 @@ export default function WishlistPage() {
         </div>
       )}
         </div>
-      </main>
-      <Footer />
-    </>
+      </main></>
   );
 }

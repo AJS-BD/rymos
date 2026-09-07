@@ -261,7 +261,7 @@ export default function AdminSettings() {
     return (
       <div key={field.key}>
         <label
-          className="block text-sm font-medium mb-1.5"
+          className="block text-[13px] font-medium mb-1.5"
           style={{ color: "var(--color-text)" }}
         >
           {field.label}
@@ -271,7 +271,7 @@ export default function AdminSettings() {
             <select
               value={value}
               onChange={(e) => updateSetting(field.key, e.target.value)}
-              className="w-full px-4 py-3 rounded-xl text-sm focus:outline-none transition-all"
+              className="w-full px-3 py-2.5 rounded-lg text-sm focus:outline-none transition-all"
               style={{
                 border: "1px solid #e5e5e7",
                 color: "var(--color-text)",
@@ -291,14 +291,14 @@ export default function AdminSettings() {
               onChange={(e) => updateSetting(field.key, e.target.value)}
               placeholder={field.placeholder}
               rows={3}
-              className="w-full px-4 py-3 rounded-xl text-sm focus:outline-none transition-all resize-none"
+              className="w-full px-3 py-2.5 rounded-lg text-sm focus:outline-none transition-all resize-none"
               style={{
                 border: "1px solid #e5e5e7",
                 color: "var(--color-text)",
                 background: "var(--color-bg)",
               }}
               onFocus={(e) => {
-                e.currentTarget.style.borderColor = "var(--color-primary)";
+                e.currentTarget.style.borderColor = "#0071E3";
                 e.currentTarget.style.boxShadow = "0 0 0 3px rgba(0,113,227,0.1)";
               }}
               onBlur={(e) => {
@@ -312,7 +312,7 @@ export default function AdminSettings() {
               value={value}
               onChange={(e) => updateSetting(field.key, e.target.value)}
               placeholder={field.placeholder}
-              className={`w-full px-4 py-3 rounded-xl text-sm focus:outline-none transition-all ${
+              className={`w-full px-3 py-2.5 rounded-lg text-sm focus:outline-none transition-all ${
                 isPassword ? "pr-10" : ""
               }`}
               style={{
@@ -321,7 +321,7 @@ export default function AdminSettings() {
                 background: "var(--color-bg)",
               }}
               onFocus={(e) => {
-                e.currentTarget.style.borderColor = "var(--color-primary)";
+                e.currentTarget.style.borderColor = "#0071E3";
                 e.currentTarget.style.boxShadow = "0 0 0 3px rgba(0,113,227,0.1)";
               }}
               onBlur={(e) => {
@@ -357,14 +357,14 @@ export default function AdminSettings() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-semibold" style={{ color: "var(--color-text)" }}>
+          <h1 className="text-[28px] font-semibold tracking-tight" style={{ color: "var(--color-text)" }}>
             Settings
           </h1>
-          <p style={{ color: "var(--color-text-muted)" }}>Admin panel settings</p>
+          <p className="text-sm mt-1" style={{ color: "var(--color-text-muted)" }}>Admin panel settings</p>
         </div>
         <div className="flex items-center justify-center py-12">
           <Loader2 className="w-8 h-8 animate-spin" style={{ color: "var(--color-text-muted)" }} />
-          <span className="ml-2" style={{ color: "var(--color-text-muted)" }}>
+          <span className="ml-2 text-sm" style={{ color: "var(--color-text-muted)" }}>
             Loading settings...
           </span>
         </div>
@@ -375,15 +375,15 @@ export default function AdminSettings() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-semibold" style={{ color: "var(--color-text)" }}>
+        <h1 className="text-[28px] font-semibold tracking-tight" style={{ color: "var(--color-text)" }}>
           Settings
         </h1>
-        <p style={{ color: "var(--color-text-muted)" }}>Admin panel settings</p>
+        <p className="text-sm mt-1" style={{ color: "var(--color-text-muted)" }}>Admin panel settings</p>
       </div>
 
       {/* Tabs */}
       <div style={{ borderBottom: "1px solid #e5e5e7" }} className="-mx-4 sm:mx-0 px-4 sm:px-0">
-        <nav className="flex gap-2 sm:gap-4 -mb-px overflow-x-auto pb-px scrollbar-hide">
+        <nav className="flex gap-1 sm:gap-2 -mb-px overflow-x-auto scrollbar-hide">
           {tabs.map((tab) => (
             <button
               key={tab.key}
@@ -392,10 +392,10 @@ export default function AdminSettings() {
                 setSaveMessage(null);
                 setTestResult(null);
               }}
-              className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2.5 text-xs sm:text-sm font-medium border-b-2 transition-colors whitespace-nowrap flex-shrink-0"
+              className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2.5 text-xs sm:text-[13px] font-medium border-b-2 transition-colors whitespace-nowrap"
               style={{
-                borderColor: activeTab === tab.key ? "var(--color-text)" : "transparent",
-                color: activeTab === tab.key ? "var(--color-text)" : "var(--color-text-muted)",
+                borderColor: activeTab === tab.key ? "#0071E3" : "transparent",
+                color: activeTab === tab.key ? "#0071E3" : "var(--color-text-muted)",
               }}
             >
               {tab.icon}
@@ -408,17 +408,17 @@ export default function AdminSettings() {
 
       {/* Tab Content */}
       <div
-        className="rounded-2xl p-5 sm:p-8 space-y-5 sm:space-y-6"
+        className="rounded-2xl p-5 sm:p-6 space-y-5"
         style={{ background: "var(--color-bg)", border: "1px solid #e5e5e7" }}
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {currentFields.map((field) => renderField(field))}
         </div>
 
         {/* Messages */}
         {saveMessage && (
           <div
-            className="flex items-center gap-2 p-4 rounded-xl"
+            className="flex items-center gap-2 p-3.5 rounded-lg"
             style={{
               background: saveMessage.success ? "#e8f5e9" : "#ffebee",
               color: saveMessage.success ? "#2e7d32" : "#c62828",
@@ -436,7 +436,7 @@ export default function AdminSettings() {
 
         {testResult && (
           <div
-            className="flex items-center gap-2 p-4 rounded-xl"
+            className="flex items-center gap-2 p-3.5 rounded-lg"
             style={{
               background: testResult.success ? "#e8f5e9" : "#ffebee",
               color: testResult.success ? "#2e7d32" : "#c62828",
@@ -459,9 +459,9 @@ export default function AdminSettings() {
             onClick={handleSave}
             disabled={saving}
             className="flex items-center gap-2 px-6 py-2.5 text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{ background: "var(--color-text)" }}
-            onMouseEnter={(e) => !saving && (e.currentTarget.style.background = "#333")}
-            onMouseLeave={(e) => !saving && (e.currentTarget.style.background = "var(--color-text)")}
+            style={{ background: "#0071E3" }}
+            onMouseEnter={(e) => !saving && (e.currentTarget.style.background = "#0077ed")}
+            onMouseLeave={(e) => !saving && (e.currentTarget.style.background = "#0071E3")}
           >
             {saving ? (
               <Loader2 className="w-4 h-4 animate-spin" />

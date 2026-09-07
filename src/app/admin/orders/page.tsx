@@ -160,10 +160,10 @@ export default function AdminOrders() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-semibold" style={{ color: "var(--color-text)" }}>
+        <h1 className="text-[28px] font-semibold tracking-tight" style={{ color: "var(--color-text)" }}>
           Orders
         </h1>
-        <p style={{ color: "var(--color-text-muted)" }}>{orders.length} orders total</p>
+        <p className="text-sm mt-1" style={{ color: "var(--color-text-muted)" }}>{orders.length} orders total</p>
       </div>
 
       {/* Status Filter Tabs */}
@@ -172,7 +172,7 @@ export default function AdminOrders() {
           <button
             key={filter.value}
             onClick={() => setStatusFilter(filter.value)}
-            className="px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-1.5"
+            className="px-3.5 py-1.5 rounded-lg text-[13px] font-medium transition-colors flex items-center gap-1.5"
             style={{
               background:
                 statusFilter === filter.value ? "var(--color-text)" : "var(--color-bg)",
@@ -183,7 +183,7 @@ export default function AdminOrders() {
           >
             <filter.icon className="w-3.5 h-3.5" />
             {filter.label}
-            <span className="ml-1.5 text-xs opacity-70">
+            <span className="ml-1 text-xs opacity-70">
               ({statusCounts[filter.value as keyof typeof statusCounts]})
             </span>
           </button>
@@ -209,7 +209,7 @@ export default function AdminOrders() {
               color: "var(--color-text)",
             }}
             onFocus={(e) => {
-              e.currentTarget.style.borderColor = "var(--color-primary)";
+              e.currentTarget.style.borderColor = "#0071E3";
               e.currentTarget.style.boxShadow = "0 0 0 3px rgba(0,113,227,0.1)";
             }}
             onBlur={(e) => {
@@ -223,7 +223,7 @@ export default function AdminOrders() {
             <button
               key={filter.value}
               onClick={() => setTypeFilter(filter.value)}
-              className="px-4 py-2 rounded-xl text-sm font-medium transition-colors"
+              className="px-3.5 py-1.5 rounded-lg text-[13px] font-medium transition-colors"
               style={{
                 background: typeFilter === filter.value ? "var(--color-text)" : "var(--color-bg)",
                 color: typeFilter === filter.value ? "white" : "var(--color-text)",
@@ -247,7 +247,7 @@ export default function AdminOrders() {
               className="w-12 h-12 mx-auto mb-3"
               style={{ color: "var(--color-text-muted)" }}
             />
-            <p style={{ color: "var(--color-text-muted)" }}>
+            <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
               {orders.length === 0
                 ? "No orders yet"
                 : "No orders match your filters"}
@@ -262,7 +262,7 @@ export default function AdminOrders() {
                     (header) => (
                       <th
                         key={header}
-                        className="text-left px-5 py-4 text-xs font-medium uppercase tracking-wider"
+                        className="text-left px-5 py-3 text-[11px] font-medium uppercase tracking-wider"
                         style={{
                           color: "var(--color-text-muted)",
                           borderBottom: "1px solid #e5e5e7",
@@ -282,16 +282,16 @@ export default function AdminOrders() {
                     onMouseEnter={(e) => (e.currentTarget.style.background = "#fafafa")}
                     onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                   >
-                    <td className="px-5 py-4 text-sm font-medium">
+                    <td className="px-5 py-3.5 text-[13px] font-medium">
                       <Link
                         href={`/admin/orders/${order.id}`}
                         className="hover:underline"
-                        style={{ color: "var(--color-primary)" }}
+                        style={{ color: "#0071E3" }}
                       >
                         {order.order_number}
                       </Link>
                     </td>
-                    <td className="px-5 py-4 text-sm">
+                    <td className="px-5 py-3.5 text-[13px]">
                       <p className="font-medium" style={{ color: "var(--color-text)" }}>
                         {order.customers?.full_name || "Unknown"}
                       </p>
@@ -299,7 +299,7 @@ export default function AdminOrders() {
                         {order.customers?.phone}
                       </p>
                     </td>
-                    <td className="px-5 py-4 text-sm">
+                    <td className="px-5 py-3.5 text-[13px]">
                       <div className="flex items-center gap-1.5">
                         <Package className="w-3.5 h-3.5" style={{ color: "var(--color-text-muted)" }} />
                         <span style={{ color: "var(--color-text-muted)" }}>
@@ -307,9 +307,9 @@ export default function AdminOrders() {
                         </span>
                       </div>
                     </td>
-                    <td className="px-5 py-4 text-sm capitalize">
+                    <td className="px-5 py-3.5 text-[13px] capitalize">
                       <span
-                        className="px-2.5 py-1 rounded-full text-xs font-medium"
+                        className="px-2 py-0.5 rounded-full text-[11px] font-medium"
                         style={{
                           background:
                             order.order_type === "express"
@@ -328,20 +328,20 @@ export default function AdminOrders() {
                         {order.order_type}
                       </span>
                     </td>
-                    <td className="px-5 py-4 text-sm font-medium" style={{ color: "var(--color-text)" }}>
+                    <td className="px-5 py-3.5 text-[13px] font-medium" style={{ color: "var(--color-text)" }}>
                       {formatBDT(order.total)}
                     </td>
-                    <td className="px-5 py-4">
+                    <td className="px-5 py-3.5">
                       <StatusBadge status={order.status} />
                     </td>
                     <td
-                      className="px-5 py-4 text-sm whitespace-nowrap"
+                      className="px-5 py-3.5 text-[13px] whitespace-nowrap"
                       style={{ color: "var(--color-text-muted)" }}
                     >
                       {new Date(order.created_at).toLocaleDateString()}
                     </td>
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-2">
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center gap-1">
                         <Link
                           href={`/admin/orders/${order.id}`}
                           className="p-1.5 rounded-lg transition-colors"

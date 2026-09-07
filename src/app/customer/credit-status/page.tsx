@@ -4,9 +4,6 @@ import { useState, useEffect } from "react";
 import { CreditCard, Clock, CheckCircle, XCircle, AlertCircle, Calendar, DollarSign, Loader2 } from "lucide-react";
 import { getSupabase, isConfigured } from "@/lib/supabase";
 import { formatBDT } from "@/lib/utils";
-import Header from "@/components/layout/header";
-import Footer from "@/components/layout/footer";
-
 interface Application {
   id: string;
   status: string;
@@ -151,9 +148,7 @@ export default function CreditStatus() {
   };
 
   return (
-    <>
-      <Header />
-      <main className="flex-1">
+    <><main className="flex-1">
         <div className="min-h-screen bg-gray-50 py-8 px-4">
           <div className="max-w-4xl mx-auto">
             <div className="mb-8">
@@ -342,8 +337,6 @@ export default function CreditStatus() {
         )}
       </div>
         </div>
-      </main>
-      <Footer />
-    </>
+      </main></>
   );
 }

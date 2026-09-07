@@ -4,8 +4,6 @@ import Link from "next/link";
 import { useCart } from "@/context/cart-context";
 import CartItem from "@/components/cart/cart-item";
 import { formatBDT } from "@/lib/utils";
-import Header from "@/components/layout/header";
-import Footer from "@/components/layout/footer";
 import { ShoppingCart } from "lucide-react";
 
 export default function CartPage() {
@@ -13,9 +11,7 @@ export default function CartPage() {
 
   if (items.length === 0) {
     return (
-      <>
-        <Header />
-        <main className="flex-1">
+      <><main className="flex-1">
           <div className="max-w-2xl mx-auto px-4 py-12 sm:py-16 text-center">
             <ShoppingCart className="h-12 w-12 sm:h-16 sm:w-16 text-gray-300 mx-auto mb-4" />
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Your Cart is Empty</h1>
@@ -27,16 +23,12 @@ export default function CartPage() {
               Shop Now
             </Link>
           </div>
-        </main>
-        <Footer />
-      </>
+        </main></>
     );
   }
 
   return (
-    <>
-      <Header />
-      <main className="flex-1">
+    <><main className="flex-1">
         <div className="max-w-4xl mx-auto px-4 py-4 sm:py-6 lg:py-8">
           <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">
             Shopping Cart ({itemCount} items)
@@ -103,8 +95,6 @@ export default function CartPage() {
             </div>
           </div>
         </div>
-      </main>
-      <Footer />
-    </>
+      </main></>
   );
 }

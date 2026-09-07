@@ -56,10 +56,10 @@ export default function AdminCustomers() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-semibold" style={{ color: "var(--color-text)" }}>
+          <h1 className="text-[28px] font-semibold tracking-tight" style={{ color: "var(--color-text)" }}>
             Customers
           </h1>
-          <p style={{ color: "var(--color-text-muted)" }}>Loading...</p>
+          <p className="text-sm mt-1" style={{ color: "var(--color-text-muted)" }}>Loading...</p>
         </div>
       </div>
     );
@@ -68,10 +68,10 @@ export default function AdminCustomers() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-semibold" style={{ color: "var(--color-text)" }}>
+        <h1 className="text-[28px] font-semibold tracking-tight" style={{ color: "var(--color-text)" }}>
           Customers
         </h1>
-        <p style={{ color: "var(--color-text-muted)" }}>{customers.length} customers total</p>
+        <p className="text-sm mt-1" style={{ color: "var(--color-text-muted)" }}>{customers.length} customers total</p>
       </div>
 
       {/* Filters */}
@@ -81,7 +81,7 @@ export default function AdminCustomers() {
       >
         <div>
           <label
-            className="block text-xs font-medium mb-1.5"
+            className="block text-[11px] font-medium uppercase tracking-wide mb-1.5"
             style={{ color: "var(--color-text-muted)" }}
           >
             Created Via
@@ -89,7 +89,7 @@ export default function AdminCustomers() {
           <select
             value={createdViaFilter}
             onChange={(e) => setCreatedViaFilter(e.target.value)}
-            className="px-3 py-2 rounded-xl text-sm focus:outline-none"
+            className="px-3 py-2 rounded-lg text-sm focus:outline-none"
             style={{
               border: "1px solid #e5e5e7",
               color: "var(--color-text)",
@@ -103,7 +103,7 @@ export default function AdminCustomers() {
         </div>
         <div>
           <label
-            className="block text-xs font-medium mb-1.5"
+            className="block text-[11px] font-medium uppercase tracking-wide mb-1.5"
             style={{ color: "var(--color-text-muted)" }}
           >
             Customer Type
@@ -111,7 +111,7 @@ export default function AdminCustomers() {
           <select
             value={customerTypeFilter}
             onChange={(e) => setCustomerTypeFilter(e.target.value)}
-            className="px-3 py-2 rounded-xl text-sm focus:outline-none"
+            className="px-3 py-2 rounded-lg text-sm focus:outline-none"
             style={{
               border: "1px solid #e5e5e7",
               color: "var(--color-text)",
@@ -135,112 +135,114 @@ export default function AdminCustomers() {
         className="rounded-2xl overflow-hidden"
         style={{ background: "var(--color-bg)", border: "1px solid #e5e5e7" }}
       >
-        <table className="w-full">
-          <thead>
-            <tr>
-              {["Name", "Phone", "Address", "Type", "Via", "Profile", "Joined"].map(
-                (header) => (
-                  <th
-                    key={header}
-                    className="text-left px-5 py-4 text-xs font-medium uppercase tracking-wider"
-                    style={{
-                      color: "var(--color-text-muted)",
-                      borderBottom: "1px solid #e5e5e7",
-                    }}
-                  >
-                    {header}
-                  </th>
-                )
-              )}
-            </tr>
-          </thead>
-          <tbody>
-            {filteredCustomers.length === 0 ? (
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[700px]">
+            <thead>
               <tr>
-                <td
-                  colSpan={7}
-                  className="px-5 py-12 text-center"
-                  style={{ color: "var(--color-text-muted)" }}
-                >
-                  No customers found
-                </td>
+                {["Name", "Phone", "Address", "Type", "Via", "Profile", "Joined"].map(
+                  (header) => (
+                    <th
+                      key={header}
+                      className="text-left px-5 py-3 text-[11px] font-medium uppercase tracking-wider"
+                      style={{
+                        color: "var(--color-text-muted)",
+                        borderBottom: "1px solid #e5e5e7",
+                      }}
+                    >
+                      {header}
+                    </th>
+                  )
+                )}
               </tr>
-            ) : (
-              filteredCustomers.map((customer) => (
-                <tr
-                  key={customer.id}
-                  style={{ borderBottom: "1px solid #f5f5f7" }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = "#fafafa")}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                >
-                  <td className="px-5 py-4">
-                    <p className="font-medium text-sm" style={{ color: "var(--color-text)" }}>
-                      {customer.full_name}
-                    </p>
-                    <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
-                      @{customer.username}
-                    </p>
-                  </td>
-                  <td className="px-5 py-4 text-sm" style={{ color: "var(--color-text-muted)" }}>
-                    {customer.phone}
-                  </td>
-                  <td className="px-5 py-4 text-sm" style={{ color: "var(--color-text-muted)" }}>
-                    {customer.address || "-"}
-                  </td>
-                  <td className="px-5 py-4">
-                    <span
-                      className="text-xs px-2.5 py-1 rounded-full font-medium"
-                      style={{
-                        background:
-                          customer.customer_type === "online"
-                            ? "#e3f2fd"
-                            : customer.customer_type === "walk_in"
-                            ? "#e8f5e9"
-                            : "#f3e5f5",
-                        color:
-                          customer.customer_type === "online"
-                            ? "#1565c0"
-                            : customer.customer_type === "walk_in"
-                            ? "#2e7d32"
-                            : "#7b1fa2",
-                      }}
-                    >
-                      {customer.customer_type}
-                    </span>
-                  </td>
-                  <td className="px-5 py-4">
-                    <span
-                      className="text-xs px-2.5 py-1 rounded-full font-medium"
-                      style={{
-                        background: customer.created_via === "pos" ? "#fff3e0" : "#f5f5f7",
-                        color:
-                          customer.created_via === "pos"
-                            ? "#e65100"
-                            : "var(--color-text-muted)",
-                      }}
-                    >
-                      {customer.created_via || "online_signup"}
-                    </span>
-                  </td>
-                  <td className="px-5 py-4">
-                    <span
-                      className="text-xs px-2.5 py-1 rounded-full font-medium"
-                      style={{
-                        background: customer.profile_completed ? "#e8f5e9" : "#fff8e1",
-                        color: customer.profile_completed ? "#2e7d32" : "#f57f17",
-                      }}
-                    >
-                      {customer.profile_completed ? "Complete" : "Pending"}
-                    </span>
-                  </td>
-                  <td className="px-5 py-4 text-sm" style={{ color: "var(--color-text-muted)" }}>
-                    {new Date(customer.created_at).toLocaleDateString()}
+            </thead>
+            <tbody>
+              {filteredCustomers.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={7}
+                    className="px-5 py-12 text-center"
+                    style={{ color: "var(--color-text-muted)" }}
+                  >
+                    No customers found
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                filteredCustomers.map((customer) => (
+                  <tr
+                    key={customer.id}
+                    style={{ borderBottom: "1px solid #f5f5f7" }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = "#fafafa")}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                  >
+                    <td className="px-5 py-3.5">
+                      <p className="font-medium text-[13px]" style={{ color: "var(--color-text)" }}>
+                        {customer.full_name}
+                      </p>
+                      <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
+                        @{customer.username}
+                      </p>
+                    </td>
+                    <td className="px-5 py-3.5 text-[13px]" style={{ color: "var(--color-text-muted)" }}>
+                      {customer.phone}
+                    </td>
+                    <td className="px-5 py-3.5 text-[13px] max-w-[200px] truncate" style={{ color: "var(--color-text-muted)" }}>
+                      {customer.address || "-"}
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <span
+                        className="text-[11px] px-2 py-0.5 rounded-full font-medium"
+                        style={{
+                          background:
+                            customer.customer_type === "online"
+                              ? "#e3f2fd"
+                              : customer.customer_type === "walk_in"
+                              ? "#e8f5e9"
+                              : "#f3e5f5",
+                          color:
+                            customer.customer_type === "online"
+                              ? "#1565c0"
+                              : customer.customer_type === "walk_in"
+                              ? "#2e7d32"
+                              : "#7b1fa2",
+                        }}
+                      >
+                        {customer.customer_type}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <span
+                        className="text-[11px] px-2 py-0.5 rounded-full font-medium"
+                        style={{
+                          background: customer.created_via === "pos" ? "#fff3e0" : "#f5f5f7",
+                          color:
+                            customer.created_via === "pos"
+                              ? "#e65100"
+                              : "var(--color-text-muted)",
+                        }}
+                      >
+                        {customer.created_via || "online_signup"}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <span
+                        className="text-[11px] px-2 py-0.5 rounded-full font-medium"
+                        style={{
+                          background: customer.profile_completed ? "#e8f5e9" : "#fff8e1",
+                          color: customer.profile_completed ? "#2e7d32" : "#f57f17",
+                        }}
+                      >
+                        {customer.profile_completed ? "Complete" : "Pending"}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3.5 text-[13px]" style={{ color: "var(--color-text-muted)" }}>
+                      {new Date(customer.created_at).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

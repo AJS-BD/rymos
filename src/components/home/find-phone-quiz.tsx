@@ -41,7 +41,7 @@ export default function FindPhoneQuiz() {
             >
               <motion.div
                 whileHover={{ scale: 1.1, rotate: 5 }}
-                className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-white shadow-md flex items-center justify-center cursor-pointer"
+                className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white shadow-md flex items-center justify-center cursor-pointer"
               >
                 <step.icon className="h-6 w-6 sm:h-8 sm:w-8 text-[var(--color-primary)]" />
               </motion.div>

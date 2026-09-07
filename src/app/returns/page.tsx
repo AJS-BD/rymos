@@ -1,7 +1,5 @@
 import { Metadata } from "next";
 import { getSupabase, isConfigured } from "@/lib/supabase";
-import Header from "@/components/layout/header";
-import Footer from "@/components/layout/footer";
 import {
   RotateCcw,
   Package,
@@ -99,9 +97,7 @@ export default function ReturnsPage() {
   const configured = isConfigured();
 
   return (
-    <>
-      <Header />
-      <main className="flex-1">
+    <><main className="flex-1">
         {/* Hero */}
         <section className="bg-[var(--color-dark-banner)] text-white py-16 sm:py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -282,8 +278,6 @@ export default function ReturnsPage() {
             </div>
           </div>
         </section>
-      </main>
-      <Footer />
-    </>
+      </main></>
   );
 }

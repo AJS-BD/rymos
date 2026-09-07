@@ -99,13 +99,13 @@ export default function HeroBanner() {
               <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start">
                 <Link
                   href="/products?category=smartphones"
-                  className="inline-flex items-center justify-center px-6 sm:px-8 py-3 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors text-sm sm:text-base"
+                  className="inline-flex items-center justify-center px-6 sm:px-8 py-3 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors text-sm sm:text-base min-h-[44px]"
                 >
                   {slide.cta1}
                 </Link>
                 <Link
                   href="/products?category=accessories"
-                  className="inline-flex items-center justify-center px-6 sm:px-8 py-3 border-2 border-white text-white rounded-lg font-medium hover:bg-white hover:text-black transition-colors text-sm sm:text-base"
+                  className="inline-flex items-center justify-center px-6 sm:px-8 py-3 border-2 border-white text-white rounded-lg font-medium hover:bg-white hover:text-black transition-colors text-sm sm:text-base min-h-[44px]"
                 >
                   {slide.cta2}
                 </Link>
@@ -115,7 +115,7 @@ export default function HeroBanner() {
                 {slide.badges.map((badge) => (
                   <span
                     key={badge}
-                    className="px-3 sm:px-4 py-1.5 sm:py-2 bg-white/20 backdrop-blur-sm rounded-full text-xs sm:text-sm font-medium text-white border border-white/30 flex items-center gap-1.5 sm:gap-2"
+                    className="px-3 sm:px-4 py-2 sm:py-2 bg-white/20 backdrop-blur-sm rounded-full text-xs sm:text-sm font-medium text-white border border-white/30 flex items-center gap-1.5 sm:gap-2 min-h-[36px]"
                   >
                     {badge.includes("120Hz") && <Smartphone className="h-3 w-3 sm:h-4 sm:w-4" />}
                     {badge.includes("Chip") && <Cpu className="h-3 w-3 sm:h-4 sm:w-4" />}

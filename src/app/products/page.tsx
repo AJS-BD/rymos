@@ -69,10 +69,10 @@ function ProductCard({ product }: { product: Product }) {
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 relative z-[1]"
         />
       </div>
-      <h3 className="text-xs sm:text-sm font-medium text-[var(--color-text)] mb-0.5 sm:mb-1 line-clamp-2">
+      <h3 className="text-xs sm:text-sm font-medium text-[var(--color-text)] mb-0.5 sm:mb-1 line-clamp-2 leading-tight">
         {product.name}
       </h3>
-      <p className="text-xs sm:text-sm text-[var(--color-text-muted)]">
+      <p className="text-[10px] sm:text-xs md:text-sm text-[var(--color-text-muted)] font-medium">
         {new Intl.NumberFormat("en-BD", { style: "currency", currency: "BDT", minimumFractionDigits: 0 }).format(product.price)}
       </p>
     </motion.a>

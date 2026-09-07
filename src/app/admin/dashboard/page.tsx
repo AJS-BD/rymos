@@ -48,12 +48,12 @@ export default async function AdminDashboard() {
     <div className="space-y-8">
       <div>
         <h1
-          className="text-3xl font-semibold"
+          className="text-[28px] font-semibold tracking-tight"
           style={{ color: "var(--color-text)" }}
         >
           Dashboard
         </h1>
-        <p style={{ color: "var(--color-text-muted)" }}>
+        <p className="text-sm mt-1" style={{ color: "var(--color-text-muted)" }}>
           Welcome to RYmos admin panel
         </p>
       </div>
@@ -62,14 +62,14 @@ export default async function AdminDashboard() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Products */}
         <div
-          className="p-6 rounded-2xl"
+          className="p-5 rounded-2xl"
           style={{ background: "var(--color-bg)", border: "1px solid #e5e5e7" }}
         >
-          <p className="text-sm font-medium" style={{ color: "var(--color-text-muted)" }}>
+          <p className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--color-text-muted)" }}>
             Total Products
           </p>
           <p
-            className="text-4xl font-semibold mt-2"
+            className="text-[32px] font-semibold mt-2 tracking-tight"
             style={{ color: "var(--color-text)" }}
           >
             {stats.totalProducts}
@@ -78,14 +78,14 @@ export default async function AdminDashboard() {
 
         {/* Orders */}
         <div
-          className="p-6 rounded-2xl"
+          className="p-5 rounded-2xl"
           style={{ background: "var(--color-bg)", border: "1px solid #e5e5e7" }}
         >
-          <p className="text-sm font-medium" style={{ color: "var(--color-text-muted)" }}>
+          <p className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--color-text-muted)" }}>
             Total Orders
           </p>
           <p
-            className="text-4xl font-semibold mt-2"
+            className="text-[32px] font-semibold mt-2 tracking-tight"
             style={{ color: "var(--color-text)" }}
           >
             {stats.totalOrders}
@@ -94,14 +94,14 @@ export default async function AdminDashboard() {
 
         {/* Customers */}
         <div
-          className="p-6 rounded-2xl"
+          className="p-5 rounded-2xl"
           style={{ background: "var(--color-bg)", border: "1px solid #e5e5e7" }}
         >
-          <p className="text-sm font-medium" style={{ color: "var(--color-text-muted)" }}>
+          <p className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--color-text-muted)" }}>
             Total Customers
           </p>
           <p
-            className="text-4xl font-semibold mt-2"
+            className="text-[32px] font-semibold mt-2 tracking-tight"
             style={{ color: "var(--color-text)" }}
           >
             {stats.totalCustomers}
@@ -110,14 +110,14 @@ export default async function AdminDashboard() {
 
         {/* Revenue */}
         <div
-          className="p-6 rounded-2xl"
+          className="p-5 rounded-2xl"
           style={{ background: "var(--color-bg)", border: "1px solid #e5e5e7" }}
         >
-          <p className="text-sm font-medium" style={{ color: "var(--color-text-muted)" }}>
+          <p className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--color-text-muted)" }}>
             Revenue
           </p>
           <p
-            className="text-4xl font-semibold mt-2"
+            className="text-[32px] font-semibold mt-2 tracking-tight"
             style={{ color: "var(--color-text)" }}
           >
             ৳0
@@ -132,8 +132,8 @@ export default async function AdminDashboard() {
           className="rounded-2xl overflow-hidden"
           style={{ background: "var(--color-bg)", border: "1px solid #e5e5e7" }}
         >
-          <div className="p-5" style={{ borderBottom: "1px solid #e5e5e7" }}>
-            <h2 className="text-lg font-semibold" style={{ color: "var(--color-text)" }}>
+          <div className="px-5 py-4" style={{ borderBottom: "1px solid #e5e5e7" }}>
+            <h2 className="text-[15px] font-semibold" style={{ color: "var(--color-text)" }}>
               Recent Orders
             </h2>
           </div>
@@ -143,7 +143,7 @@ export default async function AdminDashboard() {
                 No orders yet
               </p>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {stats.recentOrders.map((order: any) => (
                   <div
                     key={order.id}
@@ -163,7 +163,7 @@ export default async function AdminDashboard() {
                         ৳{order.total}
                       </p>
                       <span
-                        className="text-xs px-2.5 py-1 rounded-full font-medium"
+                        className="inline-block text-[11px] px-2 py-0.5 rounded-full font-medium"
                         style={{
                           background:
                             order.status === "delivered"
@@ -194,8 +194,8 @@ export default async function AdminDashboard() {
           className="rounded-2xl overflow-hidden"
           style={{ background: "var(--color-bg)", border: "1px solid #e5e5e7" }}
         >
-          <div className="p-5" style={{ borderBottom: "1px solid #e5e5e7" }}>
-            <h2 className="text-lg font-semibold" style={{ color: "var(--color-text)" }}>
+          <div className="px-5 py-4" style={{ borderBottom: "1px solid #e5e5e7" }}>
+            <h2 className="text-[15px] font-semibold" style={{ color: "var(--color-text)" }}>
               Low Stock Alert
             </h2>
           </div>
@@ -205,7 +205,7 @@ export default async function AdminDashboard() {
                 All products are well stocked
               </p>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {stats.lowStockProducts.map((product: any) => (
                   <div
                     key={product.id}

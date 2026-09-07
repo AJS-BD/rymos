@@ -4,8 +4,6 @@ import { useState, useEffect, useCallback, use } from "react";
 import { getSupabase, isConfigured } from "@/lib/supabase";
 import { formatBDT } from "@/lib/utils";
 import Link from "next/link";
-import Header from "@/components/layout/header";
-import Footer from "@/components/layout/footer";
 import {
   ArrowLeft,
   Package,
@@ -150,23 +148,17 @@ export default function CustomerOrderDetail({
 
   if (loading) {
     return (
-      <>
-        <Header />
-        <main className="flex-1">
+      <><main className="flex-1">
           <div className="flex items-center justify-center h-64">
             <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
           </div>
-        </main>
-        <Footer />
-      </>
+        </main></>
     );
   }
 
   if (error || !order) {
     return (
-      <>
-        <Header />
-        <main className="flex-1">
+      <><main className="flex-1">
           <div className="max-w-2xl mx-auto px-4 py-16 text-center">
             <AlertCircle className="w-12 h-12 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-500">{error || "Order not found."}</p>
@@ -177,16 +169,12 @@ export default function CustomerOrderDetail({
               ← Back to orders
             </Link>
           </div>
-        </main>
-        <Footer />
-      </>
+        </main></>
     );
   }
 
   return (
-    <>
-      <Header />
-      <main className="flex-1">
+    <><main className="flex-1">
         <div className="max-w-4xl mx-auto px-4 py-8">
           {/* Header */}
       <div className="flex items-start justify-between mb-6">
@@ -482,8 +470,6 @@ export default function CustomerOrderDetail({
         </div>
       </div>
         </div>
-      </main>
-      <Footer />
-    </>
+      </main></>
   );
 }

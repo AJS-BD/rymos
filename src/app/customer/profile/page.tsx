@@ -3,8 +3,6 @@
 import { useState, useEffect } from 'react';
 import { getSupabase, isConfigured } from '@/lib/supabase';
 import { formatBDT } from '@/lib/utils';
-import Header from '@/components/layout/header';
-import Footer from '@/components/layout/footer';
 import { User, Phone, Mail, MapPin, Store, Save, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 
 export default function ProfilePage() {
@@ -101,22 +99,16 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <>
-        <Header />
-        <main className="flex-1">
+      <><main className="flex-1">
           <div className="min-h-screen bg-gray-50 flex items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
           </div>
-        </main>
-        <Footer />
-      </>
+        </main></>
     );
   }
 
   return (
-    <>
-      <Header />
-      <main className="flex-1">
+    <><main className="flex-1">
         <div className="min-h-screen bg-gray-50 py-8 px-4">
           <div className="max-w-2xl mx-auto">
             <div className="bg-white rounded-lg shadow-sm border p-6">
@@ -236,8 +228,6 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
-      </main>
-      <Footer />
-    </>
+      </main></>
   );
 }

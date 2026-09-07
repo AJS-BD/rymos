@@ -4,8 +4,6 @@ import { useState, useEffect, useRef } from "react";
 import { getSupabase, isConfigured } from "@/lib/supabase";
 import ChatBubble from "@/components/chat/chat-bubble";
 import ChatInput from "@/components/chat/chat-input";
-import Header from "@/components/layout/header";
-import Footer from "@/components/layout/footer";
 import { MessageSquare, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
@@ -146,9 +144,7 @@ export default function CustomerMessages() {
   };
 
   return (
-    <>
-      <Header />
-      <main className="flex-1">
+    <><main className="flex-1">
         <div className="min-h-screen bg-gray-50 flex flex-col">
           {/* Header */}
           <header className="bg-white border-b px-4 py-3 flex items-center gap-3 sticky top-0 z-10">
@@ -208,8 +204,6 @@ export default function CustomerMessages() {
             disabled={sending}
           />
         </div>
-      </main>
-      <Footer />
-    </>
+      </main></>
   );
 }

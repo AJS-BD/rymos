@@ -222,7 +222,7 @@ function TestimonialCard({ testimonial, index }: { testimonial: Testimonial; ind
       className="flex-shrink-0 w-[280px] sm:w-[340px] lg:w-[400px] bg-white rounded-xl sm:rounded-2xl p-5 sm:p-6 lg:p-8 shadow-sm cursor-pointer"
     >
       <Quote className="h-8 w-8 text-[var(--color-border)] mb-4" />
-      <p className="text-base sm:text-lg text-[var(--color-text)] leading-relaxed">
+      <p className="text-sm sm:text-base lg:text-lg text-[var(--color-text)] leading-relaxed line-clamp-4">
         &ldquo;{testimonial.content}&rdquo;
       </p>
       <div className="mt-6 pt-4 border-t border-[var(--color-border)]">

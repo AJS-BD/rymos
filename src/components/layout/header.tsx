@@ -23,23 +23,28 @@ export default function Header() {
 
           {/* Navigation - Desktop */}
           <nav className="hidden md:flex items-center space-x-8">
-            {["Products", "Accessories", "Deals", "Support"].map((item) => (
+            {[
+              { label: "Products", href: "/products" },
+              { label: "Accessories", href: "/products?category=accessories" },
+              { label: "Deals", href: "/products?deals=true" },
+              { label: "About", href: "/about" },
+            ].map((item) => (
               <Link
-                key={item}
-                href={item === "Products" ? "/products" : `/${item.toLowerCase()}`}
+                key={item.label}
+                href={item.href}
                 className="text-xs font-normal text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
               >
-                {item}
+                {item.label}
               </Link>
             ))}
           </nav>
 
           {/* Right side */}
-          <div className="flex items-center space-x-2 sm:space-x-4">
+          <div className="flex items-center space-x-3 sm:space-x-4">
             {/* Search */}
             <button
               onClick={() => setSearchOpen(!searchOpen)}
-              className="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+              className="p-3 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
             >
               <Search className="h-4 w-4" />
             </button>
@@ -50,22 +55,22 @@ export default function Header() {
             {/* Mobile Menu */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+              className="md:hidden p-3 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
             >
-              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
             </button>
           </div>
         </div>
 
         {/* Search Bar */}
         {searchOpen && (
-          <div className="pb-3 sm:pb-4">
+          <div className="pb-3">
             <input
               type="text"
               placeholder="Search rymos.com"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2.5 text-sm bg-[var(--color-bg-alt)] rounded-lg border-none focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] min-h-[44px]"
+              className="w-full px-4 py-3 text-sm bg-[var(--color-bg-alt)] rounded-lg border-none focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] min-h-[44px]"
               autoFocus
             />
           </div>
@@ -74,16 +79,23 @@ export default function Header() {
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-[var(--color-border)] bg-white">
-          <nav className="px-4 py-4 sm:py-6 space-y-1">
-            {["Products", "Accessories", "Deals", "Support"].map((item) => (
+        <div className="md:hidden border-t border-[var(--color-border)] bg-white/95 backdrop-blur-xl">
+          <nav className="px-4 py-6 space-y-4">
+            {[
+              { label: "Products", href: "/products" },
+              { label: "Accessories", href: "/products?category=accessories" },
+              { label: "Deals", href: "/products?deals=true" },
+              { label: "About", href: "/about" },
+              { label: "Contact", href: "/contact" },
+              { label: "FAQ", href: "/faq" },
+            ].map((item) => (
               <Link
-                key={item}
-                href={item === "Products" ? "/products" : `/${item.toLowerCase()}`}
+                key={item.label}
+                href={item.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className="block py-3 px-4 text-base font-medium text-[var(--color-text)] hover:text-[var(--color-primary)] hover:bg-[var(--color-bg-alt)] rounded-lg transition-colors min-h-[48px] flex items-center"
+                className="block text-base font-medium text-[var(--color-text)] hover:text-[var(--color-primary)] transition-colors"
               >
-                {item}
+                {item.label}
               </Link>
             ))}
           </nav>

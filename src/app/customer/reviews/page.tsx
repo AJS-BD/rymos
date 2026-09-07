@@ -3,8 +3,6 @@
 import { useState, useEffect } from "react";
 import { getSupabase, isConfigured } from "@/lib/supabase";
 import StarRating from "@/components/shared/star-rating";
-import Header from "@/components/layout/header";
-import Footer from "@/components/layout/footer";
 import {
   Star,
   MessageSquare,
@@ -159,22 +157,16 @@ export default function CustomerReviews() {
 
   if (loading) {
     return (
-      <>
-        <Header />
-        <main className="flex-1">
+      <><main className="flex-1">
           <div className="flex items-center justify-center h-64">
             <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
           </div>
-        </main>
-        <Footer />
-      </>
+        </main></>
     );
   }
 
   return (
-    <>
-      <Header />
-      <main className="flex-1">
+    <><main className="flex-1">
         <div className="max-w-4xl mx-auto px-4 py-8">
           <div className="flex items-center justify-between mb-6">
         <div>
@@ -350,8 +342,6 @@ export default function CustomerReviews() {
         </div>
       )}
         </div>
-      </main>
-      <Footer />
-    </>
+      </main></>
   );
 }

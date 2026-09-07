@@ -199,7 +199,7 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         </div>
-        <h3 className="text-base font-medium text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors duration-200">
+        <h3 className="text-sm sm:text-base font-medium text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors duration-200 line-clamp-2 leading-tight">
           {product.name}
         </h3>
         <p className="text-sm text-[var(--color-text-muted)] mt-1">

@@ -22,7 +22,11 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Performance: contain layout for isolated components */
+/* ============================================
+   PERFORMANCE OPTIMIZATIONS
+   ============================================ */
+
+/* Contain layout for isolated components - prevents layout thrashing */
 .contain-layout {
   contain: layout;
 }
@@ -35,7 +39,11 @@
   contain: strict;
 }
 
-/* Performance: will-change for animated elements */
+.contain-content {
+  contain: content;
+}
+
+/* will-change for animated elements - promotes to GPU layer */
 .will-change-transform {
   will-change: transform;
 }
@@ -44,14 +52,30 @@
   will-change: opacity;
 }
 
-/* GPU acceleration for smooth scrolling */
+.will-change-scroll {
+  will-change: scroll-position;
+}
+
+/* GPU acceleration for smooth scrolling/animations */
 .gpu-accelerated {
   transform: translateZ(0);
   backface-visibility: hidden;
+  perspective: 1000px;
 }
+
+/* Content visibility for off-screen elements - reduces rendering cost */
+.content-visibility-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 500px;
+}
+
+/* ============================================
+   BASE STYLES
+   ============================================ */
 
 html {
   scroll-behavior: smooth;
+  text-size-adjust: 100%;
 }
 
 body {
@@ -59,9 +83,13 @@ body {
   color: var(--color-text);
   font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
   overflow-x: hidden;
+  text-rendering: optimizeLegibility;
 }
 
-/* Smooth scroll */
+/* ============================================
+   SMOOTH SCROLL (Lenis)
+   ============================================ */
+
 html.lenis {
   height: auto;
 }
@@ -82,7 +110,10 @@ html.lenis {
   pointer-events: none;
 }
 
-/* Custom scrollbar */
+/* ============================================
+   CUSTOM SCROLLBAR
+   ============================================ */
+
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -100,7 +131,10 @@ html.lenis {
   background: #a1a1a6;
 }
 
-/* Selection */
+/* ============================================
+   SELECTION
+   ============================================ */
+
 ::selection {
   background: rgba(0, 113, 227, 0.2);
   color: inherit;
@@ -111,7 +145,10 @@ html.lenis {
   color: inherit;
 }
 
-/* Focus rings */
+/* ============================================
+   FOCUS RINGS
+   ============================================ */
+
 *:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
@@ -122,12 +159,22 @@ html.lenis {
   outline: none;
 }
 
-/* Typography utilities */
+/* ============================================
+   TYPOGRAPHY UTILITIES
+   ============================================ */
+
 .text-balance {
   text-wrap: balance;
 }
 
-/* Animation utilities */
+.text-pretty {
+  text-wrap: pretty;
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -157,6 +204,15 @@ html.lenis {
   }
 }
 
+@keyframes pulse-subtle {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
 .animate-fade-in-up {
   animation: fadeInUp 0.6s ease-out forwards;
 }
@@ -175,7 +231,14 @@ html.lenis {
   animation-play-state: paused;
 }
 
-/* Hide scrollbar */
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s ease-in-out infinite;
+}
+
+/* ============================================
+   HIDE SCROLLBAR
+   ============================================ */
+
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -185,7 +248,10 @@ html.lenis {
   display: none;
 }
 
-/* Scroll snap */
+/* ============================================
+   SCROLL SNAP
+   ============================================ */
+
 .snap-x {
   scroll-snap-type: x mandatory;
 }
@@ -198,7 +264,10 @@ html.lenis {
   scroll-snap-type: x mandatory;
 }
 
-/* Gradient text */
+/* ============================================
+   GRADIENT TEXT
+   ============================================ */
+
 .gradient-text {
   background: linear-gradient(135deg, #1d1d1f 0%, #515154 100%);
   -webkit-background-clip: text;
@@ -206,14 +275,20 @@ html.lenis {
   background-clip: text;
 }
 
-/* Glass effect */
+/* ============================================
+   GLASS EFFECT
+   ============================================ */
+
 .glass {
   background: rgba(255, 255, 255, 0.72);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
 }
 
-/* 3D perspective */
+/* ============================================
+   3D PERSPECTIVE
+   ============================================ */
+
 .perspective-1000 {
   perspective: 1000px;
 }
@@ -222,7 +297,10 @@ html.lenis {
   transform-style: preserve-3d;
 }
 
-/* Page transition */
+/* ============================================
+   PAGE TRANSITION
+   ============================================ */
+
 .page-enter {
   opacity: 0;
   transform: scale(0.98) translateY(10px);
@@ -234,7 +312,10 @@ html.lenis {
   transition: opacity 0.4s ease-out, transform 0.4s ease-out;
 }
 
-/* Touch targets */
+/* ============================================
+   TOUCH TARGETS (Mobile)
+   ============================================ */
+
 @media (max-width: 640px) {
   button, a, input, select, textarea {
     min-height: 44px;
@@ -242,7 +323,10 @@ html.lenis {
   }
 }
 
-/* Reduced motion */
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -266,9 +350,23 @@ html.lenis {
     opacity: 1 !important;
     transform: none !important;
   }
+
+  .animate-pulse-subtle {
+    animation: none !important;
+  }
+
+  /* Remove will-change to free GPU memory */
+  .will-change-transform,
+  .will-change-opacity,
+  .will-change-scroll {
+    will-change: auto !important;
+  }
 }
 
-/* Print styles */
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
 @media print {
   *,
   *::before,
@@ -339,7 +437,8 @@ html.lenis {
   .glass,
   .animate-scroll,
   .animate-shimmer,
-  .animate-fade-in-up {
+  .animate-fade-in-up,
+  .animate-pulse-subtle {
     display: none !important;
   }
 
@@ -355,7 +454,10 @@ html.lenis {
   }
 }
 
-/* Image CLS prevention */
+/* ============================================
+   IMAGE CLS PREVENTION
+   ============================================ */
+
 img {
   max-width: 100%;
   height: auto;
@@ -378,24 +480,63 @@ img {
   aspect-ratio: 3 / 2;
 }
 
-/* Container queries for responsive components */
+/* ============================================
+   CONTAINER QUERIES
+   ============================================ */
+
 @container (min-width: 400px) {
   .container-responsive {
     /* Styles for containers wider than 400px */
   }
 }
 
-/* Content visibility for off-screen elements */
-.content-visibility-auto {
-  content-visibility: auto;
-  contain-intrinsic-size: 0 500px;
-}
+/* ============================================
+   FONT LOADING OPTIMIZATION
+   ============================================ */
 
-/* Optimize font loading */
 @font-face {
   font-family: "Inter";
   font-style: normal;
   font-weight: 100 900;
   font-display: swap;
   src: url("/fonts/Inter-Variable.woff2") format("woff2");
+}
+
+/* ============================================
+   SKELETON LOADING STATES
+   ============================================ */
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-bg-alt) 25%,
+    #e8e8ed 50%,
+    var(--color-bg-alt) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+/* ============================================
+   LAZY LOAD PLACEHOLDER
+   ============================================ */
+
+.lazy-placeholder {
+  background: var(--color-bg-alt);
+  position: relative;
+  overflow: hidden;
+}
+
+.lazy-placeholder::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    transparent 100%
+  );
+  animation: shimmer 1.5s infinite;
 }

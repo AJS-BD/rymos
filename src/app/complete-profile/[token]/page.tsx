@@ -3,9 +3,6 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useParams } from 'next/navigation';
 import { CheckCircle, AlertCircle, Loader2, User, Phone, MapPin, Store } from 'lucide-react';
-import Header from "@/components/layout/header";
-import Footer from "@/components/layout/footer";
-
 interface Customer {
   id: string;
   full_name: string;
@@ -101,23 +98,17 @@ function CompleteProfileContent() {
 
   if (loading) {
     return (
-      <>
-        <Header />
-        <main className="flex-1">
+      <><main className="flex-1">
           <div className="min-h-screen bg-gray-50 flex items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
           </div>
-        </main>
-        <Footer />
-      </>
+        </main></>
     );
   }
 
   if (alreadyCompleted) {
     return (
-      <>
-        <Header />
-        <main className="flex-1">
+      <><main className="flex-1">
           <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-lg shadow-sm border p-8 max-w-md w-full text-center">
               <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
@@ -125,17 +116,13 @@ function CompleteProfileContent() {
               <p className="text-gray-500">Your profile has already been completed. Thank you!</p>
             </div>
           </div>
-        </main>
-        <Footer />
-      </>
+        </main></>
     );
   }
 
   if (success) {
     return (
-      <>
-        <Header />
-        <main className="flex-1">
+      <><main className="flex-1">
           <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-lg shadow-sm border p-8 max-w-md w-full text-center">
               <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
@@ -143,17 +130,13 @@ function CompleteProfileContent() {
               <p className="text-gray-500">Your profile has been successfully updated. Thank you for completing your information.</p>
             </div>
           </div>
-        </main>
-        <Footer />
-      </>
+        </main></>
     );
   }
 
   if (error) {
     return (
-      <>
-        <Header />
-        <main className="flex-1">
+      <><main className="flex-1">
           <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-lg shadow-sm border p-8 max-w-md w-full text-center">
               <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
@@ -161,16 +144,12 @@ function CompleteProfileContent() {
               <p className="text-gray-500">{error}</p>
             </div>
           </div>
-        </main>
-        <Footer />
-      </>
+        </main></>
     );
   }
 
   return (
-    <>
-      <Header />
-      <main className="flex-1">
+    <><main className="flex-1">
         <div className="min-h-screen bg-gray-50 py-8 px-4">
           <div className="max-w-lg mx-auto">
             <div className="bg-white rounded-lg shadow-sm border p-6">
@@ -272,9 +251,7 @@ function CompleteProfileContent() {
             </div>
           </div>
         </div>
-      </main>
-      <Footer />
-    </>
+      </main></>
   );
 }
 

@@ -1,13 +1,15 @@
 "use client";
 
 import Image, { ImageProps } from "next/image";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 
 interface OptimizedImageProps extends Omit<ImageProps, "placeholder" | "blurDataURL"> {
   fallbackSrc?: string;
   aspectRatio?: string;
   rounded?: boolean;
   roundedSize?: "sm" | "md" | "lg" | "xl" | "full";
+  objectFit?: "cover" | "contain" | "fill" | "none";
+  sizes?: string;
 }
 
 const roundedClasses: Record<string, string> = {
@@ -18,9 +20,12 @@ const roundedClasses: Record<string, string> = {
   full: "rounded-full",
 };
 
-// Generate a tiny blur placeholder (1x1 pixel SVG)
+// Generate a tiny blur placeholder (1x1 pixel SVG) - prevents CLS
 const BLUR_DATA_URL =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3Crect width='1' height='1' fill='%23f5f5f7'/%3E%3C/svg%3E";
+
+// Default responsive srcSet sizes
+const DEFAULT_SIZES = "(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw";
 
 export function OptimizedImage({
   src,
@@ -31,9 +36,11 @@ export function OptimizedImage({
   aspectRatio,
   rounded = false,
   roundedSize = "md",
+  objectFit = "cover",
   className = "",
   priority = false,
   quality = 85,
+  sizes = DEFAULT_SIZES,
   ...props
 }: OptimizedImageProps) {
   const [imgSrc, setImgSrc] = useState(src);
@@ -51,14 +58,17 @@ export function OptimizedImage({
 
   const roundedClass = rounded ? roundedClasses[roundedSize] : "";
 
-  const wrapperStyle = aspectRatio ? { aspectRatio } : undefined;
+  const wrapperStyle = useMemo(() => {
+    if (aspectRatio) return { aspectRatio };
+    return { aspectRatio: `${width} / ${height}` };
+  }, [aspectRatio, width, height]);
 
   return (
     <div
-      className={`relative overflow-hidden ${roundedClass} ${className}`}
+      className={`relative overflow-hidden ${roundedClass} ${className} contain-paint`}
       style={wrapperStyle}
     >
-      {/* Skeleton loader */}
+      {/* Skeleton loader - prevents CLS */}
       {!isLoaded && (
         <div
           className="absolute inset-0 animate-shimmer bg-gradient-to-r from-gray-100 via-gray-200 to-gray-100"
@@ -76,12 +86,14 @@ export function OptimizedImage({
         blurDataURL={BLUR_DATA_URL}
         onError={handleError}
         onLoad={handleLoad}
-        sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-        className={`transition-opacity duration-300 ${
+        sizes={sizes}
+        loading={priority ? "eager" : "lazy"}
+        decoding="async"
+        className={`transition-opacity duration-300 will-change-opacity ${
           isLoaded ? "opacity-100" : "opacity-0"
         } ${roundedClass}`}
         style={{
-          objectFit: "cover",
+          objectFit,
           width: "100%",
           height: "auto",
         }}
@@ -125,6 +137,7 @@ export function ProductImage({
       roundedSize="lg"
       className={className}
       priority={priority}
+      sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
     />
   );
 }
@@ -149,6 +162,7 @@ export function HeroImage({
       priority
       quality={90}
       className={className}
+      sizes="100vw"
     />
   );
 }
@@ -173,6 +187,33 @@ export function CategoryImage({
       rounded
       roundedSize="xl"
       className={className}
+      sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
+    />
+  );
+}
+
+// Thumbnail image for cart/wishlist
+export function ThumbnailImage({
+  src,
+  alt,
+  className = "",
+}: {
+  src: string;
+  alt: string;
+  className?: string;
+}) {
+  return (
+    <OptimizedImage
+      src={src}
+      alt={alt}
+      width={80}
+      height={80}
+      aspectRatio="1/1"
+      rounded
+      roundedSize="md"
+      className={className}
+      sizes="80px"
+      quality={75}
     />
   );
 }
