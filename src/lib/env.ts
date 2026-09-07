@@ -1,19 +1,13 @@
 // Environment configuration
-// All env vars use RYMOS_ prefix (no NEXT_PUBLIC_) to avoid Vercel restrictions
-// They are exposed to the browser via next.config.js `env` field
-
+// Uses NEXT_PUBLIC_ prefix as that's what Vercel provides
 export const env = {
   supabase: {
-    url: process.env.RYMOS_SUPABASE_URL || "",
-    anonKey: process.env.RYMOS_SUPABASE_ANON_KEY || "",
-    serviceKey: process.env.RYMOS_SUPABASE_SERVICE_KEY || "",
+    url: process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+    anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+    serviceKey: process.env.SUPABASE_SERVICE_ROLE_KEY || "",
   },
   app: {
-    url: process.env.RYMOS_APP_URL || "http://localhost:3000",
-  },
-  admin: {
-    email: process.env.RYMOS_ADMIN_EMAIL || "admin@rymos.com",
-    password: process.env.RYMOS_ADMIN_PASSWORD || "change-me",
+    url: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
   },
 } as const;
 
@@ -21,8 +15,8 @@ export const env = {
 export function validateEnv() {
   const missing: string[] = [];
 
-  if (!env.supabase.url) missing.push("RYMOS_SUPABASE_URL");
-  if (!env.supabase.anonKey) missing.push("RYMOS_SUPABASE_ANON_KEY");
+  if (!env.supabase.url) missing.push("NEXT_PUBLIC_SUPABASE_URL");
+  if (!env.supabase.anonKey) missing.push("NEXT_PUBLIC_SUPABASE_ANON_KEY");
 
   if (missing.length > 0 && typeof window === "undefined") {
     console.warn(

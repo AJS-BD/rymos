@@ -6,8 +6,8 @@ let _client: SupabaseClient | null = null;
 export function getSupabase(): SupabaseClient {
   if (_client) return _client;
 
-  const url = process.env.RYMOS_SUPABASE_URL;
-  const key = process.env.RYMOS_SUPABASE_ANON_KEY;
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!url || !key) {
     console.warn("Supabase env vars not set — using placeholder");
@@ -24,7 +24,7 @@ export function getSupabase(): SupabaseClient {
 // Check at call time, not module load time
 export function isConfigured(): boolean {
   return Boolean(
-    process.env.RYMOS_SUPABASE_URL &&
-    process.env.RYMOS_SUPABASE_ANON_KEY
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   );
 }
