@@ -17,6 +17,24 @@ interface Product {
 }
 
 /* ------------------------------------------------------------------ */
+/*  Categories                                                          */
+/* ------------------------------------------------------------------ */
+
+const CATEGORIES = [
+  "All",
+  "Smartphones",
+  "Audio",
+  "Chargers",
+  "Cases & Protection",
+  "Wearables",
+  "Power Banks",
+] as const;
+
+type Category = (typeof CATEGORIES)[number];
+
+type SortOption = "name" | "price-asc" | "price-desc";
+
+/* ------------------------------------------------------------------ */
 /*  Product images map                                                  */
 /* ------------------------------------------------------------------ */
 
@@ -90,6 +108,119 @@ function SearchBar({ value, onChange }: { value: string; onChange: (v: string) =
 }
 
 /* ------------------------------------------------------------------ */
+/*  Category filter bar                                                 */
+/* ------------------------------------------------------------------ */
+
+function CategoryFilter({
+  categories,
+  active,
+  onSelect,
+}: {
+  categories: readonly string[];
+  active: Category;
+  onSelect: (c: Category) => void;
+}) {
+  return (
+    <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
+      {categories.map((cat) => {
+        const isActive = cat === active;
+        return (
+          <button
+            key={cat}
+            onClick={() => onSelect(cat as Category)}
+            className={[
+              "px-4 sm:px-5 py-2 rounded-full text-sm font-light transition-all duration-200",
+              isActive
+                ? "bg-[var(--color-text)] text-white shadow-sm"
+                : "bg-transparent text-[var(--color-text-muted)] border border-[var(--color-border)] hover:border-[var(--color-text)] hover:text-[var(--color-text)]",
+            ].join(" ")}
+          >
+            {cat}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Sort dropdown                                                       */
+/* ------------------------------------------------------------------ */
+
+const SORT_OPTIONS: { value: SortOption; label: string }[] = [
+  { value: "name", label: "Sort by Name" },
+  { value: "price-asc", label: "Price: Low to High" },
+  { value: "price-desc", label: "Price: High to Low" },
+];
+
+function SortDropdown({
+  value,
+  onChange,
+}: {
+  value: SortOption;
+  onChange: (v: SortOption) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const activeLabel = SORT_OPTIONS.find((o) => o.value === value)?.label ?? "Sort";
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-light text-[var(--color-text-muted)] border border-[var(--color-border)] hover:border-[var(--color-text)] hover:text-[var(--color-text)] transition-all duration-200"
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M3 4.5h14.25M3 9h9.75M3 13.5h5.25m5.25-.75L17.25 9m0 0L21 12.75M17.25 9v12" />
+        </svg>
+        {activeLabel}
+        <svg
+          className={["w-3 h-3 transition-transform duration-200", open ? "rotate-180" : ""].join(" ")}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          strokeWidth={2}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+        </svg>
+      </button>
+      {open && (
+        <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-[var(--color-border)]/50 py-1 z-20">
+          {SORT_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => {
+                onChange(opt.value);
+                setOpen(false);
+              }}
+              className={[
+                "w-full text-left px-4 py-2.5 text-sm font-light transition-colors",
+                opt.value === value
+                  ? "text-[var(--color-text)] bg-[var(--color-bg-alt)]"
+                  : "text-[var(--color-text-muted)] hover:bg-[var(--color-bg-alt)] hover:text-[var(--color-text)]",
+              ].join(" ")}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /*  Product Card                                                        */
 /* ------------------------------------------------------------------ */
 
@@ -157,6 +288,8 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<Category>("All");
+  const [sortOption, setSortOption] = useState<SortOption>("name");
   const heroRef = useRef<HTMLDivElement>(null);
   const heroInView = useInView(heroRef, { once: true });
 
@@ -175,14 +308,39 @@ export default function ProductsPage() {
   }, []);
 
   const filteredProducts = useMemo(() => {
-    if (!searchQuery.trim()) return products;
-    const query = searchQuery.toLowerCase();
-    return products.filter(
-      (p) =>
-        p.name.toLowerCase().includes(query) ||
-        p.brand?.toLowerCase().includes(query)
-    );
-  }, [products, searchQuery]);
+    let result = products;
+
+    // Filter by category
+    if (selectedCategory !== "All") {
+      result = result.filter((p) => p.category === selectedCategory);
+    }
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(
+        (p) =>
+          p.name.toLowerCase().includes(query) ||
+          p.brand?.toLowerCase().includes(query)
+      );
+    }
+
+    // Sort
+    switch (sortOption) {
+      case "price-asc":
+        result = [...result].sort((a, b) => a.price - b.price);
+        break;
+      case "price-desc":
+        result = [...result].sort((a, b) => b.price - a.price);
+        break;
+      case "name":
+      default:
+        result = [...result].sort((a, b) => a.name.localeCompare(b.name));
+        break;
+    }
+
+    return result;
+  }, [products, searchQuery, selectedCategory, sortOption]);
 
   return (
     <main className="flex-1 min-h-screen bg-white">
@@ -213,9 +371,25 @@ export default function ProductsPage() {
         </div>
       </section>
 
-      {/* Products Grid */}
+      {/* Category Filter Bar */}
+      <section className="py-6 sm:py-8 bg-white border-b border-[var(--color-border)]/40">
+        <div className="max-w-7xl mx-auto px-6 sm:px-8">
+          <CategoryFilter
+            categories={CATEGORIES}
+            active={selectedCategory}
+            onSelect={setSelectedCategory}
+          />
+        </div>
+      </section>
+
+      {/* Sort & Products Grid */}
       <section className="py-12 sm:py-16 md:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-6 sm:px-8">
+          {/* Sort dropdown */}
+          <div className="flex justify-end mb-8">
+            <SortDropdown value={sortOption} onChange={setSortOption} />
+          </div>
+
           {loading ? (
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
               {Array.from({ length: 8 }).map((_, i) => (
@@ -232,12 +406,15 @@ export default function ProductsPage() {
               <p className="text-lg font-light text-[var(--color-text-muted)]">
                 No products found.
               </p>
-              {searchQuery && (
+              {(searchQuery || selectedCategory !== "All") && (
                 <button
-                  onClick={() => setSearchQuery("")}
+                  onClick={() => {
+                    setSearchQuery("");
+                    setSelectedCategory("All");
+                  }}
                   className="mt-4 text-sm font-light text-[var(--color-primary)] hover:text-[var(--color-primary-hover)] transition-colors"
                 >
-                  Clear search
+                  Clear filters
                 </button>
               )}
             </motion.div>

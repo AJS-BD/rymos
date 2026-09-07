@@ -1,0 +1,14 @@
+{
+  "status": "success",
+  "message": "Header navigation text and icon colors already correctly implemented based on scroll position",
+  "file": "src/components/layout/header.tsx",
+  "changes": "No changes needed - the file already implements the Apple.com pattern correctly",
+  "details": {
+    "scrollDetection": "useScroll + useMotionValueEvent with scrollY >= 50 threshold",
+    "heroState": "scrollY < 50: textColor = #ffffff (white)",
+    "scrolledState": "scrollY >= 50: textColor = #111827 (gray-900)",
+    "logo": "motion.span with animate prop, transition duration 0.3",
+    "navLinks": "motion.a with animate prop, transition duration 0.3",
+    "icons": "motion.button with animate prop, transition duration 0.3"
+  }
+}

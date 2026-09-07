@@ -1,23 +1,40 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { Search, Menu, X } from "lucide-react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { useRouter } from "next/navigation";
+import { Search, Menu, X, User } from "lucide-react";
+import { motion, useScroll, useMotionValueEvent, useTransform, AnimatePresence } from "framer-motion";
 
 const navLinks = [
   { label: "Products", href: "/products" },
-  { label: "Accessories", href: "/products?category=accessories" },
   { label: "Deals", href: "/products?deals=true" },
   { label: "About", href: "/about" },
+  { label: "Track Order", href: "/track-order" },
+  { label: "Messages", href: "/customer/messages" },
+];
+
+const accountItems = [
+  { label: "Sign In", href: "/auth/login" },
+  { label: "Create Account", href: "/auth/register" },
+  { label: "Track Order", href: "/track-order" },
+  { label: "Messages", href: "/customer/messages" },
 ];
 
 export default function Header() {
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [scrolled, setScrolled] = useState(false);
+  const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
 
   const { scrollY } = useScroll();
+
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    setScrolled(latest >= 50);
+  });
+
   const headerBg = useTransform(
     scrollY,
     [0, 80],
@@ -29,6 +46,8 @@ export default function Header() {
     [0, 80],
     ["rgba(0, 0, 0, 0)", "rgba(0, 0, 0, 0.08)"]
   );
+
+  const textColor = scrolled ? "#111827" : "#ffffff";
 
   return (
     <>
@@ -50,52 +69,101 @@ export default function Header() {
             <div className="flex-1 flex items-center">
               <Link
                 href="/"
-                className="text-[var(--color-text)] tracking-tight"
+                className="tracking-tight"
                 style={{ fontFamily: "var(--font-sans)" }}
               >
-                <span className="text-base sm:text-lg font-normal">
+                <motion.span
+                  className="text-base sm:text-lg font-normal"
+                  animate={{ color: textColor }}
+                  transition={{ duration: 0.3 }}
+                >
                   RYmos
-                </span>
+                </motion.span>
               </Link>
             </div>
 
             {/* Navigation - Centered */}
             <nav className="hidden md:flex items-center gap-8">
               {navLinks.map((item) => (
-                <Link
+                <motion.a
                   key={item.label}
                   href={item.href}
-                  className="text-xs font-light text-[var(--color-text)] hover:text-[var(--color-text-muted)] transition-colors duration-200"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    router.push(item.href);
+                  }}
+                  className="text-xs font-light cursor-pointer"
                   style={{ fontFamily: "var(--font-sans)" }}
+                  animate={{ color: textColor }}
+                  transition={{ duration: 0.3 }}
                 >
                   {item.label}
-                </Link>
+                </motion.a>
               ))}
             </nav>
 
-            {/* Right side - Search */}
+            {/* Right side - Account, Search & Menu */}
             <div className="flex-1 flex items-center justify-end gap-4">
+              {/* Account Dropdown */}
+              <div className="relative">
+                <motion.button
+                  onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
+                  className="cursor-pointer"
+                  aria-label="Account"
+                  animate={{ color: textColor }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <User className="h-4 w-4" strokeWidth={1.5} />
+                </motion.button>
+
+                {accountDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
+                    className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-50"
+                  >
+                    {accountItems.map((item) => (
+                      <Link
+                        key={item.label}
+                        href={item.href}
+                        onClick={() => setAccountDropdownOpen(false)}
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
+                        style={{ fontFamily: "var(--font-sans)" }}
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                  </motion.div>
+                )}
+              </div>
+
               {/* Search */}
-              <button
+              <motion.button
                 onClick={() => setSearchOpen(!searchOpen)}
-                className="text-[var(--color-text)] hover:text-[var(--color-text-muted)] transition-colors duration-200"
+                className="cursor-pointer"
                 aria-label="Search"
+                animate={{ color: textColor }}
+                transition={{ duration: 0.3 }}
               >
                 <Search className="h-4 w-4" strokeWidth={1.5} />
-              </button>
+              </motion.button>
 
               {/* Mobile Menu Toggle */}
-              <button
+              <motion.button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden text-[var(--color-text)] hover:text-[var(--color-text-muted)] transition-colors duration-200"
+                className="md:hidden cursor-pointer"
                 aria-label="Menu"
+                animate={{ color: textColor }}
+                transition={{ duration: 0.3 }}
               >
                 {mobileMenuOpen ? (
                   <X className="h-4 w-4" strokeWidth={1.5} />
                 ) : (
                   <Menu className="h-4 w-4" strokeWidth={1.5} />
                 )}
-              </button>
+              </motion.button>
             </div>
           </div>
 
@@ -151,6 +219,28 @@ export default function Header() {
                 </Link>
               </motion.div>
             ))}
+            <div className="w-full border-t border-gray-200 pt-6">
+              <p className="text-xs uppercase tracking-wider text-[var(--color-text-muted)] mb-4 text-center">
+                Account
+              </p>
+              {accountItems.map((item, index) => (
+                <motion.div
+                  key={item.label}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: (navLinks.length + index) * 0.05 + 0.1, duration: 0.3 }}
+                >
+                  <Link
+                    href={item.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block text-center text-lg font-light text-[var(--color-text)] hover:text-[var(--color-text-muted)] transition-colors duration-200 py-2"
+                    style={{ fontFamily: "var(--font-sans)" }}
+                  >
+                    {item.label}
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </motion.div>
       )}
