@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Search, Heart, User, ShoppingCart } from "lucide-react";
+import { Search, Heart, User } from "lucide-react";
+import CartDrawer from "@/components/cart/cart-drawer";
 
 export default function Header() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -80,15 +81,7 @@ export default function Header() {
             >
               <User className="h-5 w-5" />
             </Link>
-            <Link
-              href="/customer/cart"
-              className="p-2 text-[var(--color-text)] hover:text-[var(--color-primary)] relative"
-            >
-              <ShoppingCart className="h-5 w-5" />
-              <span className="absolute -top-1 -right-1 bg-[var(--color-accent)] text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                0
-              </span>
-            </Link>
+            <CartDrawer />
           </div>
         </div>
       </div>
