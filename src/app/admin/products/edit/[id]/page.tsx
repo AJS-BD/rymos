@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle, AlertCircle, ArrowLeft, Save } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
@@ -12,10 +12,14 @@ interface Category {
   slug: string;
 }
 
-export default function AddProduct() {
+export default function EditProduct() {
   const router = useRouter();
+  const params = useParams();
+  const id = params.id as string;
+
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(true);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [formData, setFormData] = useState({
     name: "",
@@ -30,13 +34,35 @@ export default function AddProduct() {
   });
 
   useEffect(() => {
-    async function fetchCategories() {
+    async function fetchData() {
+      setFetching(true);
       const supabase = getSupabase();
-      const { data } = await supabase.from("categories").select("*").order("sort_order");
-      if (data) setCategories(data);
+
+      const [productRes, categoriesRes] = await Promise.all([
+        supabase.from("products").select("*").eq("id", id).single(),
+        supabase.from("categories").select("*").order("sort_order"),
+      ]);
+
+      if (productRes.data) {
+        const p = productRes.data;
+        setFormData({
+          name: p.name || "",
+          brand: p.brand || "",
+          category: p.category || "",
+          stock: String(p.stock ?? ""),
+          price: String(p.price ?? ""),
+          original_price: p.original_price != null ? String(p.original_price) : "",
+          description: p.description || "",
+          is_featured: p.is_featured || false,
+          is_new_arrival: p.is_new_arrival || false,
+        });
+      }
+
+      if (categoriesRes.data) setCategories(categoriesRes.data);
+      setFetching(false);
     }
-    fetchCategories();
-  }, []);
+    if (id) fetchData();
+  }, [id]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
@@ -54,8 +80,9 @@ export default function AddProduct() {
 
     try {
       const supabase = getSupabase();
-      const { error } = await supabase.from("products").insert([
-        {
+      const { error } = await supabase
+        .from("products")
+        .update({
           name: formData.name,
           brand: formData.brand || null,
           category: formData.category || null,
@@ -65,22 +92,30 @@ export default function AddProduct() {
           description: formData.description || null,
           is_featured: formData.is_featured,
           is_new_arrival: formData.is_new_arrival,
-        },
-      ]);
+        })
+        .eq("id", id);
 
       if (error) throw error;
 
-      setMessage({ type: "success", text: "Product saved successfully!" });
+      setMessage({ type: "success", text: "Product updated successfully!" });
       setTimeout(() => {
         router.push("/admin/products");
         router.refresh();
       }, 1000);
     } catch (err: any) {
-      setMessage({ type: "error", text: err?.message || "Failed to save product" });
+      setMessage({ type: "error", text: err?.message || "Failed to update product" });
     } finally {
       setLoading(false);
     }
   };
+
+  if (fetching) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-gray-500">Loading product...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -89,8 +124,8 @@ export default function AddProduct() {
           <ArrowLeft className="h-5 w-5" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Add Product</h1>
-          <p className="text-gray-500">Create a new product</p>
+          <h1 className="text-2xl font-bold text-gray-900">Edit Product</h1>
+          <p className="text-gray-500">Update product details</p>
         </div>
       </div>
 
@@ -239,7 +274,7 @@ export default function AddProduct() {
             className="inline-flex items-center gap-2 px-6 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Save className="h-4 w-4" />
-            {loading ? "Saving..." : "Save Product"}
+            {loading ? "Updating..." : "Update Product"}
           </button>
           <Link
             href="/admin/products"

@@ -3,8 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/cart-context";
-import { formatBDT } from "@/lib/utils";
-import { MapPin, Store, CreditCard, Truck, CheckCircle } from "lucide-react";
+import { formatBDT, generateOrderNumber } from "@/lib/utils";
+import { getSupabase, isConfigured } from "@/lib/supabase";
+import { MapPin, Store, CreditCard, Truck, CheckCircle, Loader2, Package } from "lucide-react";
 
 type OrderType = "cod" | "pickup" | "credit";
 
@@ -13,29 +14,124 @@ export default function CheckoutPage() {
   const [orderType, setOrderType] = useState<OrderType>("cod");
   const [shippingAddress, setShippingAddress] = useState("");
   const [pickupNote, setPickupNote] = useState("");
-  const [isPlaced, setIsPlaced] = useState(false);
+  const [isPlacing, setIsPlacing] = useState(false);
+  const [error, setError] = useState("");
+  const [placedOrder, setPlacedOrder] = useState<{ orderNumber: string } | null>(null);
 
   const handlePlaceOrder = async () => {
-    // In a real app, this would create the order in Supabase
-    // For now, just show success
-    setIsPlaced(true);
-    clearCart();
+    setError("");
+
+    if (!isConfigured()) {
+      setError("Supabase is not configured. Please check environment variables.");
+      return;
+    }
+
+    if (orderType === "cod" && !shippingAddress.trim()) {
+      setError("Please enter a shipping address for Cash on Delivery orders.");
+      return;
+    }
+
+    setIsPlacing(true);
+
+    try {
+      const supabase = getSupabase();
+
+      // Get customer ID from localStorage (set by messages page or credit application)
+      const customerId = localStorage.getItem("rymos_customer_id");
+
+      if (!customerId) {
+        setError("Unable to identify customer. Please refresh and try again.");
+        setIsPlacing(false);
+        return;
+      }
+
+      // Generate order number based on order count this year
+      const year = new Date().getFullYear();
+      const { count: orderCount } = await supabase
+        .from("orders")
+        .select("*", { count: "exact", head: true })
+        .like("order_number", `RY-${year}-%`);
+
+      const orderNumber = generateOrderNumber((orderCount || 0) + 1);
+
+      // Map order type to schema values
+      const schemaOrderType = orderType === "pickup" ? "shop_pickup" : orderType;
+
+      // Build items array for JSONB
+      const orderItems = items.map((item) => ({
+        product_id: item.product.id,
+        name: item.product.name,
+        qty: item.quantity,
+        price: item.product.price,
+      }));
+
+      // Build shipping_address object for COD
+      const shippingAddressObj = orderType === "cod"
+        ? {
+            address: shippingAddress.trim(),
+            type: "delivery",
+          }
+        : null;
+
+      // Insert order
+      const { error: insertError } = await supabase.from("orders").insert({
+        order_number: orderNumber,
+        customer_id: customerId,
+        status: "pending",
+        order_type: schemaOrderType,
+        items: orderItems,
+        subtotal: subtotal,
+        total: subtotal,
+        payment_method: orderType === "credit" ? "credit" : "cod",
+        shipping_address: shippingAddressObj,
+        pickup_note: orderType === "pickup" ? pickupNote.trim() || null : null,
+      });
+
+      if (insertError) throw insertError;
+
+      // Clear cart and show confirmation
+      clearCart();
+      setPlacedOrder({ orderNumber });
+    } catch (err: any) {
+      setError(err.message || "Failed to place order. Please try again.");
+    } finally {
+      setIsPlacing(false);
+    }
   };
 
-  if (isPlaced) {
+  if (placedOrder) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-16 text-center">
-        <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-        <h1 className="text-2xl font-bold text-gray-900">Order Placed!</h1>
-        <p className="text-gray-500 mt-2">
-          Your order has been placed successfully. We&apos;ll contact you soon.
-        </p>
-        <Link
-          href="/products"
-          className="inline-block mt-6 px-6 py-3 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
-        >
-          Continue Shopping
-        </Link>
+        <div className="bg-white rounded-2xl border p-8 shadow-sm">
+          <div className="h-20 w-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6">
+            <CheckCircle className="h-10 w-10 text-green-500" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Order Placed Successfully!</h1>
+          <p className="text-gray-500 mb-6">
+            Thank you for your order. We&apos;ll contact you soon with delivery updates.
+          </p>
+          <div className="bg-gray-50 rounded-lg p-4 mb-6">
+            <p className="text-sm text-gray-500 mb-1">Order Number</p>
+            <p className="text-xl font-mono font-bold text-gray-900">
+              {placedOrder.orderNumber}
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link
+              href="/products"
+              className="px-6 py-3 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
+            >
+              Continue Shopping
+            </Link>
+            <Link
+              href="/customer/messages"
+              className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+            >
+              <Package className="h-4 w-4" />
+              Contact Support
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }
@@ -58,6 +154,12 @@ export default function CheckoutPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Checkout</h1>
+
+      {error && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          {error}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Left - Order Details */}
@@ -199,10 +301,17 @@ export default function CheckoutPage() {
 
           <button
             onClick={handlePlaceOrder}
-            disabled={orderType === "cod" && !shippingAddress.trim()}
-            className="w-full mt-4 py-3 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={isPlacing || (orderType === "cod" && !shippingAddress.trim())}
+            className="w-full mt-4 py-3 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            Place Order
+            {isPlacing ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Placing Order...
+              </>
+            ) : (
+              "Place Order"
+            )}
           </button>
         </div>
       </div>
