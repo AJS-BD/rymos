@@ -1,7 +1,12 @@
-import { supabase } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import ProductCard from "@/components/products/product-card";
 
 async function getNewArrivals() {
+  if (!isSupabaseConfigured) {
+    console.warn("Supabase not configured — returning empty products");
+    return [];
+  }
+
   const { data, error } = await supabase
     .from("products")
     .select("*")
