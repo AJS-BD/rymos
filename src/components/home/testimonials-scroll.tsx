@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useState, useCallback } from "react";
-import { motion, useReducedMotion, useSpring, useMotionValue, useTransform, useInView } from "framer-motion";
+import { motion, useReducedMotion, useSpring, useMotionValue, useTransform } from "framer-motion";
 import { Quote } from "lucide-react";
 
 interface Testimonial {
@@ -94,14 +94,13 @@ export default function TestimonialsScroll() {
   const doubledTestimonials = [...testimonials, ...testimonials];
 
   return (
-    <section className="py-12 sm:py-20 lg:py-32 bg-[var(--color-bg-alt)] overflow-hidden">
+    <section className="py-12 sm:py-16 lg:py-20 bg-[var(--color-bg-alt)] overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 mb-8 sm:mb-12">
         <motion.h2
-          initial={{ opacity: 0, y: 24, rotateX: -10 }}
-          whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ type: "spring", damping: 22, stiffness: 100, mass: 0.8 }}
-          style={{ transformPerspective: 1200 }}
           className="text-2xl sm:text-3xl md:text-5xl font-semibold tracking-tight text-[var(--color-text)]"
         >
           What people are saying.
@@ -128,7 +127,7 @@ export default function TestimonialsScroll() {
           /* Static layout for reduced motion */
           <div className="flex gap-6 px-4 overflow-x-auto scrollbar-hide">
             {testimonials.map((testimonial) => (
-              <TestimonialCard key={testimonial.id} testimonial={testimonial} index={0} />
+              <TestimonialCard key={testimonial.id} testimonial={testimonial} />
             ))}
           </div>
         ) : (
@@ -140,7 +139,6 @@ export default function TestimonialsScroll() {
               <TestimonialCard
                 key={`${testimonial.id}-${index}`}
                 testimonial={testimonial}
-                index={index}
               />
             ))}
           </motion.div>
@@ -150,10 +148,9 @@ export default function TestimonialsScroll() {
   );
 }
 
-function TestimonialCard({ testimonial, index }: { testimonial: Testimonial; index: number }) {
+function TestimonialCard({ testimonial }: { testimonial: Testimonial }) {
   const prefersReducedMotion = useReducedMotion();
   const cardRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(cardRef, { once: true, margin: "-30px" });
 
   // 3D hover effect with spring physics
   const mouseX = useMotionValue(0);
@@ -201,15 +198,8 @@ function TestimonialCard({ testimonial, index }: { testimonial: Testimonial; ind
       onMouseMove={handleMouseMove}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      initial={{ opacity: 0, y: 24, rotateX: -8 }}
-      animate={isInView ? { opacity: 1, y: 0, rotateX: 0 } : { opacity: 0, y: 24, rotateX: -8 }}
-      transition={{
-        type: "spring",
-        damping: 22,
-        stiffness: 100,
-        mass: 0.8,
-        delay: (index % 5) * 0.08,
-      }}
+      initial={{ opacity: 1, y: 0, rotateX: 0 }}
+      animate={{ opacity: 1, y: 0, rotateX: 0 }}
       style={{
         rotateX: prefersReducedMotion ? 0 : rotateX,
         rotateY: prefersReducedMotion ? 0 : rotateY,

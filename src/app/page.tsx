@@ -28,7 +28,7 @@ export default function HomePage() {
       >
         <div className="max-w-5xl mx-auto px-4 text-center">
           <motion.h1
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 1, y: 0 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
             className="text-3xl sm:text-5xl md:text-7xl font-semibold tracking-tight text-[var(--color-text)]"
@@ -36,7 +36,7 @@ export default function HomePage() {
             Technology,<br />Made Yours
           </motion.h1>
           <motion.p
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 1, y: 0 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.5 }}
             className="mt-3 sm:mt-6 text-base sm:text-xl md:text-2xl font-normal text-[var(--color-text-muted)]"
@@ -44,7 +44,7 @@ export default function HomePage() {
             Discover the latest smartphones and premium accessories.
           </motion.p>
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 1, y: 0 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.7 }}
             className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6"
@@ -66,8 +66,8 @@ export default function HomePage() {
 
         {/* Hero Image */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
+          initial={{ opacity: 0.3, scale: 1 }}
+          animate={{ opacity: 0.3, scale: 1 }}
           transition={{ duration: 1, delay: 0.8 }}
           className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[300px] sm:w-[400px] lg:w-[600px] h-[200px] sm:h-[300px] lg:h-[400px] opacity-30"
           style={{
@@ -86,7 +86,7 @@ export default function HomePage() {
       <FeaturedShowcase />
 
       {/* Spec Highlights */}
-      <AnimatedSection className="py-12 sm:py-20 lg:py-32 bg-white">
+      <AnimatedSection className="py-12 sm:py-16 lg:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4">
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-[var(--color-text)] text-center mb-8 sm:mb-12">
             Built for everything
@@ -125,7 +125,7 @@ export default function HomePage() {
       <TestimonialsScroll />
 
       {/* App Download CTA */}
-      <AnimatedSection className="py-12 sm:py-20 lg:py-32 bg-[var(--color-dark-banner)] text-white">
+      <AnimatedSection className="py-12 sm:py-16 lg:py-20 bg-[var(--color-dark-banner)] text-white">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-2xl sm:text-3xl lg:text-5xl font-semibold tracking-tight mb-3 sm:mb-4">
             Your Store. In Your Pocket.

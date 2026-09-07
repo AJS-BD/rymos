@@ -129,6 +129,7 @@ export default function RegisterPage() {
   };
 
   return (
+    <main className="flex-1">
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
         {/* Header */}
@@ -312,5 +313,6 @@ export default function RegisterPage() {
         </p>
       </div>
     </div>
+    </main>
   );
 }

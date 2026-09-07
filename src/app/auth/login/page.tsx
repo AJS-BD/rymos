@@ -149,6 +149,7 @@ export default function LoginPage() {
   };
 
   return (
+    <main className="flex-1">
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
         {/* Header */}
@@ -379,5 +380,6 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+    </main>
   );
 }

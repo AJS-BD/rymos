@@ -42,7 +42,7 @@ export default function FeaturedShowcase() {
   return (
     <section
       ref={sectionRef}
-      className="relative py-12 sm:py-20 lg:py-32 bg-[var(--color-dark-banner)] text-white overflow-hidden"
+      className="relative py-12 sm:py-16 lg:py-20 bg-[var(--color-dark-banner)] text-white overflow-hidden"
     >
       {/* Parallax background gradient */}
       <motion.div
