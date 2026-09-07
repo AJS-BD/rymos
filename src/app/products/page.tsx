@@ -89,8 +89,8 @@ export default function ProductsPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-4 mb-6">
-        <div className="flex-1 min-w-[200px] relative">
+      <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 mb-6">
+        <div className="flex-1 min-w-0 relative">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
           <input
             type="text"
@@ -100,43 +100,45 @@ export default function ProductsPage() {
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm"
           />
         </div>
-        <select
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-          className="px-4 py-2 border border-gray-300 rounded-lg text-sm"
-        >
-          <option value="all">All Categories</option>
-          {categories.map(cat => (
-            <option key={cat} value={cat} className="capitalize">{cat}</option>
-          ))}
-        </select>
-        <select
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value)}
-          className="px-4 py-2 border border-gray-300 rounded-lg text-sm"
-        >
-          <option value="name">Sort by Name</option>
-          <option value="price-low">Price: Low to High</option>
-          <option value="price-high">Price: High to Low</option>
-        </select>
-        <div className="flex border border-gray-300 rounded-lg overflow-hidden">
-          <button
-            onClick={() => setViewMode("grid")}
-            className={`p-2 ${viewMode === "grid" ? "bg-gray-100" : ""}`}
+        <div className="flex gap-2 flex-wrap">
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="flex-1 sm:flex-none px-4 py-2 border border-gray-300 rounded-lg text-sm min-w-[140px]"
           >
-            <Grid className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => setViewMode("list")}
-            className={`p-2 ${viewMode === "list" ? "bg-gray-100" : ""}`}
+            <option value="all">All Categories</option>
+            {categories.map(cat => (
+              <option key={cat} value={cat} className="capitalize">{cat}</option>
+            ))}
+          </select>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="flex-1 sm:flex-none px-4 py-2 border border-gray-300 rounded-lg text-sm min-w-[140px]"
           >
-            <List className="h-4 w-4" />
-          </button>
+            <option value="name">Sort by Name</option>
+            <option value="price-low">Price: Low to High</option>
+            <option value="price-high">Price: High to Low</option>
+          </select>
+          <div className="flex border border-gray-300 rounded-lg overflow-hidden">
+            <button
+              onClick={() => setViewMode("grid")}
+              className={`p-2 ${viewMode === "grid" ? "bg-gray-100" : ""}`}
+            >
+              <Grid className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setViewMode("list")}
+              className={`p-2 ${viewMode === "list" ? "bg-gray-100" : ""}`}
+            >
+              <List className="h-4 w-4" />
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Products Grid */}
-      <div className={viewMode === "grid" ? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4" : "space-y-4"}>
+      <div className={viewMode === "grid" ? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4" : "space-y-3 sm:space-y-4"}>
         {filteredProducts.map(product => {
           const discount = product.original_price
             ? Math.round(((product.original_price - product.price) / product.original_price) * 100)

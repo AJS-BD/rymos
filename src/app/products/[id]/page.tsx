@@ -68,29 +68,29 @@ export default async function ProductDetail({ params }: { params: Promise<{ id: 
       </nav>
 
       {/* Product Detail */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12">
         {/* Image */}
         <div className="aspect-square bg-gray-100 rounded-2xl overflow-hidden">
           <img src={imageUrl} alt={product.name} className="w-full h-full object-cover" />
         </div>
 
         {/* Info */}
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           <div>
             {product.brand && (
-              <p className="text-sm text-gray-500 uppercase tracking-wider">{product.brand}</p>
+              <p className="text-xs sm:text-sm text-gray-500 uppercase tracking-wider">{product.brand}</p>
             )}
-            <h1 className="text-3xl font-bold text-gray-900 mt-1">{product.name}</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mt-1">{product.name}</h1>
           </div>
 
           {/* Price */}
-          <div className="flex items-baseline gap-3">
-            <span className="text-3xl font-bold text-gray-900">
+          <div className="flex items-baseline gap-2 sm:gap-3 flex-wrap">
+            <span className="text-2xl sm:text-3xl font-bold text-gray-900">
               ৳{product.price.toLocaleString()}
             </span>
             {product.original_price && product.original_price > product.price && (
               <>
-                <span className="text-xl text-gray-400 line-through">
+                <span className="text-lg sm:text-xl text-gray-400 line-through">
                   ৳{product.original_price.toLocaleString()}
                 </span>
                 <span className="px-2 py-1 bg-red-100 text-red-700 text-sm font-medium rounded">
@@ -124,11 +124,11 @@ export default async function ProductDetail({ params }: { params: Promise<{ id: 
           )}
 
           {/* Actions */}
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             <button className="flex-1 py-3 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors">
               Add to Cart
             </button>
-            <button className="px-6 py-3 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+            <button className="w-full sm:w-auto px-6 py-3 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors">
               Buy Now
             </button>
           </div>

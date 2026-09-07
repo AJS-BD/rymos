@@ -279,7 +279,7 @@ export default function CheckoutPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
         {/* Left - Order Details */}
         <div className="space-y-6">
           {/* Order Type Selection */}

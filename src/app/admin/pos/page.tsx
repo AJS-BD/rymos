@@ -37,6 +37,7 @@ export default function POSPage() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [showCheckout, setShowCheckout] = useState(false);
   const [showReceipt, setShowReceipt] = useState(false);
+  const [showMobileCart, setShowMobileCart] = useState(false);
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("cash");
@@ -217,16 +218,16 @@ export default function POSPage() {
     : '';
 
   return (
-    <div className="flex h-[calc(100vh-4rem)]">
+    <div className="flex flex-col lg:flex-row h-[calc(100vh-4rem)] lg:h-[calc(100vh-4rem)]">
       {/* Products Section */}
-      <div className="flex-1 p-6 overflow-auto">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">POS</h1>
-          <p className="text-gray-500">Point of Sale System</p>
+      <div className="flex-1 p-4 lg:p-6 overflow-auto pb-20 lg:pb-6">
+        <div className="mb-4 lg:mb-6">
+          <h1 className="text-xl lg:text-2xl font-bold text-gray-900">POS</h1>
+          <p className="text-gray-500 text-sm">Point of Sale System</p>
         </div>
 
         {/* Search & Filter */}
-        <div className="flex gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-4 lg:mb-6">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
             <input
@@ -250,20 +251,20 @@ export default function POSPage() {
         </div>
 
         {/* Products Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
           {filteredProducts.map(product => (
             <button
               key={product.id}
               onClick={() => addToCart(product)}
-              className="p-4 bg-white rounded-lg border hover:shadow-md transition-shadow text-left"
+              className="p-2 sm:p-4 bg-white rounded-lg border hover:shadow-md transition-shadow text-left"
             >
-              <div className="aspect-square bg-gray-100 rounded-lg mb-3 flex items-center justify-center">
-                <Smartphone className="h-12 w-12 text-gray-300" />
+              <div className="aspect-square bg-gray-100 rounded-lg mb-2 sm:mb-3 flex items-center justify-center">
+                <Smartphone className="h-8 w-8 sm:h-12 sm:w-12 text-gray-300" />
               </div>
-              <h3 className="font-medium text-sm text-gray-900 truncate">{product.name}</h3>
+              <h3 className="font-medium text-xs sm:text-sm text-gray-900 truncate">{product.name}</h3>
               <p className="text-xs text-gray-500">{product.brand}</p>
-              <div className="flex items-center justify-between mt-2">
-                <span className="font-bold text-sm">{formatBDT(product.price)}</span>
+              <div className="flex items-center justify-between mt-1 sm:mt-2">
+                <span className="font-bold text-xs sm:text-sm">{formatBDT(product.price)}</span>
                 <span className="text-xs text-gray-400">{product.stock} left</span>
               </div>
             </button>
@@ -271,9 +272,28 @@ export default function POSPage() {
         </div>
       </div>
 
-      {/* Cart Section */}
-      <div className="w-96 bg-white border-l flex flex-col">
-        <div className="p-4 border-b flex items-center justify-between">
+      {/* Cart Section - Desktop sidebar / Mobile bottom sheet */}
+      <div className="fixed lg:relative bottom-0 left-0 right-0 lg:inset-auto lg:w-96 bg-white border-t lg:border-l lg:border-t-0 flex flex-col z-30 max-h-[50vh] lg:max-h-none shadow-lg lg:shadow-none transition-all">
+        {/* Cart Header - Mobile Toggle */}
+        <div
+          className="lg:hidden p-3 border-b flex items-center justify-between cursor-pointer bg-gray-50"
+          onClick={() => setShowMobileCart(!showMobileCart)}
+        >
+          <div className="flex items-center gap-2">
+            <ShoppingCart className="h-5 w-5" />
+            <span className="font-semibold text-gray-900">Cart ({itemCount})</span>
+          </div>
+          <div className="flex items-center gap-2">
+            {cart.length > 0 && (
+              <span className="font-bold text-sm">{formatBDT(subtotal)}</span>
+            )}
+            <button className="p-1 text-gray-500">
+              {showMobileCart ? '▼' : '▲'}
+            </button>
+          </div>
+        </div>
+
+        <div className="hidden lg:flex p-4 border-b items-center justify-between">
           <h2 className="font-semibold text-gray-900">Cart ({itemCount})</h2>
           {cart.length > 0 && (
             <button onClick={() => setCart([])} className="text-xs text-red-500 hover:text-red-700">
@@ -283,32 +303,32 @@ export default function POSPage() {
         </div>
 
         {/* Cart Items */}
-        <div className="flex-1 overflow-auto p-4 space-y-3">
+        <div className={`flex-1 overflow-auto p-3 sm:p-4 space-y-2 sm:space-y-3 ${showMobileCart ? 'block' : 'hidden lg:block'}`} style={{ maxHeight: showMobileCart ? '40vh' : undefined }}>
           {cart.length === 0 ? (
-            <div className="text-center py-8">
-              <ShoppingCart className="h-12 w-12 text-gray-300 mx-auto mb-2" />
+            <div className="text-center py-4 sm:py-8">
+              <ShoppingCart className="h-8 w-8 sm:h-12 sm:w-12 text-gray-300 mx-auto mb-2" />
               <p className="text-gray-500 text-sm">Cart is empty</p>
             </div>
           ) : (
             cart.map(item => (
-              <div key={item.product.id} className="flex gap-3 p-3 bg-gray-50 rounded-lg">
-                <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center">
-                  <Smartphone className="h-6 w-6 text-gray-400" />
+              <div key={item.product.id} className="flex gap-2 sm:gap-3 p-2 sm:p-3 bg-gray-50 rounded-lg">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-200 rounded flex items-center justify-center flex-shrink-0">
+                  <Smartphone className="h-5 w-5 sm:h-6 sm:w-6 text-gray-400" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm truncate">{item.product.name}</p>
+                  <p className="font-medium text-xs sm:text-sm truncate">{item.product.name}</p>
                   <p className="text-xs text-gray-500">{formatBDT(item.product.price)}</p>
-                  <div className="flex items-center gap-2 mt-1">
+                  <div className="flex items-center gap-1 sm:gap-2 mt-1">
                     <button
                       onClick={() => updateQuantity(item.product.id, -1)}
-                      className="w-6 h-6 rounded bg-gray-200 flex items-center justify-center"
+                      className="w-5 h-5 sm:w-6 sm:h-6 rounded bg-gray-200 flex items-center justify-center"
                     >
                       <Minus className="h-3 w-3" />
                     </button>
-                    <span className="text-sm font-medium">{item.quantity}</span>
+                    <span className="text-xs sm:text-sm font-medium">{item.quantity}</span>
                     <button
                       onClick={() => updateQuantity(item.product.id, 1)}
-                      className="w-6 h-6 rounded bg-gray-200 flex items-center justify-center"
+                      className="w-5 h-5 sm:w-6 sm:h-6 rounded bg-gray-200 flex items-center justify-center"
                     >
                       <Plus className="h-3 w-3" />
                     </button>
@@ -320,8 +340,8 @@ export default function POSPage() {
                     </button>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="font-bold text-sm">{formatBDT(item.product.price * item.quantity)}</p>
+                <div className="text-right flex-shrink-0">
+                  <p className="font-bold text-xs sm:text-sm">{formatBDT(item.product.price * item.quantity)}</p>
                 </div>
               </div>
             ))
@@ -330,14 +350,14 @@ export default function POSPage() {
 
         {/* Cart Summary */}
         {cart.length > 0 && (
-          <div className="p-4 border-t space-y-3">
+          <div className="p-3 sm:p-4 border-t space-y-2 sm:space-y-3">
             <div className="flex justify-between text-sm">
               <span className="text-gray-500">Subtotal</span>
               <span className="font-bold">{formatBDT(subtotal)}</span>
             </div>
             <button
               onClick={() => setShowCheckout(true)}
-              className="w-full py-3 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
+              className="w-full py-2 sm:py-3 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors text-sm sm:text-base"
             >
               Proceed to Checkout
             </button>

@@ -42,18 +42,18 @@ export default function CategoryStrip() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="grid grid-cols-3 sm:grid-cols-6 gap-4"
+          className="flex sm:grid sm:grid-cols-6 gap-4 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide"
         >
           {categories.map((category) => (
-            <motion.div key={category.slug} variants={itemVariants}>
+            <motion.div key={category.slug} variants={itemVariants} className="flex-shrink-0 w-24 sm:w-auto">
               <Link
                 href={`/products?category=${category.slug}`}
-                className="flex flex-col items-center p-4 rounded-lg hover:bg-[var(--color-bg-alt)] transition-colors group"
+                className="flex flex-col items-center p-3 sm:p-4 rounded-lg hover:bg-[var(--color-bg-alt)] transition-colors group"
               >
-                <div className="w-12 h-12 rounded-full bg-[var(--color-bg-alt)] group-hover:bg-[var(--color-primary)] flex items-center justify-center transition-colors">
-                  <category.icon className="h-6 w-6 text-[var(--color-text)] group-hover:text-white transition-colors" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[var(--color-bg-alt)] group-hover:bg-[var(--color-primary)] flex items-center justify-center transition-colors">
+                  <category.icon className="h-5 w-5 sm:h-6 sm:w-6 text-[var(--color-text)] group-hover:text-white transition-colors" />
                 </div>
-                <span className="text-sm font-medium text-[var(--color-text)] text-center mt-2">
+                <span className="text-xs sm:text-sm font-medium text-[var(--color-text)] text-center mt-2">
                   {category.name}
                 </span>
               </Link>

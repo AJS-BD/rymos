@@ -119,7 +119,7 @@ export default function Testimonials() {
               animate="center"
               exit="exit"
               transition={{ duration: 0.5, ease: "easeInOut" }}
-              className="grid grid-cols-1 md:grid-cols-3 gap-6"
+              className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6"
             >
               {[0, 1, 2].map((offset) => {
                 const testimonial = testimonials[(current + offset) % testimonials.length];

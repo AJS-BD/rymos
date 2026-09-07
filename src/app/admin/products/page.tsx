@@ -131,77 +131,79 @@ export default function AdminProducts() {
       )}
 
       <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-gray-50 border-b">
-            <tr>
-              <th className="text-left px-4 py-3 text-sm font-medium text-gray-500">Product</th>
-              <th className="text-left px-4 py-3 text-sm font-medium text-gray-500">Category</th>
-              <th className="text-left px-4 py-3 text-sm font-medium text-gray-500">Price</th>
-              <th className="text-left px-4 py-3 text-sm font-medium text-gray-500">Stock</th>
-              <th className="text-left px-4 py-3 text-sm font-medium text-gray-500">Status</th>
-              <th className="text-right px-4 py-3 text-sm font-medium text-gray-500">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.length === 0 ? (
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[600px]">
+            <thead className="bg-gray-50 border-b">
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
-                  No products found. Add your first product to get started.
-                </td>
+                <th className="text-left px-4 py-3 text-sm font-medium text-gray-500">Product</th>
+                <th className="text-left px-4 py-3 text-sm font-medium text-gray-500">Category</th>
+                <th className="text-left px-4 py-3 text-sm font-medium text-gray-500">Price</th>
+                <th className="text-left px-4 py-3 text-sm font-medium text-gray-500">Stock</th>
+                <th className="text-left px-4 py-3 text-sm font-medium text-gray-500">Status</th>
+                <th className="text-right px-4 py-3 text-sm font-medium text-gray-500">Actions</th>
               </tr>
-            ) : (
-              products.map((product) => (
-                <tr key={product.id} className="border-b last:border-0 hover:bg-gray-50">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                        <Package className="h-5 w-5 text-gray-400" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-sm">{product.name}</p>
-                        <p className="text-xs text-gray-500">{product.brand}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-600 capitalize">{product.category}</td>
-                  <td className="px-4 py-3 text-sm font-medium">৳{product.price}</td>
-                  <td className="px-4 py-3">
-                    <span className={`text-sm font-medium ${product.stock <= 10 ? "text-red-600" : "text-gray-900"}`}>
-                      {product.stock}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`text-xs px-2 py-1 rounded-full ${
-                      product.is_featured ? "bg-blue-100 text-blue-700" :
-                      product.is_new_arrival ? "bg-green-100 text-green-700" :
-                      "bg-gray-100 text-gray-700"
-                    }`}>
-                      {product.is_featured ? "Featured" : product.is_new_arrival ? "New" : "Regular"}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <Link
-                        href={`/admin/products/edit/${product.id}`}
-                        className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 transition-colors"
-                      >
-                        <Edit className="h-4 w-4" />
-                        Edit
-                      </Link>
-                      <button
-                        onClick={() => setDeleteId(product.id)}
-                        className="inline-flex items-center gap-1 text-sm text-red-600 hover:text-red-800 transition-colors"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        Delete
-                      </button>
-                    </div>
+            </thead>
+            <tbody>
+              {products.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
+                    No products found. Add your first product to get started.
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                products.map((product) => (
+                  <tr key={product.id} className="border-b last:border-0 hover:bg-gray-50">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <Package className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-medium text-sm truncate">{product.name}</p>
+                          <p className="text-xs text-gray-500">{product.brand}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600 capitalize">{product.category}</td>
+                    <td className="px-4 py-3 text-sm font-medium">৳{product.price}</td>
+                    <td className="px-4 py-3">
+                      <span className={`text-sm font-medium ${product.stock <= 10 ? "text-red-600" : "text-gray-900"}`}>
+                        {product.stock}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`text-xs px-2 py-1 rounded-full whitespace-nowrap ${
+                        product.is_featured ? "bg-blue-100 text-blue-700" :
+                        product.is_new_arrival ? "bg-green-100 text-green-700" :
+                        "bg-gray-100 text-gray-700"
+                      }`}>
+                        {product.is_featured ? "Featured" : product.is_new_arrival ? "New" : "Regular"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex items-center justify-end gap-1 sm:gap-2">
+                        <Link
+                          href={`/admin/products/edit/${product.id}`}
+                          className="inline-flex items-center gap-1 px-2 py-1 text-xs sm:text-sm text-blue-600 hover:text-blue-800 transition-colors rounded hover:bg-blue-50"
+                        >
+                          <Edit className="h-4 w-4" />
+                          <span className="hidden sm:inline">Edit</span>
+                        </Link>
+                        <button
+                          onClick={() => setDeleteId(product.id)}
+                          className="inline-flex items-center gap-1 px-2 py-1 text-xs sm:text-sm text-red-600 hover:text-red-800 transition-colors rounded hover:bg-red-50"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          <span className="hidden sm:inline">Delete</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

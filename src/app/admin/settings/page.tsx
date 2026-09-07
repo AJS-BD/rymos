@@ -338,8 +338,8 @@ export default function AdminSettings() {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200">
-        <nav className="flex gap-4 -mb-px">
+      <div className="border-b border-gray-200 -mx-4 sm:mx-0 px-4 sm:px-0">
+        <nav className="flex gap-2 sm:gap-4 -mb-px overflow-x-auto pb-px scrollbar-hide">
           {tabs.map((tab) => (
             <button
               key={tab.key}
@@ -348,22 +348,23 @@ export default function AdminSettings() {
                 setSaveMessage(null);
                 setTestResult(null);
               }}
-              className={`flex items-center gap-2 px-3 py-2 text-sm font-medium border-b-2 transition-colors ${
+              className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium border-b-2 transition-colors whitespace-nowrap flex-shrink-0 ${
                 activeTab === tab.key
                   ? "border-black text-black"
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
               }`}
             >
               {tab.icon}
-              {tab.label}
+              <span className="hidden sm:inline">{tab.label}</span>
+              <span className="sm:hidden">{tab.label.split(' ')[0]}</span>
             </button>
           ))}
         </nav>
       </div>
 
       {/* Tab Content */}
-      <div className="bg-white rounded-lg shadow-sm border p-6 space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="bg-white rounded-lg shadow-sm border p-4 sm:p-6 space-y-4 sm:space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
           {currentFields.map((field) => renderField(field))}
         </div>
 
@@ -403,7 +404,7 @@ export default function AdminSettings() {
         )}
 
         {/* Actions */}
-        <div className="flex gap-3 pt-2">
+        <div className="flex flex-col sm:flex-row gap-3 pt-2">
           <button
             type="button"
             onClick={handleSave}

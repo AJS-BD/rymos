@@ -90,10 +90,10 @@ export default function HeroBanner() {
               transition={{ duration: 0.5 }}
               className="text-center lg:text-left text-white"
             >
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight">
+              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold leading-tight">
                 {slide.headline}
               </h1>
-              <p className="mt-6 text-lg text-gray-300 max-w-lg">
+              <p className="mt-4 sm:mt-6 text-base sm:text-lg text-gray-300 max-w-lg">
                 {slide.subheadline}
               </p>
               <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
