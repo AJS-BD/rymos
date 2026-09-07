@@ -7,18 +7,10 @@ import { formatBDT, generateOrderNumber } from "@/lib/utils";
 import { getSupabase, isConfigured } from "@/lib/supabase";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
-import { MapPin, Store, CreditCard, Truck, CheckCircle, Loader2, Package, Tag, X, Check } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Truck, Store, CreditCard, MapPin, Loader2 } from "lucide-react";
 
 type OrderType = "cod" | "pickup" | "credit";
-
-interface CouponInfo {
-  id: number;
-  code: string;
-  discount_type: "percentage" | "fixed";
-  discount_value: number;
-  min_order_amount: number | null;
-  max_discount: number | null;
-}
 
 export default function CheckoutPage() {
   const { items, subtotal, clearCart } = useCart();
@@ -29,106 +21,7 @@ export default function CheckoutPage() {
   const [error, setError] = useState("");
   const [placedOrder, setPlacedOrder] = useState<{ orderNumber: string } | null>(null);
 
-  // Coupon state
-  const [couponCode, setCouponCode] = useState("");
-  const [coupon, setCoupon] = useState<CouponInfo | null>(null);
-  const [couponError, setCouponError] = useState("");
-  const [couponLoading, setCouponLoading] = useState(false);
-  const [couponApplied, setCouponApplied] = useState(false);
-
-  const calculateDiscount = (): number => {
-    if (!coupon) return 0;
-    if (coupon.min_order_amount && subtotal < coupon.min_order_amount) return 0;
-
-    let discount = 0;
-    if (coupon.discount_type === "percentage") {
-      discount = (subtotal * coupon.discount_value) / 100;
-      if (coupon.max_discount) {
-        discount = Math.min(discount, coupon.max_discount);
-      }
-    } else {
-      discount = coupon.discount_value;
-    }
-    return Math.min(discount, subtotal);
-  };
-
-  const discount = calculateDiscount();
-  const total = subtotal - discount;
-
-  const handleApplyCoupon = async () => {
-    if (!couponCode.trim()) {
-      setCouponError("Please enter a coupon code");
-      return;
-    }
-
-    setCouponLoading(true);
-    setCouponError("");
-    setCouponApplied(false);
-
-    try {
-      const supabase = getSupabase();
-      const { data, error: fetchError } = await supabase
-        .from("coupons")
-        .select("*")
-        .eq("code", couponCode.toUpperCase().trim())
-        .single();
-
-      if (fetchError || !data) {
-        setCouponError("Invalid coupon code");
-        setCouponLoading(false);
-        return;
-      }
-
-      const couponData = data as CouponInfo & { is_active: boolean; starts_at: string; expires_at: string; usage_limit: number | null; usage_count: number };
-
-      // Validate coupon
-      if (!couponData.is_active) {
-        setCouponError("This coupon is not active");
-        setCouponLoading(false);
-        return;
-      }
-
-      const now = new Date();
-      if (new Date(couponData.starts_at) > now) {
-        setCouponError("This coupon is not yet valid");
-        setCouponLoading(false);
-        return;
-      }
-
-      if (new Date(couponData.expires_at) < now) {
-        setCouponError("This coupon has expired");
-        setCouponLoading(false);
-        return;
-      }
-
-      if (couponData.usage_limit && couponData.usage_count >= couponData.usage_limit) {
-        setCouponError("This coupon has reached its usage limit");
-        setCouponLoading(false);
-        return;
-      }
-
-      if (couponData.min_order_amount && subtotal < couponData.min_order_amount) {
-        setCouponError(`Minimum order amount is ${formatBDT(couponData.min_order_amount)}`);
-        setCouponLoading(false);
-        return;
-      }
-
-      setCoupon(couponData);
-      setCouponApplied(true);
-      setCouponError("");
-    } catch (err: any) {
-      setCouponError(err?.message || "Failed to apply coupon");
-    } finally {
-      setCouponLoading(false);
-    }
-  };
-
-  const handleRemoveCoupon = () => {
-    setCoupon(null);
-    setCouponCode("");
-    setCouponApplied(false);
-    setCouponError("");
-  };
+  const total = subtotal;
 
   const handlePlaceOrder = async () => {
     setError("");
@@ -148,7 +41,6 @@ export default function CheckoutPage() {
     try {
       const supabase = getSupabase();
 
-      // Get customer ID from localStorage (set by messages page or credit application)
       const customerId = localStorage.getItem("rymos_customer_id");
 
       if (!customerId) {
@@ -157,7 +49,6 @@ export default function CheckoutPage() {
         return;
       }
 
-      // Generate order number based on order count this year
       const year = new Date().getFullYear();
       const { count: orderCount } = await supabase
         .from("orders")
@@ -166,10 +57,8 @@ export default function CheckoutPage() {
 
       const orderNumber = generateOrderNumber((orderCount || 0) + 1);
 
-      // Map order type to schema values
       const schemaOrderType = orderType === "pickup" ? "shop_pickup" : orderType;
 
-      // Build items array for JSONB
       const orderItems = items.map((item) => ({
         product_id: item.product.id,
         name: item.product.name,
@@ -177,7 +66,6 @@ export default function CheckoutPage() {
         price: item.product.price,
       }));
 
-      // Build shipping_address object for COD
       const shippingAddressObj = orderType === "cod"
         ? {
             address: shippingAddress.trim(),
@@ -185,7 +73,6 @@ export default function CheckoutPage() {
           }
         : null;
 
-      // Insert order
       const { error: insertError } = await supabase.from("orders").insert({
         order_number: orderNumber,
         customer_id: customerId,
@@ -194,9 +81,9 @@ export default function CheckoutPage() {
         items: orderItems,
         subtotal: subtotal,
         total: total,
-        discount: discount,
-        coupon_id: coupon?.id || null,
-        coupon_code: coupon?.code || null,
+        discount: 0,
+        coupon_id: null,
+        coupon_code: null,
         payment_method: orderType === "credit" ? "credit" : "cod",
         shipping_address: shippingAddressObj,
         pickup_note: orderType === "pickup" ? pickupNote.trim() || null : null,
@@ -204,12 +91,6 @@ export default function CheckoutPage() {
 
       if (insertError) throw insertError;
 
-      // Increment coupon usage count if coupon was applied
-      if (coupon) {
-        await supabase.rpc("increment_coupon_usage", { coupon_id: coupon.id });
-      }
-
-      // Clear cart and show confirmation
       clearCart();
       setPlacedOrder({ orderNumber });
     } catch (err: any) {
@@ -224,38 +105,38 @@ export default function CheckoutPage() {
       <>
         <Header />
         <main className="flex-1">
-          <div className="max-w-2xl mx-auto px-4 py-16 text-center">
-            <div className="bg-white rounded-2xl border p-8 shadow-sm">
-              <div className="h-20 w-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6">
-                <CheckCircle className="h-10 w-10 text-green-500" />
-              </div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">Order Placed Successfully!</h1>
-              <p className="text-gray-500 mb-6">
-                Thank you for your order. We&apos;ll contact you soon with delivery updates.
-              </p>
-              <div className="bg-gray-50 rounded-lg p-4 mb-6">
-                <p className="text-sm text-gray-500 mb-1">Order Number</p>
-                <p className="text-xl font-mono font-bold text-gray-900">
-                  {placedOrder.orderNumber}
-                </p>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Link
-                  href="/products"
-                  className="px-6 py-3 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
-                >
-                  Continue Shopping
-                </Link>
-                <Link
-                  href="/customer/messages"
-                  className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
-                >
-                  <Package className="h-4 w-4" />
-                  Contact Support
-                </Link>
-              </div>
-            </div>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+            className="max-w-[640px] mx-auto px-6 py-32 text-center"
+          >
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.2 }}
+              className="w-20 h-20 rounded-full bg-[#0071E3]/10 flex items-center justify-center mx-auto mb-10"
+            >
+              <svg className="w-10 h-10 text-[#0071E3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 13l4 4L19 7" />
+              </svg>
+            </motion.div>
+            <h1 className="text-[48px] leading-tight font-semibold tracking-tight text-[#1d1d1f] mb-4">
+              Thank you.
+            </h1>
+            <p className="text-[21px] leading-relaxed text-[#86868b] mb-10">
+              Your order has been placed. You will receive a confirmation shortly.
+            </p>
+            <p className="text-sm text-[#86868b] font-mono mb-16 tracking-wide">
+              {placedOrder.orderNumber}
+            </p>
+            <Link
+              href="/products"
+              className="text-[19px] text-[#0071E3] hover:underline transition-colors"
+            >
+              Continue Shopping
+            </Link>
+          </motion.div>
         </main>
         <Footer />
       </>
@@ -267,14 +148,16 @@ export default function CheckoutPage() {
       <>
         <Header />
         <main className="flex-1">
-          <div className="max-w-2xl mx-auto px-4 py-16 text-center">
-            <h1 className="text-2xl font-bold text-gray-900">Cart is Empty</h1>
-            <p className="text-gray-500 mt-2">Add some products to checkout.</p>
+          <div className="max-w-[640px] mx-auto px-6 py-32 text-center">
+            <p className="text-[28px] font-semibold text-[#1d1d1f] mb-3">Your bag is empty.</p>
+            <p className="text-[19px] text-[#86868b] mb-10">
+              Add something to make someone happy.
+            </p>
             <Link
               href="/products"
-              className="inline-block mt-6 px-6 py-3 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
+              className="text-[19px] text-[#0071E3] hover:underline transition-colors"
             >
-              Shop Now
+              Shop now
             </Link>
           </div>
         </main>
@@ -286,242 +169,253 @@ export default function CheckoutPage() {
   return (
     <>
       <Header />
-      <main className="flex-1">
-        <div className="max-w-4xl mx-auto px-4 py-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-6">Checkout</h1>
+      <main className="flex-1 bg-[#fbfbfd]">
+        <div className="max-w-[640px] mx-auto px-6 py-20">
+          {/* Title */}
+          <motion.h1
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+            className="text-[48px] leading-tight font-semibold tracking-tight text-[#1d1d1f] mb-16"
+          >
+            Checkout.
+          </motion.h1>
 
-      {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-          {error}
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-        {/* Left - Order Details */}
-        <div className="space-y-6">
-          {/* Order Type Selection */}
-          <div className="bg-white rounded-lg border p-4">
-            <h2 className="font-semibold text-gray-900 mb-3">Delivery Method</h2>
-            <div className="space-y-2">
-              <button
-                onClick={() => setOrderType("cod")}
-                className={`w-full flex items-center gap-3 p-3 rounded-lg border transition-colors ${
-                  orderType === "cod"
-                    ? "border-black bg-gray-50"
-                    : "border-gray-200 hover:border-gray-300"
-                }`}
-              >
-                <Truck className="h-5 w-5" />
-                <div className="text-left">
-                  <p className="font-medium text-sm">Cash on Delivery</p>
-                  <p className="text-xs text-gray-500">Pay when you receive</p>
-                </div>
-              </button>
-
-              <button
-                onClick={() => setOrderType("pickup")}
-                className={`w-full flex items-center gap-3 p-3 rounded-lg border transition-colors ${
-                  orderType === "pickup"
-                    ? "border-black bg-gray-50"
-                    : "border-gray-200 hover:border-gray-300"
-                }`}
-              >
-                <Store className="h-5 w-5" />
-                <div className="text-left">
-                  <p className="font-medium text-sm">Shop Pickup</p>
-                  <p className="text-xs text-gray-500">Pick up from store</p>
-                </div>
-              </button>
-
-              <button
-                onClick={() => setOrderType("credit")}
-                className={`w-full flex items-center gap-3 p-3 rounded-lg border transition-colors ${
-                  orderType === "credit"
-                    ? "border-black bg-gray-50"
-                    : "border-gray-200 hover:border-gray-300"
-                }`}
-              >
-                <CreditCard className="h-5 w-5" />
-                <div className="text-left">
-                  <p className="font-medium text-sm">Buy on Credit</p>
-                  <p className="text-xs text-gray-500">Pay in installments</p>
-                </div>
-              </button>
-            </div>
-          </div>
-
-          {/* Conditional Fields */}
-          {orderType === "cod" && (
-            <div className="bg-white rounded-lg border p-4">
-              <h2 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                <MapPin className="h-4 w-4" />
-                Shipping Address
-              </h2>
-              <textarea
-                value={shippingAddress}
-                onChange={(e) => setShippingAddress(e.target.value)}
-                placeholder="Enter your full address..."
-                rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black"
-              />
-            </div>
-          )}
-
-          {orderType === "pickup" && (
-            <div className="bg-white rounded-lg border p-4">
-              <h2 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                <Store className="h-4 w-4" />
-                Pickup Note
-              </h2>
-              <textarea
-                value={pickupNote}
-                onChange={(e) => setPickupNote(e.target.value)}
-                placeholder="Any special instructions..."
-                rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black"
-              />
-            </div>
-          )}
-
-          {orderType === "credit" && (
-            <div className="bg-white rounded-lg border p-4">
-              <h2 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                <CreditCard className="h-4 w-4" />
-                Credit Application
-              </h2>
-              <p className="text-sm text-gray-600 mb-3">
-                To buy on credit, please submit a credit application first.
-              </p>
-              <Link
-                href="/customer/credit-application"
-                className="text-sm text-blue-600 hover:text-blue-800"
-              >
-                Apply for Credit →
-              </Link>
-            </div>
-          )}
-
-          {/* Coupon Code Section */}
-          <div className="bg-white rounded-lg border p-4">
-            <h2 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-              <Tag className="h-4 w-4" />
-              Coupon Code
+          {/* Order Summary */}
+          <section className="mb-16">
+            <h2 className="text-[28px] font-semibold tracking-tight text-[#1d1d1f] mb-8">
+              Your Order
             </h2>
-
-            {couponApplied && coupon ? (
-              <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg p-3">
-                <div className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-green-600" />
-                  <div>
-                    <p className="text-sm font-medium text-green-800 font-mono">{coupon.code}</p>
-                    <p className="text-xs text-green-600">
-                      {coupon.discount_type === "percentage"
-                        ? `${coupon.discount_value}% off`
-                        : `৳${coupon.discount_value} off`}
-                      {coupon.max_discount && coupon.discount_type === "percentage"
-                        ? ` (max ৳${coupon.max_discount})`
-                        : ""}
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={handleRemoveCoupon}
-                  className="p-1 hover:bg-green-100 rounded transition-colors"
-                >
-                  <X className="h-4 w-4 text-green-600" />
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={couponCode}
-                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                    placeholder="Enter coupon code"
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black font-mono uppercase"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        handleApplyCoupon();
-                      }
-                    }}
-                  />
-                  <button
-                    onClick={handleApplyCoupon}
-                    disabled={couponLoading}
-                    className="px-4 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            <div className="space-y-6">
+              <AnimatePresence>
+                {items.map((item, index) => (
+                  <motion.div
+                    key={item.product.id}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: index * 0.06, ease: [0.25, 0.1, 0.25, 1] }}
+                    className="flex items-center gap-5"
                   >
-                    {couponLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      "Apply"
-                    )}
-                  </button>
-                </div>
-                {couponError && (
-                  <p className="text-xs text-red-600">{couponError}</p>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
+                    {/* Product Image */}
+                    <div className="w-24 h-24 rounded-2xl bg-[#f5f5f7] flex-shrink-0 overflow-hidden">
+                      {item.product.images && item.product.images.length > 0 ? (
+                        <img
+                          src={item.product.images[0]}
+                          alt={item.product.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <span className="text-[#86868b] text-xs">No image</span>
+                        </div>
+                      )}
+                    </div>
+                    {/* Product Info */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[19px] font-normal text-[#1d1d1f] leading-snug">
+                        {item.product.name}
+                      </p>
+                      <p className="text-[15px] text-[#86868b] mt-1">
+                        Qty {item.quantity}
+                      </p>
+                    </div>
+                    {/* Price */}
+                    <div className="flex-shrink-0">
+                      <p className="text-[19px] font-normal text-[#1d1d1f] tabular-nums">
+                        {formatBDT(item.product.price * item.quantity)}
+                      </p>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
 
-        {/* Right - Order Summary */}
-        <div className="bg-white rounded-lg border p-4 h-fit">
-          <h2 className="font-semibold text-gray-900 mb-3">Order Summary</h2>
-
-          <div className="space-y-3 mb-4">
-            {items.map((item) => (
-              <div key={item.product.id} className="flex justify-between text-sm">
-                <span className="text-gray-600">
-                  {item.product.name} × {item.quantity}
+            {/* Total */}
+            <div className="mt-10 pt-8 border-t border-[#d2d2d7]">
+              <div className="flex justify-between items-baseline">
+                <span className="text-[19px] text-[#1d1d1f]">Total</span>
+                <span className="text-[28px] font-semibold text-[#1d1d1f] tracking-tight tabular-nums">
+                  {formatBDT(total)}
                 </span>
-                <span className="font-medium">
-                  {formatBDT(item.product.price * item.quantity)}
-                </span>
               </div>
-            ))}
-          </div>
-
-          <div className="border-t pt-3 space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Subtotal</span>
-              <span>{formatBDT(subtotal)}</span>
             </div>
-            {discount > 0 && (
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Discount</span>
-                <span className="text-green-600">-{formatBDT(discount)}</span>
-              </div>
+          </section>
+
+          {/* Payment Method */}
+          <section className="mb-16">
+            <h2 className="text-[28px] font-semibold tracking-tight text-[#1d1d1f] mb-8">
+              Payment
+            </h2>
+            <div className="space-y-3">
+              {[
+                { type: "cod" as const, icon: Truck, title: "Cash on Delivery", subtitle: "Pay when your order arrives" },
+                { type: "pickup" as const, icon: Store, title: "Shop Pickup", subtitle: "Pick up your order from our store" },
+                { type: "credit" as const, icon: CreditCard, title: "Buy on Credit", subtitle: "Pay in easy installments" },
+              ].map((option) => (
+                <motion.div
+                  key={option.type}
+                  whileTap={{ scale: 0.995 }}
+                  transition={{ duration: 0.1 }}
+                >
+                  <label
+                    className={`block w-full text-left flex items-center gap-4 p-5 rounded-2xl border cursor-pointer transition-all duration-300 ${
+                      orderType === option.type
+                        ? "border-[#0071E3] bg-white shadow-sm"
+                        : "border-[#e8e8ed] bg-white hover:border-[#d2d2d7]"
+                    }`}
+                    onClick={() => setOrderType(option.type)}
+                  >
+                    <div className={`w-11 h-11 rounded-full flex items-center justify-center transition-colors duration-300 ${
+                      orderType === option.type ? "bg-[#0071E3]" : "bg-[#f5f5f7]"
+                    }`}>
+                      <option.icon className={`w-5 h-5 transition-colors duration-300 ${orderType === option.type ? "text-white" : "text-[#86868b]"}`} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-[18px] font-normal text-[#1d1d1f]">{option.title}</p>
+                      <p className="text-[14px] text-[#86868b] mt-0.5">{option.subtitle}</p>
+                    </div>
+                    <div className={`w-[22px] h-[22px] rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
+                      orderType === option.type ? "border-[#0071E3]" : "border-[#d2d2d7]"
+                    }`}>
+                      {orderType === option.type && (
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                          className="w-3 h-3 rounded-full bg-[#0071E3]"
+                        />
+                      )}
+                    </div>
+                  </label>
+                </motion.div>
+              ))}
+            </div>
+          </section>
+
+          {/* Delivery Details */}
+          <section className="mb-16">
+            <AnimatePresence mode="wait">
+              {orderType === "cod" && (
+                <motion.div
+                  key="cod"
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -12 }}
+                  transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
+                >
+                  <h2 className="text-[28px] font-semibold tracking-tight text-[#1d1d1f] mb-8">
+                    Shipping Address
+                  </h2>
+                  <div className="relative">
+                    <MapPin className="absolute left-4 top-4 w-5 h-5 text-[#86868b]" />
+                    <textarea
+                      value={shippingAddress}
+                      onChange={(e) => setShippingAddress(e.target.value)}
+                      placeholder="Enter your full address"
+                      rows={3}
+                      className="w-full pl-12 pr-4 py-4 text-[18px] bg-white border border-[#e8e8ed] rounded-2xl focus:outline-none focus:border-[#0071E3] focus:ring-2 focus:ring-[#0071E3]/20 transition-all duration-300 placeholder:text-[#86868b] resize-none"
+                    />
+                  </div>
+                </motion.div>
+              )}
+
+              {orderType === "pickup" && (
+                <motion.div
+                  key="pickup"
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -12 }}
+                  transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
+                >
+                  <h2 className="text-[28px] font-semibold tracking-tight text-[#1d1d1f] mb-8">
+                    Pickup Note
+                  </h2>
+                  <textarea
+                    value={pickupNote}
+                    onChange={(e) => setPickupNote(e.target.value)}
+                    placeholder="Any special instructions (optional)"
+                    rows={3}
+                    className="w-full px-4 py-4 text-[18px] bg-white border border-[#e8e8ed] rounded-2xl focus:outline-none focus:border-[#0071E3] focus:ring-2 focus:ring-[#0071E3]/20 transition-all duration-300 placeholder:text-[#86868b] resize-none"
+                  />
+                </motion.div>
+              )}
+
+              {orderType === "credit" && (
+                <motion.div
+                  key="credit"
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -12 }}
+                  transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
+                >
+                  <h2 className="text-[28px] font-semibold tracking-tight text-[#1d1d1f] mb-8">
+                    Credit Application
+                  </h2>
+                  <p className="text-[18px] text-[#86868b] leading-relaxed">
+                    Apply for credit to buy your items now and pay later.
+                  </p>
+                  <Link
+                    href="/customer/credit-application"
+                    className="inline-block mt-4 text-[18px] text-[#0071E3] hover:underline transition-colors"
+                  >
+                    Apply for Credit
+                  </Link>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </section>
+
+          {/* Error */}
+          <AnimatePresence>
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.3 }}
+                className="mb-10 p-5 bg-red-50 border border-red-100 rounded-2xl text-red-600 text-[15px]"
+              >
+                {error}
+              </motion.div>
             )}
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Delivery</span>
-              <span className="text-green-600">Free</span>
-            </div>
-            <div className="flex justify-between font-bold text-lg border-t pt-2">
-              <span>Total</span>
-              <span>{formatBDT(total)}</span>
-            </div>
-          </div>
+          </AnimatePresence>
 
-          <button
-            onClick={handlePlaceOrder}
-            disabled={isPlacing || (orderType === "cod" && !shippingAddress.trim())}
-            className="w-full mt-4 py-3 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          {/* CTA - Text Link */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+            className="pt-10 border-t border-[#d2d2d7] text-center"
           >
             {isPlacing ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Placing Order...
-              </>
+              <span className="inline-flex items-center gap-2 text-[20px] text-[#86868b]">
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Placing Order
+              </span>
             ) : (
-              "Place Order"
+              <a
+                onClick={handlePlaceOrder}
+                className={`text-[20px] font-normal transition-colors duration-200 ${
+                  orderType === "cod" && !shippingAddress.trim()
+                    ? "text-[#d2d2d7] cursor-not-allowed pointer-events-none"
+                    : "text-[#0071E3] hover:underline cursor-pointer"
+                }`}
+              >
+                Place Order
+              </a>
             )}
-          </button>
+          </motion.div>
+
+          {/* Return link */}
+          <div className="mt-10 text-center">
+            <Link
+              href="/customer/cart"
+              className="text-[15px] text-[#86868b] hover:text-[#0071E3] transition-colors duration-200"
+            >
+              ← Return to Bag
+            </Link>
+          </div>
         </div>
-      </div>
-    </div>
       </main>
       <Footer />
     </>

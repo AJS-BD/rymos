@@ -5,6 +5,9 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
 import AnimatedSection from "@/components/ui/animated-section";
+import ProductScroll from "@/components/home/product-scroll";
+import FeaturedShowcase from "@/components/home/featured-showcase";
+import TestimonialsScroll from "@/components/home/testimonials-scroll";
 
 export default function HomePage() {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -80,88 +83,11 @@ export default function HomePage() {
           />
         </motion.section>
 
-        {/* Featured Product */}
-        <AnimatedSection className="py-20 sm:py-32 bg-white">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-              <div className="order-2 lg:order-1">
-                <p className="text-sm font-medium text-[var(--color-primary)] uppercase tracking-wider mb-2">
-                  New
-                </p>
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-[var(--color-text)] mb-4">
-                  iPhone 15 Pro Max
-                </h2>
-                <p className="text-lg sm:text-xl text-[var(--color-text-muted)] mb-8 max-w-md">
-                  Titanium. A17 Pro chip. 48MP camera. The most powerful iPhone ever.
-                </p>
-                <div className="flex items-center gap-6">
-                  <a
-                    href="/products/iphone-15-pro-max"
-                    className="text-[var(--color-primary)] hover:underline text-base font-normal"
-                  >
-                    Learn More →
-                  </a>
-                  <a
-                    href="/products"
-                    className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] text-base font-normal"
-                  >
-                    Buy
-                  </a>
-                </div>
-              </div>
-              <div className="order-1 lg:order-2">
-                <div className="aspect-square bg-[var(--color-bg-alt)] rounded-3xl overflow-hidden">
-                  <img
-                    src="https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=600&q=80"
-                    alt="iPhone 15 Pro Max"
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </AnimatedSection>
+        {/* Product Scroll */}
+        <ProductScroll />
 
-        {/* Product Grid */}
-        <AnimatedSection className="py-20 sm:py-32 bg-[var(--color-bg-alt)]">
-          <div className="max-w-7xl mx-auto px-4">
-            <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-[var(--color-text)] text-center mb-12">
-              Featured Products
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {[
-                { name: "Samsung Galaxy S24 Ultra", price: "৳129,999", img: "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=400&q=80" },
-                { name: "iPhone 15 Pro Max", price: "৳164,999", img: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400&q=80" },
-                { name: "OnePlus 12", price: "৳79,999", img: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=400&q=80" },
-                { name: "Xiaomi 14 Ultra", price: "৳54,999", img: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=400&q=80" },
-              ].map((product, index) => (
-                <motion.a
-                  key={product.name}
-                  href="/products"
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  className="group bg-white rounded-2xl p-4 hover:shadow-lg transition-shadow"
-                >
-                  <div className="aspect-square bg-[var(--color-bg-alt)] rounded-xl overflow-hidden mb-4">
-                    <img
-                      src={product.img}
-                      alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  </div>
-                  <h3 className="text-sm font-medium text-[var(--color-text)] mb-1">
-                    {product.name}
-                  </h3>
-                  <p className="text-sm text-[var(--color-text-muted)]">
-                    {product.price}
-                  </p>
-                </motion.a>
-              ))}
-            </div>
-          </div>
-        </AnimatedSection>
+        {/* Featured Showcase */}
+        <FeaturedShowcase />
 
         {/* Spec Highlights */}
         <AnimatedSection className="py-20 sm:py-32 bg-white">
@@ -199,7 +125,10 @@ export default function HomePage() {
           </div>
         </AnimatedSection>
 
-        {/* CTA */}
+        {/* Testimonials Scroll */}
+        <TestimonialsScroll />
+
+        {/* App Download CTA */}
         <AnimatedSection className="py-20 sm:py-32 bg-[var(--color-dark-banner)] text-white">
           <div className="max-w-4xl mx-auto px-4 text-center">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight mb-4">
