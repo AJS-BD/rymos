@@ -16,7 +16,7 @@ export default function CartDrawer() {
       {/* Cart Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className="p-2 text-gray-700 hover:text-black relative"
+        className="p-2 text-gray-700 hover:text-black relative hidden sm:block"
       >
         <ShoppingCart className="h-5 w-5" />
         {itemCount > 0 && (

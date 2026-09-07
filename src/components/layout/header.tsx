@@ -72,7 +72,7 @@ export default function Header() {
           <div className="flex items-center space-x-2 sm:space-x-4">
             <Link
               href="/customer/wishlist"
-              className="p-2 text-[var(--color-text)] hover:text-[var(--color-primary)]"
+              className="hidden sm:block p-2 text-[var(--color-text)] hover:text-[var(--color-primary)]"
             >
               <Heart className="h-5 w-5" />
             </Link>

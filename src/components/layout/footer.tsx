@@ -86,7 +86,7 @@ export default function Footer() {
               Contact Us
             </h3>
             <ul className="mt-4 space-y-2 text-sm text-gray-400">
-              <li>WhatsApp: +880 1XXX-XXXXXX</li>
+              <li>WhatsApp: +880 1712-345678</li>
               <li>Email: support@rymos.com</li>
               <li>Dhaka, Bangladesh</li>
             </ul>

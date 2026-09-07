@@ -15,7 +15,7 @@ export default function SpecBanner() {
               <div className="p-4 bg-white/10 rounded-lg">
                 <Camera className="h-6 w-6 mb-2 text-white" />
                 <div className="text-sm text-gray-400">Camera</div>
-                <div className="font-bold">500MP Pro-grade</div>
+                <div className="font-bold">200MP Pro-grade</div>
               </div>
               <div className="p-4 bg-white/10 rounded-lg">
                 <Battery className="h-6 w-6 mb-2 text-white" />
