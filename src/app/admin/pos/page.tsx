@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { getSupabase, isConfigured } from "@/lib/supabase";
-import { Search, ShoppingCart, X, Plus, Minus, Trash2, CreditCard, Banknote, Smartphone } from "lucide-react";
+import { Search, ShoppingCart, X, Plus, Minus, Trash2, CreditCard, Banknote, Smartphone, User, Phone, QrCode, MessageCircle, Mail } from "lucide-react";
+import QRCode from 'qrcode';
 
 interface Product {
   id: string;
@@ -20,6 +21,14 @@ interface CartItem {
   quantity: number;
 }
 
+interface CustomerResult {
+  id: string;
+  full_name: string;
+  phone: string;
+  profile_completed: boolean;
+  created_via?: string;
+}
+
 export default function POSPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
@@ -27,8 +36,15 @@ export default function POSPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [showCheckout, setShowCheckout] = useState(false);
+  const [showReceipt, setShowReceipt] = useState(false);
+  const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("cash");
+  const [orderNumber, setOrderNumber] = useState("");
+  const [createdCustomer, setCreatedCustomer] = useState<CustomerResult | null>(null);
+  const [profileToken, setProfileToken] = useState<string | null>(null);
+  const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>("");
+  const [profileUrl, setProfileUrl] = useState<string>("");
 
   useEffect(() => {
     async function loadProducts() {
@@ -90,6 +106,14 @@ export default function POSPage() {
   const subtotal = cart.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
   const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
+  const formatBDT = (amount: number) => {
+    return new Intl.NumberFormat('en-BD', {
+      style: 'currency',
+      currency: 'BDT',
+      minimumFractionDigits: 0,
+    }).format(amount).replace('BDT', '৳');
+  };
+
   const handleCheckout = async () => {
     if (cart.length === 0) return;
 
@@ -101,12 +125,47 @@ export default function POSPage() {
     const supabase = getSupabase();
 
     // Generate order number
-    const orderNumber = `RY-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9999)).padStart(4, '0')}`;
+    const newOrderNumber = `RY-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9999)).padStart(4, '0')}`;
+    setOrderNumber(newOrderNumber);
+
+    // Create customer if name and phone provided
+    let customerData: CustomerResult | null = null;
+    let token: string | null = null;
+
+    if (customerName && customerPhone) {
+      try {
+        const res = await fetch('/api/customers/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ full_name: customerName, phone: customerPhone }),
+        });
+        const data = await res.json();
+        if (data.customer) {
+          customerData = data.customer;
+          setCreatedCustomer(data.customer);
+          if (data.created && data.profileToken) {
+            token = data.profileToken;
+            setProfileToken(data.profileToken);
+            const url = `${window.location.origin}/complete-profile/${data.profileToken}`;
+            setProfileUrl(url);
+            // Generate QR code
+            const qrDataUrl = await QRCode.toDataURL(url, {
+              width: 200,
+              margin: 2,
+              color: { dark: '#000000', light: '#ffffff' },
+            });
+            setQrCodeDataUrl(qrDataUrl);
+          }
+        }
+      } catch (err) {
+        console.error('Error creating customer:', err);
+      }
+    }
 
     // Create order
     const { error } = await supabase.from("orders").insert({
-      order_number: orderNumber,
-      customer_id: null,
+      order_number: newOrderNumber,
+      customer_id: customerData?.id || null,
       status: "confirmed",
       order_type: "pos",
       items: cart.map(item => ({
@@ -133,11 +192,29 @@ export default function POSPage() {
         .eq("id", item.product.id);
     }
 
-    alert(`Order ${orderNumber} placed successfully!`);
     setCart([]);
     setShowCheckout(false);
-    setCustomerPhone("");
+    setShowReceipt(true);
   };
+
+  const resetForm = () => {
+    setShowReceipt(false);
+    setCustomerName("");
+    setCustomerPhone("");
+    setCreatedCustomer(null);
+    setProfileToken(null);
+    setQrCodeDataUrl("");
+    setProfileUrl("");
+    setOrderNumber("");
+  };
+
+  const whatsappLink = profileUrl
+    ? `https://wa.me/?text=${encodeURIComponent(`Complete your profile at RYmos: ${profileUrl}`)}`
+    : '';
+
+  const emailLink = profileUrl
+    ? `mailto:?subject=${encodeURIComponent('Complete Your RYmos Profile')}&body=${encodeURIComponent(`Please complete your profile at RYmos by visiting: ${profileUrl}`)}`
+    : '';
 
   return (
     <div className="flex h-[calc(100vh-4rem)]">
@@ -186,7 +263,7 @@ export default function POSPage() {
               <h3 className="font-medium text-sm text-gray-900 truncate">{product.name}</h3>
               <p className="text-xs text-gray-500">{product.brand}</p>
               <div className="flex items-center justify-between mt-2">
-                <span className="font-bold text-sm">৳{product.price}</span>
+                <span className="font-bold text-sm">{formatBDT(product.price)}</span>
                 <span className="text-xs text-gray-400">{product.stock} left</span>
               </div>
             </button>
@@ -220,7 +297,7 @@ export default function POSPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm truncate">{item.product.name}</p>
-                  <p className="text-xs text-gray-500">৳{item.product.price}</p>
+                  <p className="text-xs text-gray-500">{formatBDT(item.product.price)}</p>
                   <div className="flex items-center gap-2 mt-1">
                     <button
                       onClick={() => updateQuantity(item.product.id, -1)}
@@ -244,7 +321,7 @@ export default function POSPage() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-bold text-sm">৳{(item.product.price * item.quantity).toLocaleString()}</p>
+                  <p className="font-bold text-sm">{formatBDT(item.product.price * item.quantity)}</p>
                 </div>
               </div>
             ))
@@ -256,7 +333,7 @@ export default function POSPage() {
           <div className="p-4 border-t space-y-3">
             <div className="flex justify-between text-sm">
               <span className="text-gray-500">Subtotal</span>
-              <span className="font-bold">৳{subtotal.toLocaleString()}</span>
+              <span className="font-bold">{formatBDT(subtotal)}</span>
             </div>
             <button
               onClick={() => setShowCheckout(true)}
@@ -281,7 +358,24 @@ export default function POSPage() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Customer Phone (optional)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <User className="inline h-4 w-4 mr-1" />
+                  Customer Name (optional)
+                </label>
+                <input
+                  type="text"
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  placeholder="Enter customer name"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <Phone className="inline h-4 w-4 mr-1" />
+                  Customer Phone (optional)
+                </label>
                 <input
                   type="tel"
                   value={customerPhone}
@@ -322,7 +416,7 @@ export default function POSPage() {
                 </div>
                 <div className="flex justify-between font-bold">
                   <span>Total</span>
-                  <span>৳{subtotal.toLocaleString()}</span>
+                  <span>{formatBDT(subtotal)}</span>
                 </div>
               </div>
 
@@ -333,6 +427,76 @@ export default function POSPage() {
                 Complete Sale
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Receipt Modal */}
+      {showReceipt && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg w-full max-w-md p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold">Order Complete</h2>
+              <button onClick={resetForm}>
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="text-center mb-4">
+              <div className="text-green-500 text-4xl mb-2">✓</div>
+              <p className="font-medium">Order {orderNumber}</p>
+              <p className="text-sm text-gray-500">Total: {formatBDT(subtotal)}</p>
+            </div>
+
+            {createdCustomer && profileToken && (
+              <div className="border-t pt-4 mt-4">
+                <h3 className="font-medium text-sm mb-3 text-center">Customer Profile</h3>
+                <p className="text-sm text-gray-600 text-center mb-3">
+                  {createdCustomer.full_name} • {createdCustomer.phone}
+                </p>
+
+                {qrCodeDataUrl && (
+                  <div className="flex flex-col items-center space-y-3">
+                    <div className="bg-white p-3 border rounded-lg">
+                      <img src={qrCodeDataUrl} alt="Profile QR Code" className="w-40 h-40" />
+                    </div>
+                    <p className="text-xs text-gray-500 text-center">
+                      Scan to complete your profile
+                    </p>
+
+                    <div className="flex gap-2 w-full">
+                      {whatsappLink && (
+                        <a
+                          href={whatsappLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 flex items-center justify-center gap-1 py-2 bg-green-500 text-white rounded-lg text-xs font-medium hover:bg-green-600 transition-colors"
+                        >
+                          <MessageCircle className="h-3 w-3" />
+                          WhatsApp
+                        </a>
+                      )}
+                      {emailLink && (
+                        <a
+                          href={emailLink}
+                          className="flex-1 flex items-center justify-center gap-1 py-2 bg-blue-500 text-white rounded-lg text-xs font-medium hover:bg-blue-600 transition-colors"
+                        >
+                          <Mail className="h-3 w-3" />
+                          Email
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <button
+              onClick={resetForm}
+              className="w-full mt-4 py-3 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
+            >
+              New Sale
+            </button>
           </div>
         </div>
       )}
