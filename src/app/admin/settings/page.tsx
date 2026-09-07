@@ -258,18 +258,25 @@ export default function AdminSettings() {
     const showPassword = showPasswords[field.key];
     const inputType = isPassword ? (showPassword ? "text" : "password") : field.type;
 
-    const baseClasses =
-      "w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent";
-
     return (
       <div key={field.key}>
-        <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
+        <label
+          className="block text-sm font-medium mb-1.5"
+          style={{ color: "var(--color-text)" }}
+        >
+          {field.label}
+        </label>
         <div className="relative">
           {field.type === "select" ? (
             <select
               value={value}
               onChange={(e) => updateSetting(field.key, e.target.value)}
-              className={baseClasses}
+              className="w-full px-4 py-3 rounded-xl text-sm focus:outline-none transition-all"
+              style={{
+                border: "1px solid #e5e5e7",
+                color: "var(--color-text)",
+                background: "var(--color-bg)",
+              }}
             >
               <option value="">Select {field.label}</option>
               {field.options?.map((opt) => (
@@ -284,7 +291,20 @@ export default function AdminSettings() {
               onChange={(e) => updateSetting(field.key, e.target.value)}
               placeholder={field.placeholder}
               rows={3}
-              className={baseClasses + " resize-none"}
+              className="w-full px-4 py-3 rounded-xl text-sm focus:outline-none transition-all resize-none"
+              style={{
+                border: "1px solid #e5e5e7",
+                color: "var(--color-text)",
+                background: "var(--color-bg)",
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = "var(--color-primary)";
+                e.currentTarget.style.boxShadow = "0 0 0 3px rgba(0,113,227,0.1)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = "#e5e5e7";
+                e.currentTarget.style.boxShadow = "none";
+              }}
             />
           ) : (
             <input
@@ -292,21 +312,39 @@ export default function AdminSettings() {
               value={value}
               onChange={(e) => updateSetting(field.key, e.target.value)}
               placeholder={field.placeholder}
-              className={baseClasses + (isPassword ? " pr-10" : "")}
+              className={`w-full px-4 py-3 rounded-xl text-sm focus:outline-none transition-all ${
+                isPassword ? "pr-10" : ""
+              }`}
+              style={{
+                border: "1px solid #e5e5e7",
+                color: "var(--color-text)",
+                background: "var(--color-bg)",
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = "var(--color-primary)";
+                e.currentTarget.style.boxShadow = "0 0 0 3px rgba(0,113,227,0.1)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = "#e5e5e7";
+                e.currentTarget.style.boxShadow = "none";
+              }}
             />
           )}
           {isPassword && (
             <button
               type="button"
               onClick={() => togglePasswordVisibility(field.key)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
+              style={{ color: "var(--color-text-muted)" }}
             >
               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
           )}
         </div>
         {field.description && (
-          <p className="mt-1 text-xs text-gray-500">{field.description}</p>
+          <p className="mt-1.5 text-xs" style={{ color: "var(--color-text-muted)" }}>
+            {field.description}
+          </p>
         )}
       </div>
     );
@@ -319,12 +357,16 @@ export default function AdminSettings() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-          <p className="text-gray-500">Admin panel settings</p>
+          <h1 className="text-3xl font-semibold" style={{ color: "var(--color-text)" }}>
+            Settings
+          </h1>
+          <p style={{ color: "var(--color-text-muted)" }}>Admin panel settings</p>
         </div>
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
-          <span className="ml-2 text-gray-500">Loading settings...</span>
+          <Loader2 className="w-8 h-8 animate-spin" style={{ color: "var(--color-text-muted)" }} />
+          <span className="ml-2" style={{ color: "var(--color-text-muted)" }}>
+            Loading settings...
+          </span>
         </div>
       </div>
     );
@@ -333,12 +375,14 @@ export default function AdminSettings() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-        <p className="text-gray-500">Admin panel settings</p>
+        <h1 className="text-3xl font-semibold" style={{ color: "var(--color-text)" }}>
+          Settings
+        </h1>
+        <p style={{ color: "var(--color-text-muted)" }}>Admin panel settings</p>
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200 -mx-4 sm:mx-0 px-4 sm:px-0">
+      <div style={{ borderBottom: "1px solid #e5e5e7" }} className="-mx-4 sm:mx-0 px-4 sm:px-0">
         <nav className="flex gap-2 sm:gap-4 -mb-px overflow-x-auto pb-px scrollbar-hide">
           {tabs.map((tab) => (
             <button
@@ -348,34 +392,38 @@ export default function AdminSettings() {
                 setSaveMessage(null);
                 setTestResult(null);
               }}
-              className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium border-b-2 transition-colors whitespace-nowrap flex-shrink-0 ${
-                activeTab === tab.key
-                  ? "border-black text-black"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
+              className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2.5 text-xs sm:text-sm font-medium border-b-2 transition-colors whitespace-nowrap flex-shrink-0"
+              style={{
+                borderColor: activeTab === tab.key ? "var(--color-text)" : "transparent",
+                color: activeTab === tab.key ? "var(--color-text)" : "var(--color-text-muted)",
+              }}
             >
               {tab.icon}
               <span className="hidden sm:inline">{tab.label}</span>
-              <span className="sm:hidden">{tab.label.split(' ')[0]}</span>
+              <span className="sm:hidden">{tab.label.split(" ")[0]}</span>
             </button>
           ))}
         </nav>
       </div>
 
       {/* Tab Content */}
-      <div className="bg-white rounded-lg shadow-sm border p-4 sm:p-6 space-y-4 sm:space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+      <div
+        className="rounded-2xl p-5 sm:p-8 space-y-5 sm:space-y-6"
+        style={{ background: "var(--color-bg)", border: "1px solid #e5e5e7" }}
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
           {currentFields.map((field) => renderField(field))}
         </div>
 
         {/* Messages */}
         {saveMessage && (
           <div
-            className={`flex items-center gap-2 p-3 rounded-lg ${
-              saveMessage.success
-                ? "bg-green-50 text-green-700 border border-green-200"
-                : "bg-red-50 text-red-700 border border-red-200"
-            }`}
+            className="flex items-center gap-2 p-4 rounded-xl"
+            style={{
+              background: saveMessage.success ? "#e8f5e9" : "#ffebee",
+              color: saveMessage.success ? "#2e7d32" : "#c62828",
+              border: `1px solid ${saveMessage.success ? "#c8e6c9" : "#ffcdd2"}`,
+            }}
           >
             {saveMessage.success ? (
               <CheckCircle2 className="w-4 h-4" />
@@ -388,11 +436,12 @@ export default function AdminSettings() {
 
         {testResult && (
           <div
-            className={`flex items-center gap-2 p-3 rounded-lg ${
-              testResult.success
-                ? "bg-green-50 text-green-700 border border-green-200"
-                : "bg-red-50 text-red-700 border border-red-200"
-            }`}
+            className="flex items-center gap-2 p-4 rounded-xl"
+            style={{
+              background: testResult.success ? "#e8f5e9" : "#ffebee",
+              color: testResult.success ? "#2e7d32" : "#c62828",
+              border: `1px solid ${testResult.success ? "#c8e6c9" : "#ffcdd2"}`,
+            }}
           >
             {testResult.success ? (
               <CheckCircle2 className="w-4 h-4" />
@@ -409,7 +458,10 @@ export default function AdminSettings() {
             type="button"
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-2 px-6 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-6 py-2.5 text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ background: "var(--color-text)" }}
+            onMouseEnter={(e) => !saving && (e.currentTarget.style.background = "#333")}
+            onMouseLeave={(e) => !saving && (e.currentTarget.style.background = "var(--color-text)")}
           >
             {saving ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -424,7 +476,12 @@ export default function AdminSettings() {
               type="button"
               onClick={handleTest}
               disabled={testing !== null}
-              className="flex items-center gap-2 px-6 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                border: "1px solid #e5e5e7",
+                color: "var(--color-text)",
+                background: "var(--color-bg)",
+              }}
             >
               {testing ? (
                 <Loader2 className="w-4 h-4 animate-spin" />

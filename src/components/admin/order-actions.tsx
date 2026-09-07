@@ -37,13 +37,13 @@ export const STATUS_LABELS: Record<OrderStatus, string> = {
   cancelled: "Cancelled",
 };
 
-export const STATUS_COLORS: Record<OrderStatus, string> = {
-  pending: "bg-yellow-100 text-yellow-700",
-  confirmed: "bg-blue-100 text-blue-700",
-  packing: "bg-purple-100 text-purple-700",
-  shipping: "bg-indigo-100 text-indigo-700",
-  delivered: "bg-green-100 text-green-700",
-  cancelled: "bg-red-100 text-red-700",
+export const STATUS_COLORS: Record<OrderStatus, { background: string; color: string }> = {
+  pending: { background: "#fff8e1", color: "#f57f17" },
+  confirmed: { background: "#e3f2fd", color: "#1565c0" },
+  packing: { background: "#f3e5f5", color: "#7b1fa2" },
+  shipping: { background: "#e8eaf6", color: "#283593" },
+  delivered: { background: "#e8f5e9", color: "#2e7d32" },
+  cancelled: { background: "#ffebee", color: "#c62828" },
 };
 
 export const STATUS_ICONS: Record<OrderStatus, React.ReactNode> = {
@@ -60,41 +60,47 @@ const ACTION_BUTTONS: {
   label: string;
   icon: React.ReactNode;
   color: string;
+  hoverBg: string;
   fromStatuses: OrderStatus[];
 }[] = [
   {
     target: "confirmed",
     label: "Confirm",
     icon: <CheckCircle className="w-4 h-4" />,
-    color: "text-blue-600 hover:text-blue-800 hover:bg-blue-50",
+    color: "#1565c0",
+    hoverBg: "#e3f2fd",
     fromStatuses: ["pending"],
   },
   {
     target: "packing",
     label: "Pack",
     icon: <Package className="w-4 h-4" />,
-    color: "text-purple-600 hover:text-purple-800 hover:bg-purple-50",
+    color: "#7b1fa2",
+    hoverBg: "#f3e5f5",
     fromStatuses: ["confirmed"],
   },
   {
     target: "shipping",
     label: "Ship",
     icon: <Truck className="w-4 h-4" />,
-    color: "text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50",
+    color: "#283593",
+    hoverBg: "#e8eaf6",
     fromStatuses: ["packing"],
   },
   {
     target: "delivered",
     label: "Deliver",
     icon: <Home className="w-4 h-4" />,
-    color: "text-green-600 hover:text-green-800 hover:bg-green-50",
+    color: "#2e7d32",
+    hoverBg: "#e8f5e9",
     fromStatuses: ["shipping"],
   },
   {
     target: "cancelled",
     label: "Cancel",
     icon: <XCircle className="w-4 h-4" />,
-    color: "text-red-600 hover:text-red-800 hover:bg-red-50",
+    color: "#c62828",
+    hoverBg: "#ffebee",
     fromStatuses: ["pending", "confirmed", "packing"],
   },
 ];
@@ -120,7 +126,6 @@ export default function OrderActions({
       const supabase = getSupabase();
       const now = new Date().toISOString();
 
-      // Update order status
       const { error: updateError } = await supabase
         .from("orders")
         .update({ status: newStatus, updated_at: now })
@@ -128,7 +133,6 @@ export default function OrderActions({
 
       if (updateError) throw updateError;
 
-      // Insert status history record
       const { error: historyError } = await supabase
         .from("order_status_history")
         .insert({
@@ -164,7 +168,10 @@ export default function OrderActions({
           key={action.target}
           onClick={() => handleStatusUpdate(action.target)}
           disabled={updating}
-          className={`p-1.5 rounded transition-colors disabled:opacity-50 ${action.color}`}
+          className="p-1.5 rounded-lg transition-colors disabled:opacity-50"
+          style={{ color: action.color }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = action.hoverBg)}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
           title={action.label}
         >
           {updating ? (
@@ -179,9 +186,14 @@ export default function OrderActions({
 }
 
 export function StatusBadge({ status }: { status: OrderStatus }) {
+  const colors = STATUS_COLORS[status];
   return (
     <span
-      className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${STATUS_COLORS[status]}`}
+      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium"
+      style={{
+        background: colors.background,
+        color: colors.color,
+      }}
     >
       {STATUS_ICONS[status]}
       {STATUS_LABELS[status]}

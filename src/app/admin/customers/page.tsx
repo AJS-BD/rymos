@@ -56,8 +56,10 @@ export default function AdminCustomers() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Customers</h1>
-          <p className="text-gray-500">Loading...</p>
+          <h1 className="text-3xl font-semibold" style={{ color: "var(--color-text)" }}>
+            Customers
+          </h1>
+          <p style={{ color: "var(--color-text-muted)" }}>Loading...</p>
         </div>
       </div>
     );
@@ -66,18 +68,33 @@ export default function AdminCustomers() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Customers</h1>
-        <p className="text-gray-500">{customers.length} customers total</p>
+        <h1 className="text-3xl font-semibold" style={{ color: "var(--color-text)" }}>
+          Customers
+        </h1>
+        <p style={{ color: "var(--color-text-muted)" }}>{customers.length} customers total</p>
       </div>
 
       {/* Filters */}
-      <div className="flex gap-4 bg-white p-4 rounded-lg border">
+      <div
+        className="flex gap-4 p-4 rounded-2xl"
+        style={{ background: "var(--color-bg)", border: "1px solid #e5e5e7" }}
+      >
         <div>
-          <label className="block text-xs font-medium text-gray-500 mb-1">Created Via</label>
+          <label
+            className="block text-xs font-medium mb-1.5"
+            style={{ color: "var(--color-text-muted)" }}
+          >
+            Created Via
+          </label>
           <select
             value={createdViaFilter}
             onChange={(e) => setCreatedViaFilter(e.target.value)}
-            className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm"
+            className="px-3 py-2 rounded-xl text-sm focus:outline-none"
+            style={{
+              border: "1px solid #e5e5e7",
+              color: "var(--color-text)",
+              background: "var(--color-bg)",
+            }}
           >
             <option value="all">All</option>
             <option value="pos">POS</option>
@@ -85,11 +102,21 @@ export default function AdminCustomers() {
           </select>
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-500 mb-1">Customer Type</label>
+          <label
+            className="block text-xs font-medium mb-1.5"
+            style={{ color: "var(--color-text-muted)" }}
+          >
+            Customer Type
+          </label>
           <select
             value={customerTypeFilter}
             onChange={(e) => setCustomerTypeFilter(e.target.value)}
-            className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm"
+            className="px-3 py-2 rounded-xl text-sm focus:outline-none"
+            style={{
+              border: "1px solid #e5e5e7",
+              color: "var(--color-text)",
+              background: "var(--color-bg)",
+            }}
           >
             <option value="all">All</option>
             <option value="walk_in">Walk-in</option>
@@ -98,67 +125,115 @@ export default function AdminCustomers() {
           </select>
         </div>
         <div className="flex items-end">
-          <span className="text-sm text-gray-500">
+          <span className="text-sm" style={{ color: "var(--color-text-muted)" }}>
             Showing {filteredCustomers.length} of {customers.length}
           </span>
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+      <div
+        className="rounded-2xl overflow-hidden"
+        style={{ background: "var(--color-bg)", border: "1px solid #e5e5e7" }}
+      >
         <table className="w-full">
-          <thead className="bg-gray-50 border-b">
+          <thead>
             <tr>
-              <th className="text-left px-4 py-3 text-sm font-medium text-gray-500">Name</th>
-              <th className="text-left px-4 py-3 text-sm font-medium text-gray-500">Phone</th>
-              <th className="text-left px-4 py-3 text-sm font-medium text-gray-500">Address</th>
-              <th className="text-left px-4 py-3 text-sm font-medium text-gray-500">Type</th>
-              <th className="text-left px-4 py-3 text-sm font-medium text-gray-500">Via</th>
-              <th className="text-left px-4 py-3 text-sm font-medium text-gray-500">Profile</th>
-              <th className="text-left px-4 py-3 text-sm font-medium text-gray-500">Joined</th>
+              {["Name", "Phone", "Address", "Type", "Via", "Profile", "Joined"].map(
+                (header) => (
+                  <th
+                    key={header}
+                    className="text-left px-5 py-4 text-xs font-medium uppercase tracking-wider"
+                    style={{
+                      color: "var(--color-text-muted)",
+                      borderBottom: "1px solid #e5e5e7",
+                    }}
+                  >
+                    {header}
+                  </th>
+                )
+              )}
             </tr>
           </thead>
           <tbody>
             {filteredCustomers.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
+                <td
+                  colSpan={7}
+                  className="px-5 py-12 text-center"
+                  style={{ color: "var(--color-text-muted)" }}
+                >
                   No customers found
                 </td>
               </tr>
             ) : (
               filteredCustomers.map((customer) => (
-                <tr key={customer.id} className="border-b last:border-0 hover:bg-gray-50">
-                  <td className="px-4 py-3">
-                    <p className="font-medium text-sm">{customer.full_name}</p>
-                    <p className="text-xs text-gray-500">@{customer.username}</p>
+                <tr
+                  key={customer.id}
+                  style={{ borderBottom: "1px solid #f5f5f7" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "#fafafa")}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                >
+                  <td className="px-5 py-4">
+                    <p className="font-medium text-sm" style={{ color: "var(--color-text)" }}>
+                      {customer.full_name}
+                    </p>
+                    <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
+                      @{customer.username}
+                    </p>
                   </td>
-                  <td className="px-4 py-3 text-sm">{customer.phone}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{customer.address || '-'}</td>
-                  <td className="px-4 py-3">
-                    <span className={`text-xs px-2 py-1 rounded-full ${
-                      customer.customer_type === "online" ? "bg-blue-100 text-blue-700" :
-                      customer.customer_type === "walk_in" ? "bg-green-100 text-green-700" :
-                      "bg-purple-100 text-purple-700"
-                    }`}>
+                  <td className="px-5 py-4 text-sm" style={{ color: "var(--color-text-muted)" }}>
+                    {customer.phone}
+                  </td>
+                  <td className="px-5 py-4 text-sm" style={{ color: "var(--color-text-muted)" }}>
+                    {customer.address || "-"}
+                  </td>
+                  <td className="px-5 py-4">
+                    <span
+                      className="text-xs px-2.5 py-1 rounded-full font-medium"
+                      style={{
+                        background:
+                          customer.customer_type === "online"
+                            ? "#e3f2fd"
+                            : customer.customer_type === "walk_in"
+                            ? "#e8f5e9"
+                            : "#f3e5f5",
+                        color:
+                          customer.customer_type === "online"
+                            ? "#1565c0"
+                            : customer.customer_type === "walk_in"
+                            ? "#2e7d32"
+                            : "#7b1fa2",
+                      }}
+                    >
                       {customer.customer_type}
                     </span>
                   </td>
-                  <td className="px-4 py-3">
-                    <span className={`text-xs px-2 py-1 rounded-full ${
-                      customer.created_via === 'pos' ? "bg-orange-100 text-orange-700" :
-                      "bg-gray-100 text-gray-700"
-                    }`}>
-                      {customer.created_via || 'online_signup'}
+                  <td className="px-5 py-4">
+                    <span
+                      className="text-xs px-2.5 py-1 rounded-full font-medium"
+                      style={{
+                        background: customer.created_via === "pos" ? "#fff3e0" : "#f5f5f7",
+                        color:
+                          customer.created_via === "pos"
+                            ? "#e65100"
+                            : "var(--color-text-muted)",
+                      }}
+                    >
+                      {customer.created_via || "online_signup"}
                     </span>
                   </td>
-                  <td className="px-4 py-3">
-                    <span className={`text-xs px-2 py-1 rounded-full ${
-                      customer.profile_completed ? "bg-green-100 text-green-700" :
-                      "bg-yellow-100 text-yellow-700"
-                    }`}>
-                      {customer.profile_completed ? 'Complete' : 'Pending'}
+                  <td className="px-5 py-4">
+                    <span
+                      className="text-xs px-2.5 py-1 rounded-full font-medium"
+                      style={{
+                        background: customer.profile_completed ? "#e8f5e9" : "#fff8e1",
+                        color: customer.profile_completed ? "#2e7d32" : "#f57f17",
+                      }}
+                    >
+                      {customer.profile_completed ? "Complete" : "Pending"}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-500">
+                  <td className="px-5 py-4 text-sm" style={{ color: "var(--color-text-muted)" }}>
                     {new Date(customer.created_at).toLocaleDateString()}
                   </td>
                 </tr>

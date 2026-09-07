@@ -72,8 +72,8 @@ export default function ProductScroll() {
   const titleRotateX = useTransform(scrollYProgress, [0, 0.3], [-8, 0]);
 
   return (
-    <section ref={sectionRef} className="py-20 sm:py-32 bg-white overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 mb-12">
+    <section ref={sectionRef} className="py-12 sm:py-20 lg:py-32 bg-white overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 mb-8 sm:mb-12">
         <motion.div
           style={{
             y: titleY,
@@ -83,10 +83,10 @@ export default function ProductScroll() {
             transformStyle: "preserve-3d",
           }}
         >
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-[var(--color-text)]">
+          <h2 className="text-2xl sm:text-3xl md:text-5xl font-semibold tracking-tight text-[var(--color-text)]">
             The latest.
           </h2>
-          <p className="mt-2 text-lg text-[var(--color-text-muted)]">
+          <p className="mt-2 text-base sm:text-lg text-[var(--color-text-muted)]">
             Take a look at what&apos;s new.
           </p>
         </motion.div>
@@ -95,7 +95,7 @@ export default function ProductScroll() {
       <div className="relative">
         {/* Scroll container */}
         <div className="overflow-x-auto scrollbar-hide">
-          <div className="flex gap-6 px-4 sm:px-6 lg:px-8 snap-x snap-mandatory pb-4">
+          <div className="flex gap-4 sm:gap-6 px-4 sm:px-6 lg:px-8 snap-x snap-mandatory pb-4">
             {products.map((product, index) => (
               <ProductCard key={product.id} product={product} index={index} />
             ))}
@@ -103,10 +103,10 @@ export default function ProductScroll() {
         </div>
 
         {/* View All link */}
-        <div className="max-w-7xl mx-auto px-4 mt-10">
+        <div className="max-w-7xl mx-auto px-4 mt-6 sm:mt-10">
           <Link
             href="/products"
-            className="inline-flex items-center gap-1 text-[var(--color-primary)] hover:underline text-base font-normal"
+            className="inline-flex items-center gap-1 text-[var(--color-primary)] hover:underline text-sm sm:text-base font-normal"
           >
             View all products
             <ChevronRight className="h-4 w-4" />
@@ -186,7 +186,7 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
         transformStyle: "preserve-3d",
         willChange: "transform",
       }}
-      className="flex-shrink-0 w-[280px] sm:w-[320px] snap-start"
+      className="flex-shrink-0 w-[240px] sm:w-[280px] lg:w-[320px] snap-start"
     >
       <div className="group cursor-pointer">
         <div className="relative aspect-square bg-[var(--color-bg-alt)] rounded-2xl overflow-hidden mb-4">

@@ -152,7 +152,7 @@ export default function AdminOrders() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+        <Loader2 className="w-6 h-6 animate-spin" style={{ color: "var(--color-text-muted)" }} />
       </div>
     );
   }
@@ -160,8 +160,10 @@ export default function AdminOrders() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Orders</h1>
-        <p className="text-gray-500">{orders.length} orders total</p>
+        <h1 className="text-3xl font-semibold" style={{ color: "var(--color-text)" }}>
+          Orders
+        </h1>
+        <p style={{ color: "var(--color-text-muted)" }}>{orders.length} orders total</p>
       </div>
 
       {/* Status Filter Tabs */}
@@ -170,11 +172,14 @@ export default function AdminOrders() {
           <button
             key={filter.value}
             onClick={() => setStatusFilter(filter.value)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${
-              statusFilter === filter.value
-                ? "bg-black text-white"
-                : "bg-white text-gray-700 border hover:bg-gray-50"
-            }`}
+            className="px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-1.5"
+            style={{
+              background:
+                statusFilter === filter.value ? "var(--color-text)" : "var(--color-bg)",
+              color:
+                statusFilter === filter.value ? "white" : "var(--color-text)",
+              border: `1px solid ${statusFilter === filter.value ? "var(--color-text)" : "#e5e5e7"}`,
+            }}
           >
             <filter.icon className="w-3.5 h-3.5" />
             {filter.label}
@@ -188,13 +193,29 @@ export default function AdminOrders() {
       {/* Type Filter & Search */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4"
+            style={{ color: "var(--color-text-muted)" }}
+          />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by order #, customer name, or phone..."
-            className="w-full pl-10 pr-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-black focus:border-black"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm focus:outline-none transition-all"
+            style={{
+              background: "var(--color-bg)",
+              border: "1px solid #e5e5e7",
+              color: "var(--color-text)",
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = "var(--color-primary)";
+              e.currentTarget.style.boxShadow = "0 0 0 3px rgba(0,113,227,0.1)";
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = "#e5e5e7";
+              e.currentTarget.style.boxShadow = "none";
+            }}
           />
         </div>
         <div className="flex gap-2">
@@ -202,11 +223,12 @@ export default function AdminOrders() {
             <button
               key={filter.value}
               onClick={() => setTypeFilter(filter.value)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                typeFilter === filter.value
-                  ? "bg-gray-900 text-white"
-                  : "bg-white text-gray-700 border hover:bg-gray-50"
-              }`}
+              className="px-4 py-2 rounded-xl text-sm font-medium transition-colors"
+              style={{
+                background: typeFilter === filter.value ? "var(--color-text)" : "var(--color-bg)",
+                color: typeFilter === filter.value ? "white" : "var(--color-text)",
+                border: `1px solid ${typeFilter === filter.value ? "var(--color-text)" : "#e5e5e7"}`,
+              }}
             >
               {filter.label}
             </button>
@@ -215,11 +237,17 @@ export default function AdminOrders() {
       </div>
 
       {/* Orders Table */}
-      <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+      <div
+        className="rounded-2xl overflow-hidden"
+        style={{ background: "var(--color-bg)", border: "1px solid #e5e5e7" }}
+      >
         {filteredOrders.length === 0 ? (
           <div className="p-8 text-center">
-            <ShoppingBag className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500">
+            <ShoppingBag
+              className="w-12 h-12 mx-auto mb-3"
+              style={{ color: "var(--color-text-muted)" }}
+            />
+            <p style={{ color: "var(--color-text-muted)" }}>
               {orders.length === 0
                 ? "No orders yet"
                 : "No orders match your filters"}
@@ -228,90 +256,99 @@ export default function AdminOrders() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[800px]">
-              <thead className="bg-gray-50 border-b">
+              <thead>
                 <tr>
-                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-500">
-                    Order #
-                  </th>
-                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-500">
-                    Customer
-                  </th>
-                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-500">
-                    Items
-                  </th>
-                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-500">
-                    Type
-                  </th>
-                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-500">
-                    Total
-                  </th>
-                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-500">
-                    Status
-                  </th>
-                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-500">
-                    Date
-                  </th>
-                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-500">
-                    Actions
-                  </th>
+                  {["Order #", "Customer", "Items", "Type", "Total", "Status", "Date", "Actions"].map(
+                    (header) => (
+                      <th
+                        key={header}
+                        className="text-left px-5 py-4 text-xs font-medium uppercase tracking-wider"
+                        style={{
+                          color: "var(--color-text-muted)",
+                          borderBottom: "1px solid #e5e5e7",
+                        }}
+                      >
+                        {header}
+                      </th>
+                    )
+                  )}
                 </tr>
               </thead>
               <tbody>
                 {filteredOrders.map((order) => (
                   <tr
                     key={order.id}
-                    className="border-b last:border-0 hover:bg-gray-50"
+                    style={{ borderBottom: "1px solid #f5f5f7" }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = "#fafafa")}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                   >
-                    <td className="px-4 py-3 text-sm font-medium">
+                    <td className="px-5 py-4 text-sm font-medium">
                       <Link
                         href={`/admin/orders/${order.id}`}
-                        className="text-blue-600 hover:underline"
+                        className="hover:underline"
+                        style={{ color: "var(--color-primary)" }}
                       >
                         {order.order_number}
                       </Link>
                     </td>
-                    <td className="px-4 py-3 text-sm">
-                      <p className="font-medium">
+                    <td className="px-5 py-4 text-sm">
+                      <p className="font-medium" style={{ color: "var(--color-text)" }}>
                         {order.customers?.full_name || "Unknown"}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
                         {order.customers?.phone}
                       </p>
                     </td>
-                    <td className="px-4 py-3 text-sm">
+                    <td className="px-5 py-4 text-sm">
                       <div className="flex items-center gap-1.5">
-                        <Package className="w-3.5 h-3.5 text-gray-400" />
-                        <span>{getOrderItemCount(order.items)} items</span>
+                        <Package className="w-3.5 h-3.5" style={{ color: "var(--color-text-muted)" }} />
+                        <span style={{ color: "var(--color-text-muted)" }}>
+                          {getOrderItemCount(order.items)} items
+                        </span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-sm capitalize">
+                    <td className="px-5 py-4 text-sm capitalize">
                       <span
-                        className={`px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap ${
-                          order.order_type === "express"
-                            ? "bg-orange-100 text-orange-700"
-                            : order.order_type === "pickup"
-                            ? "bg-teal-100 text-teal-700"
-                            : "bg-gray-100 text-gray-700"
-                        }`}
+                        className="px-2.5 py-1 rounded-full text-xs font-medium"
+                        style={{
+                          background:
+                            order.order_type === "express"
+                              ? "#fff3e0"
+                              : order.order_type === "pickup"
+                              ? "#e0f2f1"
+                              : "#f5f5f7",
+                          color:
+                            order.order_type === "express"
+                              ? "#e65100"
+                              : order.order_type === "pickup"
+                              ? "#00695c"
+                              : "var(--color-text-muted)",
+                        }}
                       >
                         {order.order_type}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-sm font-medium">
+                    <td className="px-5 py-4 text-sm font-medium" style={{ color: "var(--color-text)" }}>
                       {formatBDT(order.total)}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-5 py-4">
                       <StatusBadge status={order.status} />
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-500 whitespace-nowrap">
+                    <td
+                      className="px-5 py-4 text-sm whitespace-nowrap"
+                      style={{ color: "var(--color-text-muted)" }}
+                    >
                       {new Date(order.created_at).toLocaleDateString()}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-5 py-4">
                       <div className="flex items-center gap-2">
                         <Link
                           href={`/admin/orders/${order.id}`}
-                          className="p-1.5 text-gray-600 hover:text-black hover:bg-gray-100 rounded transition-colors"
+                          className="p-1.5 rounded-lg transition-colors"
+                          style={{ color: "var(--color-text-muted)" }}
                           title="View details"
+                          onMouseEnter={(e) => (e.currentTarget.style.background = "#f5f5f7")}
+                          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                         >
                           <Eye className="w-4 h-4" />
                         </Link>

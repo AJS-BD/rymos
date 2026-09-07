@@ -22,6 +22,34 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Performance: contain layout for isolated components */
+.contain-layout {
+  contain: layout;
+}
+
+.contain-paint {
+  contain: paint;
+}
+
+.contain-strict {
+  contain: strict;
+}
+
+/* Performance: will-change for animated elements */
+.will-change-transform {
+  will-change: transform;
+}
+
+.will-change-opacity {
+  will-change: opacity;
+}
+
+/* GPU acceleration for smooth scrolling */
+.gpu-accelerated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -78,10 +106,20 @@ html.lenis {
   color: inherit;
 }
 
+::-moz-selection {
+  background: rgba(0, 113, 227, 0.2);
+  color: inherit;
+}
+
 /* Focus rings */
 *:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
+}
+
+/* Remove focus styles for mouse users */
+*:focus:not(:focus-visible) {
+  outline: none;
 }
 
 /* Typography utilities */
@@ -202,4 +240,162 @@ html.lenis {
     min-height: 44px;
     min-width: 44px;
   }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .animate-scroll {
+    animation: none !important;
+  }
+
+  .animate-shimmer {
+    animation: none !important;
+  }
+
+  .animate-fade-in-up {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* Print styles */
+@media print {
+  *,
+  *::before,
+  *::after {
+    background: transparent !important;
+    color: #000 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  body {
+    font-size: 12pt;
+    line-height: 1.5;
+  }
+
+  a,
+  a:visited {
+    text-decoration: underline;
+  }
+
+  a[href]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.9em;
+    color: #666;
+  }
+
+  a[href^="#"]::after,
+  a[href^="javascript:"]::after {
+    content: "";
+  }
+
+  abbr[title]::after {
+    content: " (" attr(title) ")";
+  }
+
+  pre,
+  blockquote {
+    border: 1px solid #999;
+    page-break-inside: avoid;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  tr,
+  img {
+    page-break-inside: avoid;
+  }
+
+  p,
+  h2,
+  h3 {
+    orphans: 3;
+    widows: 3;
+  }
+
+  h2,
+  h3 {
+    page-break-after: avoid;
+  }
+
+  /* Hide non-essential elements when printing */
+  nav,
+  footer,
+  .no-print,
+  .scrollbar-hide,
+  .glass,
+  .animate-scroll,
+  .animate-shimmer,
+  .animate-fade-in-up {
+    display: none !important;
+  }
+
+  /* Ensure images don't break across pages */
+  img {
+    max-width: 100% !important;
+    page-break-inside: avoid;
+  }
+
+  /* Show URLs for links in print */
+  .print-show-url::after {
+    content: " (" attr(href) ")";
+  }
+}
+
+/* Image CLS prevention */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Aspect ratio boxes for CLS prevention */
+.aspect-square {
+  aspect-ratio: 1 / 1;
+}
+
+.aspect-video {
+  aspect-ratio: 16 / 9;
+}
+
+.aspect-4-3 {
+  aspect-ratio: 4 / 3;
+}
+
+.aspect-3-2 {
+  aspect-ratio: 3 / 2;
+}
+
+/* Container queries for responsive components */
+@container (min-width: 400px) {
+  .container-responsive {
+    /* Styles for containers wider than 400px */
+  }
+}
+
+/* Content visibility for off-screen elements */
+.content-visibility-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 500px;
+}
+
+/* Optimize font loading */
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("/fonts/Inter-Variable.woff2") format("woff2");
 }

@@ -36,79 +36,113 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gray-100 flex">
+    <div className="min-h-screen flex" style={{ background: "var(--color-bg-alt)" }}>
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b px-4 py-3 flex items-center justify-between">
+      <div
+        className="lg:hidden fixed top-0 left-0 right-0 z-40 px-4 py-3 flex items-center justify-between"
+        style={{ background: "var(--color-bg)", borderBottom: "1px solid #e5e5e7" }}
+      >
         <button
           onClick={() => setSidebarOpen(true)}
-          className="p-2 text-gray-700 hover:text-black"
+          className="p-2 rounded-lg transition-colors"
+          style={{ color: "var(--color-text)" }}
           aria-label="Open menu"
         >
           <Menu className="h-5 w-5" />
         </button>
-        <Link href="/admin/dashboard" className="text-lg font-bold text-gray-900">
+        <Link
+          href="/admin/dashboard"
+          className="text-lg font-semibold"
+          style={{ color: "var(--color-text)" }}
+        >
           RYmos
         </Link>
-        <div className="w-9" /> {/* Spacer for centering */}
+        <div className="w-9" />
       </div>
 
       {/* Mobile Overlay */}
       {sidebarOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-black/50 z-40"
+          className="lg:hidden fixed inset-0 z-40"
+          style={{ background: "rgba(0,0,0,0.4)" }}
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar */}
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white shadow-sm border-r flex flex-col transform transition-transform duration-300 lg:transform-none ${
+        className={`fixed lg:static inset-y-0 left-0 z-50 w-64 flex flex-col transform transition-transform duration-300 lg:transform-none ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
+        style={{ background: "var(--color-bg)", borderRight: "1px solid #e5e5e7" }}
       >
-        <div className="p-4 border-b flex items-center justify-between">
+        <div
+          className="p-5 flex items-center justify-between"
+          style={{ borderBottom: "1px solid #e5e5e7" }}
+        >
           <div>
-            <Link href="/admin/dashboard" className="text-xl font-bold text-gray-900">
+            <Link
+              href="/admin/dashboard"
+              className="text-xl font-semibold"
+              style={{ color: "var(--color-text)" }}
+            >
               RYmos
             </Link>
-            <p className="text-xs text-gray-500">Admin Panel</p>
+            <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
+              Admin Panel
+            </p>
           </div>
           <button
             onClick={() => setSidebarOpen(false)}
-            className="lg:hidden p-2 text-gray-500 hover:text-gray-700"
+            className="lg:hidden p-2 rounded-lg transition-colors"
+            style={{ color: "var(--color-text-muted)" }}
             aria-label="Close menu"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+        <nav className="flex-1 p-4 space-y-0.5 overflow-y-auto">
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
               onClick={() => setSidebarOpen(false)}
-              className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+              className="flex items-center gap-3 px-3 py-2 text-[14px] font-medium rounded-lg transition-colors"
+              style={{ color: "var(--color-text)" }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "var(--color-bg-alt)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "transparent";
+              }}
             >
-              <item.icon className="h-4 w-4" />
+              <item.icon className="h-4 w-4" style={{ color: "var(--color-text-muted)" }} />
               {item.label}
             </Link>
           ))}
         </nav>
 
-        <div className="p-4 border-t">
+        <div className="p-4" style={{ borderTop: "1px solid #e5e5e7" }}>
           <Link
             href="/"
-            className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+            className="flex items-center gap-3 px-3 py-2 text-[14px] font-medium rounded-lg transition-colors"
+            style={{ color: "var(--color-text)" }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "var(--color-bg-alt)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+            }}
           >
-            <LogOut className="h-4 w-4" />
+            <LogOut className="h-4 w-4" style={{ color: "var(--color-text-muted)" }} />
             Back to Store
           </Link>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-4 pt-16 lg:p-6 overflow-auto">{children}</main>
+      <main className="flex-1 p-4 pt-16 lg:p-8 overflow-auto">{children}</main>
     </div>
   );
 }

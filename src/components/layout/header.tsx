@@ -35,11 +35,11 @@ export default function Header() {
           </nav>
 
           {/* Right side */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4">
             {/* Search */}
             <button
               onClick={() => setSearchOpen(!searchOpen)}
-              className="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
+              className="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
             >
               <Search className="h-4 w-4" />
             </button>
@@ -50,22 +50,22 @@ export default function Header() {
             {/* Mobile Menu */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
+              className="md:hidden p-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
             >
-              {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
           </div>
         </div>
 
         {/* Search Bar */}
         {searchOpen && (
-          <div className="pb-4">
+          <div className="pb-3 sm:pb-4">
             <input
               type="text"
               placeholder="Search rymos.com"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2 text-sm bg-[var(--color-bg-alt)] rounded-lg border-none focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+              className="w-full px-4 py-2.5 text-sm bg-[var(--color-bg-alt)] rounded-lg border-none focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] min-h-[44px]"
               autoFocus
             />
           </div>
@@ -75,13 +75,13 @@ export default function Header() {
       {/* Mobile Menu */}
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-[var(--color-border)] bg-white">
-          <nav className="px-4 py-6 space-y-4">
+          <nav className="px-4 py-4 sm:py-6 space-y-1">
             {["Products", "Accessories", "Deals", "Support"].map((item) => (
               <Link
                 key={item}
                 href={item === "Products" ? "/products" : `/${item.toLowerCase()}`}
                 onClick={() => setMobileMenuOpen(false)}
-                className="block text-base font-medium text-[var(--color-text)] hover:text-[var(--color-primary)] transition-colors"
+                className="block py-3 px-4 text-base font-medium text-[var(--color-text)] hover:text-[var(--color-primary)] hover:bg-[var(--color-bg-alt)] rounded-lg transition-colors min-h-[48px] flex items-center"
               >
                 {item}
               </Link>

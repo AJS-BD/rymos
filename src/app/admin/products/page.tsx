@@ -62,10 +62,12 @@ export default function AdminProducts() {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">Products</h1>
+          <h1 className="text-3xl font-semibold" style={{ color: "var(--color-text)" }}>
+            Products
+          </h1>
         </div>
         <div className="flex items-center justify-center h-64">
-          <div className="text-gray-500">Loading products...</div>
+          <div style={{ color: "var(--color-text-muted)" }}>Loading products...</div>
         </div>
       </div>
     );
@@ -74,28 +76,38 @@ export default function AdminProducts() {
   return (
     <div className="space-y-6">
       {deleteId && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4 shadow-xl">
+        <div className="fixed inset-0 flex items-center justify-center z-50" style={{ background: "rgba(0,0,0,0.4)" }}>
+          <div
+            className="rounded-2xl p-6 max-w-sm w-full mx-4"
+            style={{ background: "var(--color-bg)" }}
+          >
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                <AlertTriangle className="h-5 w-5 text-red-600" />
+              <div
+                className="w-10 h-10 rounded-full flex items-center justify-center"
+                style={{ background: "#ffebee" }}
+              >
+                <AlertTriangle className="h-5 w-5" style={{ color: "#d32f2f" }} />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900">Delete Product</h3>
+              <h3 className="text-lg font-semibold" style={{ color: "var(--color-text)" }}>
+                Delete Product
+              </h3>
             </div>
-            <p className="text-sm text-gray-600 mb-6">
+            <p className="text-sm mb-6" style={{ color: "var(--color-text-muted)" }}>
               Are you sure you want to delete this product? This action cannot be undone.
             </p>
             <div className="flex gap-3 justify-end">
               <button
                 onClick={() => setDeleteId(null)}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                className="px-4 py-2 rounded-xl text-sm font-medium transition-colors"
+                style={{ border: "1px solid #e5e5e7", color: "var(--color-text)" }}
               >
                 Cancel
               </button>
               <button
                 onClick={handleDelete}
                 disabled={deleting}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ background: "#d32f2f" }}
               >
                 {deleting ? "Deleting..." : "Delete"}
               </button>
@@ -106,12 +118,17 @@ export default function AdminProducts() {
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Products</h1>
-          <p className="text-gray-500">{products.length} products total</p>
+          <h1 className="text-3xl font-semibold" style={{ color: "var(--color-text)" }}>
+            Products
+          </h1>
+          <p style={{ color: "var(--color-text-muted)" }}>{products.length} products total</p>
         </div>
         <Link
           href="/admin/products/add"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
+          className="inline-flex items-center gap-2 px-5 py-2.5 text-white rounded-xl text-sm font-medium transition-colors"
+          style={{ background: "var(--color-text)" }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "#333")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "var(--color-text)")}
         >
           <Plus className="h-4 w-4" />
           Add Product
@@ -120,78 +137,147 @@ export default function AdminProducts() {
 
       {message && (
         <div
-          className={`flex items-center gap-3 p-4 rounded-lg ${
-            message.type === "success"
-              ? "bg-green-50 border border-green-200 text-green-800"
-              : "bg-red-50 border border-red-200 text-red-800"
-          }`}
+          className="flex items-center gap-3 p-4 rounded-xl"
+          style={{
+            background: message.type === "success" ? "#e8f5e9" : "#ffebee",
+            border: `1px solid ${message.type === "success" ? "#c8e6c9" : "#ffcdd2"}`,
+            color: message.type === "success" ? "#2e7d32" : "#c62828",
+          }}
         >
           <p className="text-sm">{message.text}</p>
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+      <div
+        className="rounded-2xl overflow-hidden"
+        style={{ background: "var(--color-bg)", border: "1px solid #e5e5e7" }}
+      >
         <div className="overflow-x-auto">
           <table className="w-full min-w-[600px]">
-            <thead className="bg-gray-50 border-b">
+            <thead>
               <tr>
-                <th className="text-left px-4 py-3 text-sm font-medium text-gray-500">Product</th>
-                <th className="text-left px-4 py-3 text-sm font-medium text-gray-500">Category</th>
-                <th className="text-left px-4 py-3 text-sm font-medium text-gray-500">Price</th>
-                <th className="text-left px-4 py-3 text-sm font-medium text-gray-500">Stock</th>
-                <th className="text-left px-4 py-3 text-sm font-medium text-gray-500">Status</th>
-                <th className="text-right px-4 py-3 text-sm font-medium text-gray-500">Actions</th>
+                <th
+                  className="text-left px-5 py-4 text-xs font-medium uppercase tracking-wider"
+                  style={{ color: "var(--color-text-muted)", borderBottom: "1px solid #e5e5e7" }}
+                >
+                  Product
+                </th>
+                <th
+                  className="text-left px-5 py-4 text-xs font-medium uppercase tracking-wider"
+                  style={{ color: "var(--color-text-muted)", borderBottom: "1px solid #e5e5e7" }}
+                >
+                  Category
+                </th>
+                <th
+                  className="text-left px-5 py-4 text-xs font-medium uppercase tracking-wider"
+                  style={{ color: "var(--color-text-muted)", borderBottom: "1px solid #e5e5e7" }}
+                >
+                  Price
+                </th>
+                <th
+                  className="text-left px-5 py-4 text-xs font-medium uppercase tracking-wider"
+                  style={{ color: "var(--color-text-muted)", borderBottom: "1px solid #e5e5e7" }}
+                >
+                  Stock
+                </th>
+                <th
+                  className="text-left px-5 py-4 text-xs font-medium uppercase tracking-wider"
+                  style={{ color: "var(--color-text-muted)", borderBottom: "1px solid #e5e5e7" }}
+                >
+                  Status
+                </th>
+                <th
+                  className="text-right px-5 py-4 text-xs font-medium uppercase tracking-wider"
+                  style={{ color: "var(--color-text-muted)", borderBottom: "1px solid #e5e5e7" }}
+                >
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
               {products.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
+                  <td colSpan={6} className="px-5 py-12 text-center" style={{ color: "var(--color-text-muted)" }}>
                     No products found. Add your first product to get started.
                   </td>
                 </tr>
               ) : (
                 products.map((product) => (
-                  <tr key={product.id} className="border-b last:border-0 hover:bg-gray-50">
-                    <td className="px-4 py-3">
+                  <tr
+                    key={product.id}
+                    style={{ borderBottom: "1px solid #f5f5f7" }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = "#fafafa")}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                  >
+                    <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <Package className="h-5 w-5 text-gray-400" />
+                        <div
+                          className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                          style={{ background: "var(--color-bg-alt)" }}
+                        >
+                          <Package className="h-5 w-5" style={{ color: "var(--color-text-muted)" }} />
                         </div>
                         <div className="min-w-0">
-                          <p className="font-medium text-sm truncate">{product.name}</p>
-                          <p className="text-xs text-gray-500">{product.brand}</p>
+                          <p className="font-medium text-sm truncate" style={{ color: "var(--color-text)" }}>
+                            {product.name}
+                          </p>
+                          <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
+                            {product.brand}
+                          </p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600 capitalize">{product.category}</td>
-                    <td className="px-4 py-3 text-sm font-medium">৳{product.price}</td>
-                    <td className="px-4 py-3">
-                      <span className={`text-sm font-medium ${product.stock <= 10 ? "text-red-600" : "text-gray-900"}`}>
+                    <td className="px-5 py-4 text-sm capitalize" style={{ color: "var(--color-text-muted)" }}>
+                      {product.category}
+                    </td>
+                    <td className="px-5 py-4 text-sm font-medium" style={{ color: "var(--color-text)" }}>
+                      ৳{product.price}
+                    </td>
+                    <td className="px-5 py-4">
+                      <span
+                        className="text-sm font-medium"
+                        style={{ color: product.stock <= 10 ? "#d32f2f" : "var(--color-text)" }}
+                      >
                         {product.stock}
                       </span>
                     </td>
-                    <td className="px-4 py-3">
-                      <span className={`text-xs px-2 py-1 rounded-full whitespace-nowrap ${
-                        product.is_featured ? "bg-blue-100 text-blue-700" :
-                        product.is_new_arrival ? "bg-green-100 text-green-700" :
-                        "bg-gray-100 text-gray-700"
-                      }`}>
+                    <td className="px-5 py-4">
+                      <span
+                        className="text-xs px-2.5 py-1 rounded-full font-medium"
+                        style={{
+                          background: product.is_featured
+                            ? "#e3f2fd"
+                            : product.is_new_arrival
+                            ? "#e8f5e9"
+                            : "#f5f5f7",
+                          color: product.is_featured
+                            ? "#1565c0"
+                            : product.is_new_arrival
+                            ? "#2e7d32"
+                            : "var(--color-text-muted)",
+                        }}
+                      >
                         {product.is_featured ? "Featured" : product.is_new_arrival ? "New" : "Regular"}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-1 sm:gap-2">
+                    <td className="px-5 py-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
                         <Link
                           href={`/admin/products/edit/${product.id}`}
-                          className="inline-flex items-center gap-1 px-2 py-1 text-xs sm:text-sm text-blue-600 hover:text-blue-800 transition-colors rounded hover:bg-blue-50"
+                          className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-lg transition-colors"
+                          style={{ color: "var(--color-primary)" }}
+                          onMouseEnter={(e) => (e.currentTarget.style.background = "#e3f2fd")}
+                          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                         >
                           <Edit className="h-4 w-4" />
                           <span className="hidden sm:inline">Edit</span>
                         </Link>
                         <button
                           onClick={() => setDeleteId(product.id)}
-                          className="inline-flex items-center gap-1 px-2 py-1 text-xs sm:text-sm text-red-600 hover:text-red-800 transition-colors rounded hover:bg-red-50"
+                          className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-lg transition-colors"
+                          style={{ color: "#d32f2f" }}
+                          onMouseEnter={(e) => (e.currentTarget.style.background = "#ffebee")}
+                          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                         >
                           <Trash2 className="h-4 w-4" />
                           <span className="hidden sm:inline">Delete</span>

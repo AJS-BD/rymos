@@ -132,7 +132,7 @@ export default function ProductDetailClient({
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section with Parallax */}
-      <section ref={heroRef} className="relative w-full h-[70vh] sm:h-[85vh] overflow-hidden">
+      <section ref={heroRef} className="relative w-full h-[50vh] sm:h-[70vh] lg:h-[85vh] overflow-hidden">
         <motion.div
           style={{ y: heroImageY, opacity: heroOpacity }}
           className="absolute inset-0"
@@ -151,7 +151,7 @@ export default function ProductDetailClient({
           />
         </motion.div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 p-8 sm:p-16">
+        <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-8 lg:p-16">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -159,11 +159,11 @@ export default function ProductDetailClient({
             className="max-w-4xl mx-auto text-center text-white"
           >
             {product.brand && (
-              <p className="text-sm font-light tracking-widest uppercase mb-2 opacity-80">
+              <p className="text-xs sm:text-sm font-light tracking-widest uppercase mb-1 sm:mb-2 opacity-80">
                 {product.brand}
               </p>
             )}
-            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-semibold tracking-tight leading-none">
+            <h1 className="text-2xl sm:text-4xl lg:text-6xl xl:text-7xl font-semibold tracking-tight leading-none">
               {product.name}
             </h1>
           </motion.div>
@@ -171,27 +171,27 @@ export default function ProductDetailClient({
       </section>
 
       {/* Product Info Section */}
-      <section className="py-20 sm:py-32 px-6 sm:px-8">
+      <section className="py-8 sm:py-16 lg:py-24 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto text-center">
           <FadeInWhenVisible>
-            <p className="text-lg sm:text-xl text-gray-500 font-light leading-relaxed max-w-2xl mx-auto">
+            <p className="text-sm sm:text-lg lg:text-xl text-gray-500 font-light leading-relaxed max-w-2xl mx-auto">
               {product.description || "Experience the perfect blend of innovation and design. Crafted with precision for those who demand the best."}
             </p>
           </FadeInWhenVisible>
 
           <FadeInWhenVisible delay={0.15}>
-            <div className="mt-10 flex items-center justify-center gap-4">
-              <span className="text-3xl sm:text-4xl font-semibold text-gray-900 tracking-tight">
+            <div className="mt-6 sm:mt-10 flex items-center justify-center gap-3 sm:gap-4 flex-wrap">
+              <span className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-900 tracking-tight">
                 ৳{product.price.toLocaleString()}
               </span>
               {product.original_price && product.original_price > product.price && (
-                <span className="text-xl text-gray-400 line-through">
+                <span className="text-base sm:text-lg lg:text-xl text-gray-400 line-through">
                   ৳{product.original_price.toLocaleString()}
                 </span>
               )}
             </div>
             {discount > 0 && (
-              <p className="mt-2 text-sm text-green-600 font-medium">
+              <p className="mt-2 text-xs sm:text-sm text-green-600 font-medium">
                 Save {discount}%
               </p>
             )}
@@ -200,16 +200,16 @@ export default function ProductDetailClient({
           {/* Color Options */}
           {colors.length > 0 && (
             <FadeInWhenVisible delay={0.25}>
-              <div className="mt-12">
-                <p className="text-sm text-gray-500 mb-4">
+              <div className="mt-8 sm:mt-12">
+                <p className="text-xs sm:text-sm text-gray-500 mb-3 sm:mb-4">
                   Color: <span className="text-gray-900">{colors[selectedColor]?.name}</span>
                 </p>
-                <div className="flex items-center justify-center gap-3">
+                <div className="flex items-center justify-center gap-2 sm:gap-3">
                   {colors.map((color, idx) => (
                     <button
                       key={color.name}
                       onClick={() => setSelectedColor(idx)}
-                      className={`w-8 h-8 rounded-full border-2 transition-all duration-200 ${
+                      className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 transition-all duration-200 ${
                         selectedColor === idx
                           ? "border-[#0071E3] scale-110"
                           : "border-gray-200 hover:border-gray-400"
@@ -227,21 +227,21 @@ export default function ProductDetailClient({
 
       {/* Specifications Grid */}
       {specs.length > 0 && (
-        <section className="py-20 sm:py-32 bg-gray-50">
-          <div className="max-w-6xl mx-auto px-6 sm:px-8">
+        <section className="py-8 sm:py-16 lg:py-24 bg-gray-50">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <FadeInWhenVisible>
-              <h2 className="text-3xl sm:text-4xl font-semibold text-center text-gray-900 tracking-tight mb-16">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-center text-gray-900 tracking-tight mb-8 sm:mb-12 lg:mb-16">
                 Specifications
               </h2>
             </FadeInWhenVisible>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {specs.map(([key, value], idx) => (
                 <FadeInWhenVisible key={key} delay={idx * 0.08}>
-                  <div className="bg-white rounded-2xl p-8 sm:p-10 text-center shadow-sm hover:shadow-md transition-shadow duration-300 h-full flex flex-col justify-center">
-                    <p className="text-sm text-gray-500 uppercase tracking-wider mb-3 font-medium">
+                  <div className="bg-white rounded-xl sm:rounded-2xl p-5 sm:p-6 lg:p-8 text-center shadow-sm hover:shadow-md transition-shadow duration-300 h-full flex flex-col justify-center">
+                    <p className="text-xs sm:text-sm text-gray-500 uppercase tracking-wider mb-2 sm:mb-3 font-medium">
                       {key.replace(/_/g, " ")}
                     </p>
-                    <p className="text-xl sm:text-2xl font-semibold text-gray-900">
+                    <p className="text-base sm:text-lg lg:text-xl font-semibold text-gray-900">
                       {value}
                     </p>
                   </div>
@@ -253,11 +253,11 @@ export default function ProductDetailClient({
       )}
 
       {/* Feature Highlight Section */}
-      <section className="py-20 sm:py-32">
-        <div className="max-w-6xl mx-auto px-6 sm:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+      <section className="py-8 sm:py-16 lg:py-24">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 xl:gap-20 items-center">
             <FadeInWhenVisible>
-              <div className="aspect-[4/3] rounded-3xl overflow-hidden bg-gray-100 relative">
+              <div className="aspect-[4/3] rounded-2xl sm:rounded-3xl overflow-hidden bg-gray-100 relative">
                 {/* Blur placeholder */}
                 <img
                   src={blurDataUri}
@@ -273,17 +273,17 @@ export default function ProductDetailClient({
               </div>
             </FadeInWhenVisible>
             <FadeInWhenVisible delay={0.2}>
-              <div>
-                <h3 className="text-2xl sm:text-3xl font-semibold text-gray-900 tracking-tight">
+              <div className="mt-6 lg:mt-0 text-center lg:text-left">
+                <h3 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-900 tracking-tight">
                   Designed to stand out.
                 </h3>
-                <p className="mt-6 text-lg text-gray-500 font-light leading-relaxed">
+                <p className="mt-4 sm:mt-6 text-sm sm:text-base lg:text-lg text-gray-500 font-light leading-relaxed">
                   Every detail has been carefully considered. From the premium materials to the
                   intuitive interface, this is technology that feels as good as it looks.
                 </p>
                 <Link
                   href="#purchase"
-                  className="inline-flex items-center gap-1 mt-8 text-[#0071E3] text-lg hover:underline"
+                  className="inline-flex items-center gap-1 mt-6 sm:mt-8 text-[#0071E3] text-sm sm:text-base lg:text-lg hover:underline"
                 >
                   Learn more
                   <ChevronRight className="w-4 h-4" />
@@ -295,27 +295,27 @@ export default function ProductDetailClient({
       </section>
 
       {/* Purchase Section */}
-      <section id="purchase" className="py-20 sm:py-32 bg-gray-50">
-        <div className="max-w-2xl mx-auto px-6 sm:px-8 text-center">
+      <section id="purchase" className="py-8 sm:py-16 lg:py-24 bg-gray-50">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <FadeInWhenVisible>
-            <h2 className="text-3xl sm:text-4xl font-semibold text-gray-900 tracking-tight">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-900 tracking-tight">
               Ready to order?
             </h2>
-            <p className="mt-4 text-xl text-gray-500 font-light">
+            <p className="mt-3 sm:mt-4 text-lg sm:text-xl text-gray-500 font-light">
               ৳{product.price.toLocaleString()}
             </p>
             {product.stock > 0 ? (
-              <p className="mt-2 text-sm text-green-600">In stock</p>
+              <p className="mt-2 text-xs sm:text-sm text-green-600">In stock</p>
             ) : (
-              <p className="mt-2 text-sm text-red-500">Out of stock</p>
+              <p className="mt-2 text-xs sm:text-sm text-red-500">Out of stock</p>
             )}
           </FadeInWhenVisible>
 
           <FadeInWhenVisible delay={0.15}>
-            <div className="mt-10">
+            <div className="mt-6 sm:mt-10">
               <button
                 onClick={handleAddToCart}
-                className="text-[#0071E3] text-lg hover:underline inline-flex items-center gap-1"
+                className="w-full sm:w-auto px-8 py-3 text-[#0071E3] text-base sm:text-lg border-2 border-[#0071E3] rounded-lg hover:bg-[#0071E3] hover:text-white transition-colors inline-flex items-center justify-center gap-1 min-h-[48px]"
               >
                 Add to Cart
                 <ChevronRight className="w-4 h-4" />
@@ -327,21 +327,21 @@ export default function ProductDetailClient({
 
       {/* Related Products - Horizontal Scroll */}
       {related.length > 0 && (
-        <section className="py-20 sm:py-32 overflow-hidden">
-          <div className="max-w-7xl mx-auto px-6 sm:px-8">
+        <section className="py-8 sm:py-16 lg:py-24 overflow-hidden">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <FadeInWhenVisible>
-              <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 tracking-tight mb-10">
+              <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-900 tracking-tight mb-6 sm:mb-10">
                 You may also like
               </h2>
             </FadeInWhenVisible>
-            <div className="flex gap-6 overflow-x-auto pb-6 snap-x snap-mandatory scrollbar-hide -mx-6 px-6 sm:-mx-8 sm:px-8">
+            <div className="flex gap-4 sm:gap-6 overflow-x-auto pb-4 sm:pb-6 snap-x snap-mandatory scrollbar-hide -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
               {related.map((p, idx) => (
                 <FadeInWhenVisible key={p.id} delay={idx * 0.1}>
                   <Link
                     href={`/products/${p.id}`}
-                    className="flex-shrink-0 w-64 sm:w-72 snap-start group"
+                    className="flex-shrink-0 w-48 sm:w-64 lg:w-72 snap-start group"
                   >
-                    <div className="aspect-square bg-gray-100 rounded-2xl overflow-hidden relative">
+                    <div className="aspect-square bg-gray-100 rounded-xl sm:rounded-2xl overflow-hidden relative">
                       {/* Blur placeholder */}
                       <img
                         src={blurDataUri}
@@ -355,10 +355,10 @@ export default function ProductDetailClient({
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 relative z-[1]"
                       />
                     </div>
-                    <h3 className="mt-4 text-base font-medium text-gray-900 group-hover:text-[#0071E3] transition-colors">
+                    <h3 className="mt-3 sm:mt-4 text-sm sm:text-base font-medium text-gray-900 group-hover:text-[#0071E3] transition-colors">
                       {p.name}
                     </h3>
-                    <p className="mt-1 text-sm text-gray-500">
+                    <p className="mt-1 text-xs sm:text-sm text-gray-500">
                       ৳{p.price.toLocaleString()}
                     </p>
                   </Link>

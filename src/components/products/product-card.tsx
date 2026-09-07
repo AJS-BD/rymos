@@ -114,7 +114,7 @@ export default function ProductCard({ product }: { product: Product }) {
     >
       <Link
         href={`/products/${product.id}`}
-        className="group bg-white rounded-2xl border border-[var(--color-border)] overflow-hidden block"
+        className="group bg-white rounded-xl sm:rounded-2xl border border-[var(--color-border)] overflow-hidden block"
       >
         {/* Image with overflow hidden for zoom */}
         <div className="relative aspect-square bg-[var(--color-bg-alt)] overflow-hidden">
@@ -137,7 +137,7 @@ export default function ProductCard({ product }: { product: Product }) {
               initial={{ scale: 0, rotate: -10 }}
               animate={{ scale: 1, rotate: 0 }}
               transition={{ delay: 0.3, type: "spring", stiffness: 400, damping: 15 }}
-              className="absolute top-3 left-3 bg-[var(--color-accent)] text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-lg"
+              className="absolute top-2 left-2 sm:top-3 sm:left-3 bg-[var(--color-accent)] text-white text-[10px] sm:text-xs font-bold px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full shadow-lg"
             >
               {product.discount}% off
             </motion.span>
@@ -149,36 +149,36 @@ export default function ProductCard({ product }: { product: Product }) {
             animate={{ opacity: 0, scale: 0.8 }}
             whileHover={{ scale: 1.15 }}
             whileTap={{ scale: 0.9 }}
-            className="absolute top-3 right-3 p-2.5 bg-white/90 backdrop-blur-sm rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-red-50"
+            className="absolute top-2 right-2 sm:top-3 sm:right-3 p-2 sm:p-2.5 bg-white/90 backdrop-blur-sm rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-red-50 min-w-[44px] min-h-[44px] flex items-center justify-center"
           >
             <Heart className="h-4 w-4 text-gray-400 hover:text-red-500 transition-colors" />
           </motion.button>
         </div>
 
         {/* Content */}
-        <div className="p-5">
-          <h3 className="font-semibold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors duration-200">
+        <div className="p-3 sm:p-4 lg:p-5">
+          <h3 className="font-semibold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors duration-200 text-sm sm:text-base line-clamp-2">
             {product.name}
           </h3>
 
           {product.specs && (
-            <p className="text-sm text-[var(--color-text-muted)] mt-1">
+            <p className="text-xs sm:text-sm text-[var(--color-text-muted)] mt-1 line-clamp-1">
               {product.specs}
             </p>
           )}
 
           {/* Rating */}
           {product.rating && (
-            <div className="flex items-center gap-2 mt-2">
+            <div className="flex items-center gap-1.5 sm:gap-2 mt-1.5 sm:mt-2">
               <StarRating rating={product.rating} />
-              <span className="text-xs text-[var(--color-text-muted)]">
+              <span className="text-[10px] sm:text-xs text-[var(--color-text-muted)]">
                 ({product.reviewCount})
               </span>
             </div>
           )}
 
           {/* Price */}
-          <div className="mt-3">
+          <div className="mt-2 sm:mt-3">
             <PriceDisplay
               price={product.price}
               originalPrice={product.originalPrice}
@@ -188,9 +188,9 @@ export default function ProductCard({ product }: { product: Product }) {
           {/* Add to Cart */}
           <motion.button
             whileTap={{ scale: 0.97 }}
-            className="w-full mt-4 py-2.5 bg-[var(--color-primary)] text-white rounded-xl text-sm font-medium hover:bg-[var(--color-primary-hover)] transition-colors flex items-center justify-center gap-2 shadow-sm"
+            className="w-full mt-3 sm:mt-4 py-2.5 bg-[var(--color-primary)] text-white rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium hover:bg-[var(--color-primary-hover)] transition-colors flex items-center justify-center gap-2 shadow-sm min-h-[44px] sm:min-h-[48px]"
           >
-            <ShoppingCart className="w-4 h-4" />
+            <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             Add to Cart
           </motion.button>
         </div>

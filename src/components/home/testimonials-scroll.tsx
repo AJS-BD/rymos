@@ -94,15 +94,15 @@ export default function TestimonialsScroll() {
   const doubledTestimonials = [...testimonials, ...testimonials];
 
   return (
-    <section className="py-20 sm:py-32 bg-[var(--color-bg-alt)] overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 mb-12">
+    <section className="py-12 sm:py-20 lg:py-32 bg-[var(--color-bg-alt)] overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 mb-8 sm:mb-12">
         <motion.h2
           initial={{ opacity: 0, y: 24, rotateX: -10 }}
           whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
           viewport={{ once: true }}
           transition={{ type: "spring", damping: 22, stiffness: 100, mass: 0.8 }}
           style={{ transformPerspective: 1200 }}
-          className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-[var(--color-text)]"
+          className="text-2xl sm:text-3xl md:text-5xl font-semibold tracking-tight text-[var(--color-text)]"
         >
           What people are saying.
         </motion.h2>
@@ -111,7 +111,7 @@ export default function TestimonialsScroll() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ type: "spring", damping: 22, stiffness: 100, mass: 0.8, delay: 0.1 }}
-          className="mt-2 text-lg text-[var(--color-text-muted)]"
+          className="mt-2 text-base sm:text-lg text-[var(--color-text-muted)]"
         >
           Real reviews from our customers.
         </motion.p>
@@ -219,7 +219,7 @@ function TestimonialCard({ testimonial, index }: { testimonial: Testimonial; ind
         transformStyle: "preserve-3d",
         willChange: "transform",
       }}
-      className="flex-shrink-0 w-[340px] sm:w-[400px] bg-white rounded-2xl p-8 shadow-sm cursor-pointer"
+      className="flex-shrink-0 w-[280px] sm:w-[340px] lg:w-[400px] bg-white rounded-xl sm:rounded-2xl p-5 sm:p-6 lg:p-8 shadow-sm cursor-pointer"
     >
       <Quote className="h-8 w-8 text-[var(--color-border)] mb-4" />
       <p className="text-base sm:text-lg text-[var(--color-text)] leading-relaxed">

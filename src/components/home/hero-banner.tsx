@@ -60,7 +60,7 @@ export default function HeroBanner() {
   if (!isClient) return null;
 
   return (
-    <section className="relative w-full h-[500px] sm:h-[600px] overflow-hidden">
+    <section className="relative w-full h-[400px] sm:h-[500px] lg:h-[600px] overflow-hidden">
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={current}
@@ -80,7 +80,7 @@ export default function HeroBanner() {
       </AnimatePresence>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center w-full">
           <AnimatePresence mode="wait">
             <motion.div
               key={current}
@@ -90,38 +90,38 @@ export default function HeroBanner() {
               transition={{ duration: 0.5 }}
               className="text-center lg:text-left text-white"
             >
-              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold leading-tight">
+              <h1 className="text-2xl sm:text-4xl lg:text-6xl font-bold leading-tight">
                 {slide.headline}
               </h1>
-              <p className="mt-4 sm:mt-6 text-base sm:text-lg text-gray-300 max-w-lg">
+              <p className="mt-3 sm:mt-4 lg:mt-6 text-sm sm:text-base lg:text-lg text-gray-300 max-w-lg">
                 {slide.subheadline}
               </p>
-              <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+              <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start">
                 <Link
                   href="/products?category=smartphones"
-                  className="inline-flex items-center justify-center px-8 py-3 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
+                  className="inline-flex items-center justify-center px-6 sm:px-8 py-3 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors text-sm sm:text-base"
                 >
                   {slide.cta1}
                 </Link>
                 <Link
                   href="/products?category=accessories"
-                  className="inline-flex items-center justify-center px-8 py-3 border-2 border-white text-white rounded-lg font-medium hover:bg-white hover:text-black transition-colors"
+                  className="inline-flex items-center justify-center px-6 sm:px-8 py-3 border-2 border-white text-white rounded-lg font-medium hover:bg-white hover:text-black transition-colors text-sm sm:text-base"
                 >
                   {slide.cta2}
                 </Link>
               </div>
 
-              <div className="mt-10 flex flex-wrap gap-3 justify-center lg:justify-start">
+              <div className="mt-6 sm:mt-10 flex flex-wrap gap-2 sm:gap-3 justify-center lg:justify-start">
                 {slide.badges.map((badge) => (
                   <span
                     key={badge}
-                    className="px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-medium text-white border border-white/30 flex items-center gap-2"
+                    className="px-3 sm:px-4 py-1.5 sm:py-2 bg-white/20 backdrop-blur-sm rounded-full text-xs sm:text-sm font-medium text-white border border-white/30 flex items-center gap-1.5 sm:gap-2"
                   >
-                    {badge.includes("120Hz") && <Smartphone className="h-4 w-4" />}
-                    {badge.includes("Chip") && <Cpu className="h-4 w-4" />}
-                    {badge.includes("Camera") && <Camera className="h-4 w-4" />}
-                    {badge.includes("Battery") && <Battery className="h-4 w-4" />}
-                    {!badge.includes("120Hz") && !badge.includes("Chip") && !badge.includes("Camera") && !badge.includes("Battery") && <Smartphone className="h-4 w-4" />}
+                    {badge.includes("120Hz") && <Smartphone className="h-3 w-3 sm:h-4 sm:w-4" />}
+                    {badge.includes("Chip") && <Cpu className="h-3 w-3 sm:h-4 sm:w-4" />}
+                    {badge.includes("Camera") && <Camera className="h-3 w-3 sm:h-4 sm:w-4" />}
+                    {badge.includes("Battery") && <Battery className="h-3 w-3 sm:h-4 sm:w-4" />}
+                    {!badge.includes("120Hz") && !badge.includes("Chip") && !badge.includes("Camera") && !badge.includes("Battery") && <Smartphone className="h-3 w-3 sm:h-4 sm:w-4" />}
                     {badge}
                   </span>
                 ))}

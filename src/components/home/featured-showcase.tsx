@@ -42,7 +42,7 @@ export default function FeaturedShowcase() {
   return (
     <section
       ref={sectionRef}
-      className="relative py-20 sm:py-32 bg-[var(--color-dark-banner)] text-white overflow-hidden"
+      className="relative py-12 sm:py-20 lg:py-32 bg-[var(--color-dark-banner)] text-white overflow-hidden"
     >
       {/* Parallax background gradient */}
       <motion.div
@@ -54,7 +54,7 @@ export default function FeaturedShowcase() {
       </motion.div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12 items-center">
           {/* Text content - 40% */}
           <motion.div
             style={{
@@ -72,7 +72,7 @@ export default function FeaturedShowcase() {
               viewport={{ once: true }}
               transition={{ type: "spring", damping: 22, stiffness: 100, mass: 0.8 }}
               style={{ transformPerspective: 1200 }}
-              className="text-sm font-medium text-[var(--color-primary)] uppercase tracking-wider mb-3"
+              className="text-xs sm:text-sm font-medium text-[var(--color-primary)] uppercase tracking-wider mb-2 sm:mb-3"
             >
               Featured
             </motion.p>
@@ -82,7 +82,7 @@ export default function FeaturedShowcase() {
               viewport={{ once: true }}
               transition={{ type: "spring", damping: 22, stiffness: 100, mass: 0.8, delay: 0.1 }}
               style={{ transformPerspective: 1200 }}
-              className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight leading-tight"
+              className="text-2xl sm:text-3xl md:text-5xl font-semibold tracking-tight leading-tight"
             >
               iPhone 16 Pro
             </motion.h2>
@@ -92,7 +92,7 @@ export default function FeaturedShowcase() {
               viewport={{ once: true }}
               transition={{ type: "spring", damping: 22, stiffness: 100, mass: 0.8, delay: 0.2 }}
               style={{ transformPerspective: 1200 }}
-              className="mt-4 text-lg sm:text-xl text-gray-400 max-w-md"
+              className="mt-3 sm:mt-4 text-base sm:text-lg lg:text-xl text-gray-400 max-w-md"
             >
               The most powerful iPhone ever. A18 Pro chip. 48MP Fusion camera. Titanium design.
             </motion.p>
@@ -102,11 +102,11 @@ export default function FeaturedShowcase() {
               viewport={{ once: true }}
               transition={{ type: "spring", damping: 22, stiffness: 100, mass: 0.8, delay: 0.3 }}
               style={{ transformPerspective: 1200 }}
-              className="mt-8"
+              className="mt-6 sm:mt-8"
             >
               <Link
                 href="/products/iphone-16-pro"
-                className="inline-flex items-center gap-2 text-[var(--color-primary)] hover:underline text-base font-normal group"
+                className="inline-flex items-center gap-2 text-[var(--color-primary)] hover:underline text-sm sm:text-base font-normal group"
               >
                 Learn more
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -131,7 +131,7 @@ export default function FeaturedShowcase() {
               viewport={{ once: true }}
               transition={{ type: "spring", damping: 20, stiffness: 80, mass: 1 }}
               style={{ transformPerspective: 1200 }}
-              className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl"
+              className="relative aspect-[4/3] rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl"
             >
               <img
                 src="https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=900&q=80"

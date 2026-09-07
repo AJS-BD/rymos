@@ -52,9 +52,9 @@ function ProductCard({ product }: { product: Product }) {
   return (
     <motion.a
       href={`/products/${product.id}`}
-      className="group bg-[var(--color-bg-alt)] rounded-2xl p-4 hover:shadow-lg transition-shadow block"
+      className="group bg-[var(--color-bg-alt)] rounded-xl sm:rounded-2xl p-2 sm:p-3 lg:p-4 hover:shadow-lg transition-shadow block"
     >
-      <div className="aspect-square bg-white rounded-xl overflow-hidden mb-4 relative">
+      <div className="aspect-square bg-white rounded-lg sm:rounded-xl overflow-hidden mb-2 sm:mb-3 lg:mb-4 relative">
         {/* Blur placeholder layer */}
         <img
           src={blurDataUri}
@@ -69,10 +69,10 @@ function ProductCard({ product }: { product: Product }) {
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 relative z-[1]"
         />
       </div>
-      <h3 className="text-sm font-medium text-[var(--color-text)] mb-1">
+      <h3 className="text-xs sm:text-sm font-medium text-[var(--color-text)] mb-0.5 sm:mb-1 line-clamp-2">
         {product.name}
       </h3>
-      <p className="text-sm text-[var(--color-text-muted)]">
+      <p className="text-xs sm:text-sm text-[var(--color-text-muted)]">
         {new Intl.NumberFormat("en-BD", { style: "currency", currency: "BDT", minimumFractionDigits: 0 }).format(product.price)}
       </p>
     </motion.a>
@@ -104,24 +104,24 @@ export default function ProductsPage() {
   return (
     <main className="flex-1">
       {/* Hero */}
-      <section className="py-20 sm:py-32 bg-[var(--color-bg-alt)] text-center">
+      <section className="py-12 sm:py-20 lg:py-32 bg-[var(--color-bg-alt)] text-center">
         <AnimatedSection>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight text-[var(--color-text)] mb-4">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-semibold tracking-tight text-[var(--color-text)] mb-3 sm:mb-4">
             All Products
           </h1>
-          <p className="text-lg sm:text-xl text-[var(--color-text-muted)] max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg lg:text-xl text-[var(--color-text-muted)] max-w-2xl mx-auto">
             Browse our complete collection of smartphones and accessories.
           </p>
         </AnimatedSection>
       </section>
 
       {/* Products Grid with stagger entrance */}
-      <section className="py-20 sm:py-32 bg-white">
+      <section className="py-12 sm:py-20 lg:py-32 bg-white">
         <div className="max-w-7xl mx-auto px-4">
           {loading ? (
             <ProductCardSkeletonGrid count={8} />
           ) : (
-            <Stagger className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <Stagger className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
               {products.map((product) => (
                 <StaggerItem key={product.id}>
                   <ProductCard product={product} />
