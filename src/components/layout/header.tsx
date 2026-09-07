@@ -10,15 +10,6 @@ const navLinks = [
   { label: "Products", href: "/products" },
   { label: "Deals", href: "/products?deals=true" },
   { label: "About", href: "/about" },
-  { label: "Track Order", href: "/track-order" },
-  { label: "Messages", href: "/customer/messages" },
-];
-
-const accountItems = [
-  { label: "Sign In", href: "/auth/login" },
-  { label: "Create Account", href: "/auth/register" },
-  { label: "Track Order", href: "/track-order" },
-  { label: "Messages", href: "/customer/messages" },
 ];
 
 export default function Header() {
@@ -28,6 +19,13 @@ export default function Header() {
   const [searchQuery, setSearchQuery] = useState("");
   const [scrolled, setScrolled] = useState(false);
   const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // Check if user is logged in
+  useEffect(() => {
+    const customerId = localStorage.getItem("rymos_customer_id");
+    setIsLoggedIn(!!customerId);
+  }, []);
 
   const { scrollY } = useScroll();
 
@@ -48,6 +46,19 @@ export default function Header() {
   );
 
   const textColor = scrolled ? "#111827" : "#ffffff";
+
+  // Account items based on login status
+  const accountItems = isLoggedIn
+    ? [
+        { label: "Profile", href: "/customer/profile" },
+        { label: "Track Order", href: "/track-order" },
+        { label: "Messages", href: "/customer/messages" },
+        { label: "Sign Out", href: "/auth/login" },
+      ]
+    : [
+        { label: "Sign In", href: "/auth/login" },
+        { label: "Create Account", href: "/auth/register" },
+      ];
 
   return (
     <>
@@ -116,27 +127,29 @@ export default function Header() {
                   <User className="h-4 w-4" strokeWidth={1.5} />
                 </motion.button>
 
-                {accountDropdownOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -8, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -8, scale: 0.95 }}
-                    transition={{ duration: 0.2, ease: "easeOut" }}
-                    className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-50"
-                  >
-                    {accountItems.map((item) => (
-                      <Link
-                        key={item.label}
-                        href={item.href}
-                        onClick={() => setAccountDropdownOpen(false)}
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
-                        style={{ fontFamily: "var(--font-sans)" }}
-                      >
-                        {item.label}
-                      </Link>
-                    ))}
-                  </motion.div>
-                )}
+                <AnimatePresence>
+                  {accountDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                      transition={{ duration: 0.2, ease: "easeOut" }}
+                      className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-50"
+                    >
+                      {accountItems.map((item) => (
+                        <Link
+                          key={item.label}
+                          href={item.href}
+                          onClick={() => setAccountDropdownOpen(false)}
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
+                          style={{ fontFamily: "var(--font-sans)" }}
+                        >
+                          {item.label}
+                        </Link>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
               {/* Search */}
