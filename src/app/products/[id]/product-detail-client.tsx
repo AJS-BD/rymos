@@ -1,10 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { motion, useScroll, useTransform, useInView } from "framer-motion";
-import Link from "next/link";
-import { ChevronRight } from "lucide-react";
-import { useCart } from "@/context/cart-context";
+import { motion } from "framer-motion";
+import { ImageSkeleton } from "@/components/ui/skeleton";
 
 interface Product {
   id: string;
@@ -26,6 +23,13 @@ interface RelatedProduct {
   price: number;
   category: string;
 }
+
+/* ------------------------------------------------------------------ */
+/*  Blur placeholder                                                    */
+/* ------------------------------------------------------------------ */
+
+const blurDataUri =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 4'%3E%3Crect width='4' height='4' fill='%23f3f4f6'/%3E%3C/svg%3E";
 
 const productImages: Record<string, string> = {
   "Samsung Galaxy S24 Ultra": "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=1200&q=80",
@@ -80,6 +84,12 @@ function FadeInWhenVisible({ children, delay = 0, className = "" }: { children: 
   );
 }
 
+import { useRef, useState } from "react";
+import { useScroll, useTransform, useInView } from "framer-motion";
+import Link from "next/link";
+import { ChevronRight } from "lucide-react";
+import { useCart } from "@/context/cart-context";
+
 export default function ProductDetailClient({
   product,
   related,
@@ -127,10 +137,17 @@ export default function ProductDetailClient({
           style={{ y: heroImageY, opacity: heroOpacity }}
           className="absolute inset-0"
         >
+          {/* Blur placeholder */}
+          <img
+            src={blurDataUri}
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 w-full h-[120%] object-cover object-center scale-110 blur-xl"
+          />
           <img
             src={imageUrl}
             alt={product.name}
-            className="w-full h-[120%] object-cover object-center"
+            className="w-full h-[120%] object-cover object-center relative z-[1]"
           />
         </motion.div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
@@ -240,11 +257,18 @@ export default function ProductDetailClient({
         <div className="max-w-6xl mx-auto px-6 sm:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             <FadeInWhenVisible>
-              <div className="aspect-[4/3] rounded-3xl overflow-hidden bg-gray-100">
+              <div className="aspect-[4/3] rounded-3xl overflow-hidden bg-gray-100 relative">
+                {/* Blur placeholder */}
+                <img
+                  src={blurDataUri}
+                  alt=""
+                  aria-hidden="true"
+                  className="absolute inset-0 w-full h-full object-cover scale-110 blur-xl"
+                />
                 <img
                   src={imageUrl}
                   alt={product.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover relative z-[1]"
                 />
               </div>
             </FadeInWhenVisible>
@@ -317,11 +341,18 @@ export default function ProductDetailClient({
                     href={`/products/${p.id}`}
                     className="flex-shrink-0 w-64 sm:w-72 snap-start group"
                   >
-                    <div className="aspect-square bg-gray-100 rounded-2xl overflow-hidden">
+                    <div className="aspect-square bg-gray-100 rounded-2xl overflow-hidden relative">
+                      {/* Blur placeholder */}
+                      <img
+                        src={blurDataUri}
+                        alt=""
+                        aria-hidden="true"
+                        className="absolute inset-0 w-full h-full object-cover scale-110 blur-xl"
+                      />
                       <img
                         src={relatedImages[p.name] || "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&q=80"}
                         alt={p.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 relative z-[1]"
                       />
                     </div>
                     <h3 className="mt-4 text-base font-medium text-gray-900 group-hover:text-[#0071E3] transition-colors">

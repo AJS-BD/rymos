@@ -1,6 +1,4 @@
 import { getSupabase, isConfigured } from "@/lib/supabase";
-import Header from "@/components/layout/header";
-import Footer from "@/components/layout/footer";
 import ProductDetailClient from "./product-detail-client";
 
 async function getProduct(id: string) {
@@ -28,28 +26,20 @@ export default async function ProductDetail({ params }: { params: Promise<{ id: 
 
   if (!product) {
     return (
-      <>
-        <Header />
-        <main className="flex-1">
-          <div className="max-w-7xl mx-auto px-4 py-16 text-center">
-            <h1 className="text-2xl font-bold text-gray-900">Product Not Found</h1>
-            <p className="text-gray-500 mt-2">The product you're looking for doesn't exist.</p>
-          </div>
-        </main>
-        <Footer />
-      </>
+      <main className="flex-1">
+        <div className="max-w-7xl mx-auto px-4 py-16 text-center">
+          <h1 className="text-2xl font-bold text-gray-900">Product Not Found</h1>
+          <p className="text-gray-500 mt-2">The product you're looking for doesn't exist.</p>
+        </div>
+      </main>
     );
   }
 
   const related = await getRelatedProducts(product.category, product.id);
 
   return (
-    <>
-      <Header />
-      <main className="flex-1">
-        <ProductDetailClient product={product} related={related} />
-      </main>
-      <Footer />
-    </>
+    <main className="flex-1">
+      <ProductDetailClient product={product} related={related} />
+    </main>
   );
 }

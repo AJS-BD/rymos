@@ -1,10 +1,11 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useSpring, useMotionValue, useTransform, useReducedMotion } from "framer-motion";
 import Link from "next/link";
 import { ShoppingCart, Heart } from "lucide-react";
 import StarRating from "@/components/shared/star-rating";
 import PriceDisplay from "@/components/shared/price-display";
+import { useRef, useCallback } from "react";
 
 interface Product {
   id: string;
@@ -38,40 +39,125 @@ const productImages: Record<string, string> = {
 
 export default function ProductCard({ product }: { product: Product }) {
   const imageUrl = productImages[product.name] || "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&q=80";
+  const prefersReducedMotion = useReducedMotion();
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  // Motion values for 3D rotation tracking
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  // Spring-based smooth tracking with optimized config
+  const springConfig = { damping: 25, stiffness: 350, mass: 0.4 };
+  const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [10, -10]), springConfig);
+  const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-10, 10]), springConfig);
+  const scale = useSpring(1, { damping: 18, stiffness: 250, mass: 0.6 });
+  const shadowY = useSpring(0, { damping: 25, stiffness: 200 });
+  const shadowBlur = useSpring(0, { damping: 25, stiffness: 200 });
+  const shadowOpacity = useSpring(0, { damping: 25, stiffness: 200 });
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (prefersReducedMotion || !cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    mouseX.set(x);
+    mouseY.set(y);
+  }, [prefersReducedMotion, mouseX, mouseY]);
+
+  const handleMouseEnter = useCallback(() => {
+    if (prefersReducedMotion) return;
+    scale.set(1.04);
+    shadowY.set(16);
+    shadowBlur.set(32);
+    shadowOpacity.set(0.15);
+  }, [prefersReducedMotion, scale, shadowY, shadowBlur, shadowOpacity]);
+
+  const handleMouseLeave = useCallback(() => {
+    mouseX.set(0);
+    mouseY.set(0);
+    scale.set(1);
+    shadowY.set(0);
+    shadowBlur.set(0);
+    shadowOpacity.set(0);
+  }, [mouseX, mouseY, scale, shadowY, shadowBlur, shadowOpacity]);
+
+  // Shadow transform with opacity
+  const boxShadow = useTransform(
+    [shadowY, shadowBlur, shadowOpacity] as const,
+    ([y, blur, opacity]) => `0px ${y}px ${blur}px rgba(0, 0, 0, ${opacity})`
+  );
 
   return (
     <motion.div
-      whileHover={{ y: -5 }}
-      transition={{ duration: 0.2 }}
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      style={{
+        rotateX: prefersReducedMotion ? 0 : rotateX,
+        rotateY: prefersReducedMotion ? 0 : rotateY,
+        scale,
+        boxShadow,
+        transformPerspective: 1200,
+        transformStyle: "preserve-3d",
+        willChange: "transform",
+      }}
+      initial={{ opacity: 0, y: 30, rotateX: -12 }}
+      whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+      viewport={{ once: true, margin: "-50px" }}
+      transition={{
+        type: "spring",
+        damping: 20,
+        stiffness: 100,
+        mass: 0.8,
+      }}
     >
       <Link
         href={`/products/${product.id}`}
-        className="group bg-white rounded-lg border border-[var(--color-border)] overflow-hidden hover:shadow-lg transition-shadow block"
+        className="group bg-white rounded-2xl border border-[var(--color-border)] overflow-hidden block"
       >
-        {/* Image */}
+        {/* Image with overflow hidden for zoom */}
         <div className="relative aspect-square bg-[var(--color-bg-alt)] overflow-hidden">
-          <img
+          <motion.img
             src={imageUrl}
             alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-cover"
+            whileHover={prefersReducedMotion ? {} : { scale: 1.1 }}
+            transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+          />
+
+          {/* Overlay gradient on hover */}
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
           />
 
           {/* Discount Badge */}
           {product.discount && product.discount > 0 && (
-            <span className="absolute top-3 left-3 bg-[var(--color-accent)] text-white text-xs font-bold px-2 py-1 rounded-full">
+            <motion.span
+              initial={{ scale: 0, rotate: -10 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ delay: 0.3, type: "spring", stiffness: 400, damping: 15 }}
+              className="absolute top-3 left-3 bg-[var(--color-accent)] text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-lg"
+            >
               {product.discount}% off
-            </span>
+            </motion.span>
           )}
 
           {/* Wishlist button */}
-          <button className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50">
-            <Heart className="h-4 w-4 text-gray-400 hover:text-red-500" />
-          </button>
+          <motion.button
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 0, scale: 0.8 }}
+            whileHover={{ scale: 1.15 }}
+            whileTap={{ scale: 0.9 }}
+            className="absolute top-3 right-3 p-2.5 bg-white/90 backdrop-blur-sm rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-red-50"
+          >
+            <Heart className="h-4 w-4 text-gray-400 hover:text-red-500 transition-colors" />
+          </motion.button>
         </div>
 
         {/* Content */}
-        <div className="p-4">
-          <h3 className="font-semibold text-[var(--color-text)] group-hover:text-[var(--color-primary)]">
+        <div className="p-5">
+          <h3 className="font-semibold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors duration-200">
             {product.name}
           </h3>
 
@@ -100,10 +186,13 @@ export default function ProductCard({ product }: { product: Product }) {
           </div>
 
           {/* Add to Cart */}
-          <button className="w-full mt-3 py-2 bg-[var(--color-primary)] text-white rounded-lg text-sm font-medium hover:bg-[var(--color-primary-hover)] transition-colors flex items-center justify-center gap-2">
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            className="w-full mt-4 py-2.5 bg-[var(--color-primary)] text-white rounded-xl text-sm font-medium hover:bg-[var(--color-primary-hover)] transition-colors flex items-center justify-center gap-2 shadow-sm"
+          >
             <ShoppingCart className="w-4 h-4" />
             Add to Cart
-          </button>
+          </motion.button>
         </div>
       </Link>
     </motion.div>

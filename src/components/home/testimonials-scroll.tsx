@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef } from "react";
-import { motion } from "framer-motion";
+import { useRef, useEffect, useState, useCallback } from "react";
+import { motion, useReducedMotion, useSpring, useMotionValue, useTransform, useInView } from "framer-motion";
 import { Quote } from "lucide-react";
 
 interface Testimonial {
@@ -46,6 +46,49 @@ const testimonials: Testimonial[] = [
 
 export default function TestimonialsScroll() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const prefersReducedMotion = useReducedMotion();
+  const [isPaused, setIsPaused] = useState(false);
+
+  // Spring-based auto-scroll with smooth easing
+  const scrollX = useMotionValue(0);
+  const smoothScrollX = useSpring(scrollX, {
+    damping: 50,
+    stiffness: 60,
+    mass: 1.2,
+    restDelta: 0.5,
+  });
+
+  // Auto-scroll animation with smooth easing
+  useEffect(() => {
+    if (prefersReducedMotion || isPaused) return;
+
+    const container = containerRef.current;
+    if (!container) return;
+
+    const totalWidth = container.scrollWidth / 2;
+    let animationId: number;
+    let startTime: number | null = null;
+    const duration = 30000; // 30 seconds for full scroll (smoother, slower)
+
+    const animate = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const elapsed = timestamp - startTime;
+      const progress = (elapsed % duration) / duration;
+      const x = -progress * totalWidth;
+
+      scrollX.set(x);
+      animationId = requestAnimationFrame(animate);
+    };
+
+    animationId = requestAnimationFrame(animate);
+
+    return () => {
+      cancelAnimationFrame(animationId);
+    };
+  }, [prefersReducedMotion, isPaused, scrollX]);
+
+  const handleMouseEnter = useCallback(() => setIsPaused(true), []);
+  const handleMouseLeave = useCallback(() => setIsPaused(false), []);
 
   // Double the testimonials for seamless infinite scroll
   const doubledTestimonials = [...testimonials, ...testimonials];
@@ -53,37 +96,130 @@ export default function TestimonialsScroll() {
   return (
     <section className="py-20 sm:py-32 bg-[var(--color-bg-alt)] overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 mb-12">
-        <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-[var(--color-text)]">
+        <motion.h2
+          initial={{ opacity: 0, y: 24, rotateX: -10 }}
+          whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+          viewport={{ once: true }}
+          transition={{ type: "spring", damping: 22, stiffness: 100, mass: 0.8 }}
+          style={{ transformPerspective: 1200 }}
+          className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-[var(--color-text)]"
+        >
           What people are saying.
-        </h2>
-        <p className="mt-2 text-lg text-[var(--color-text-muted)]">
+        </motion.h2>
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ type: "spring", damping: 22, stiffness: 100, mass: 0.8, delay: 0.1 }}
+          className="mt-2 text-lg text-[var(--color-text-muted)]"
+        >
           Real reviews from our customers.
-        </p>
+        </motion.p>
       </div>
 
       {/* Auto-scrolling container */}
-      <div ref={containerRef} className="relative">
-        <div className="flex gap-6 animate-scroll">
-          {doubledTestimonials.map((testimonial, index) => (
-            <TestimonialCard
-              key={`${testimonial.id}-${index}`}
-              testimonial={testimonial}
-            />
-          ))}
-        </div>
+      <div
+        ref={containerRef}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        className="relative"
+      >
+        {prefersReducedMotion ? (
+          /* Static layout for reduced motion */
+          <div className="flex gap-6 px-4 overflow-x-auto scrollbar-hide">
+            {testimonials.map((testimonial) => (
+              <TestimonialCard key={testimonial.id} testimonial={testimonial} index={0} />
+            ))}
+          </div>
+        ) : (
+          <motion.div
+            style={{ x: smoothScrollX }}
+            className="flex gap-6"
+          >
+            {doubledTestimonials.map((testimonial, index) => (
+              <TestimonialCard
+                key={`${testimonial.id}-${index}`}
+                testimonial={testimonial}
+                index={index}
+              />
+            ))}
+          </motion.div>
+        )}
       </div>
     </section>
   );
 }
 
-function TestimonialCard({ testimonial }: { testimonial: Testimonial }) {
+function TestimonialCard({ testimonial, index }: { testimonial: Testimonial; index: number }) {
+  const prefersReducedMotion = useReducedMotion();
+  const cardRef = useRef<HTMLDivElement>(null);
+  const isInView = useInView(cardRef, { once: true, margin: "-30px" });
+
+  // 3D hover effect with spring physics
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  const springConfig = { damping: 25, stiffness: 350, mass: 0.4 };
+  const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [5, -5]), springConfig);
+  const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-5, 5]), springConfig);
+  const scale = useSpring(1, { damping: 18, stiffness: 250, mass: 0.6 });
+  const shadowY = useSpring(0, { damping: 25, stiffness: 200 });
+  const shadowBlur = useSpring(0, { damping: 25, stiffness: 200 });
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (prefersReducedMotion || !cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    mouseX.set(x);
+    mouseY.set(y);
+  }, [prefersReducedMotion, mouseX, mouseY]);
+
+  const handleMouseEnter = useCallback(() => {
+    if (prefersReducedMotion) return;
+    scale.set(1.03);
+    shadowY.set(8);
+    shadowBlur.set(20);
+  }, [prefersReducedMotion, scale, shadowY, shadowBlur]);
+
+  const handleMouseLeave = useCallback(() => {
+    mouseX.set(0);
+    mouseY.set(0);
+    scale.set(1);
+    shadowY.set(0);
+    shadowBlur.set(0);
+  }, [mouseX, mouseY, scale, shadowY, shadowBlur]);
+
+  const boxShadow = useTransform(
+    [shadowY, shadowBlur] as const,
+    ([y, blur]) => `0px ${y}px ${blur}px rgba(0, 0, 0, 0.08)`
+  );
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.5 }}
-      className="flex-shrink-0 w-[340px] sm:w-[400px] bg-white rounded-2xl p-8 shadow-sm"
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      initial={{ opacity: 0, y: 24, rotateX: -8 }}
+      animate={isInView ? { opacity: 1, y: 0, rotateX: 0 } : { opacity: 0, y: 24, rotateX: -8 }}
+      transition={{
+        type: "spring",
+        damping: 22,
+        stiffness: 100,
+        mass: 0.8,
+        delay: (index % 5) * 0.08,
+      }}
+      style={{
+        rotateX: prefersReducedMotion ? 0 : rotateX,
+        rotateY: prefersReducedMotion ? 0 : rotateY,
+        scale,
+        boxShadow,
+        transformPerspective: 1200,
+        transformStyle: "preserve-3d",
+        willChange: "transform",
+      }}
+      className="flex-shrink-0 w-[340px] sm:w-[400px] bg-white rounded-2xl p-8 shadow-sm cursor-pointer"
     >
       <Quote className="h-8 w-8 text-[var(--color-border)] mb-4" />
       <p className="text-base sm:text-lg text-[var(--color-text)] leading-relaxed">

@@ -3,6 +3,9 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/context/cart-context";
 import LoadingScreen from "@/components/ui/loading-screen";
+import PageTransition from "@/components/ui/page-transition";
+import Header from "@/components/layout/header";
+import Footer from "@/components/layout/footer";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -43,7 +46,14 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <LoadingScreen />
-        <CartProvider>{children}</CartProvider>
+        <CartProvider>
+          {/* Persistent header — does NOT re-animate on route changes */}
+          <Header />
+          {/* Only the main content gets page transition animations */}
+          <PageTransition>{children}</PageTransition>
+          {/* Persistent footer — does NOT re-animate on route changes */}
+          <Footer />
+        </CartProvider>
       </body>
     </html>
   );

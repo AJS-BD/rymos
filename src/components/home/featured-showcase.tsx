@@ -1,66 +1,107 @@
 "use client";
 
 import { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, useReducedMotion, useSpring } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 export default function FeaturedShowcase() {
   const sectionRef = useRef<HTMLDivElement>(null);
+  const prefersReducedMotion = useReducedMotion();
+
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start end", "end start"],
   });
 
-  const imageY = useTransform(scrollYProgress, [0, 1], [60, -60]);
-  const textY = useTransform(scrollYProgress, [0, 1], [40, -40]);
-  const textOpacity = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 1, 1, 0.8]);
-  const scale = useTransform(scrollYProgress, [0, 0.5], [0.95, 1]);
+  // Spring-based parallax transforms
+  const imageY = useSpring(
+    useTransform(scrollYProgress, [0, 1], [80, -80]),
+    { damping: 25, stiffness: 80 }
+  );
+  const textY = useSpring(
+    useTransform(scrollYProgress, [0, 1], [50, -50]),
+    { damping: 25, stiffness: 80 }
+  );
+  const textOpacity = useSpring(
+    useTransform(scrollYProgress, [0, 0.25, 0.75, 1], [0, 1, 1, 0.8]),
+    { damping: 25, stiffness: 80 }
+  );
+  const scale = useSpring(
+    useTransform(scrollYProgress, [0, 0.5], [0.92, 1]),
+    { damping: 25, stiffness: 80 }
+  );
+  const rotateX = useTransform(scrollYProgress, [0, 0.5], [-6, 0]);
+
+  // Background parallax
+  const bgY = useSpring(
+    useTransform(scrollYProgress, [0, 1], [40, -40]),
+    { damping: 25, stiffness: 60 }
+  );
 
   return (
     <section
       ref={sectionRef}
       className="relative py-20 sm:py-32 bg-[var(--color-dark-banner)] text-white overflow-hidden"
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Parallax background gradient */}
+      <motion.div
+        style={{ y: bgY }}
+        className="absolute inset-0 pointer-events-none"
+      >
+        <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-white/[0.03] to-transparent" />
+        <div className="absolute bottom-0 left-0 w-1/3 h-2/3 bg-gradient-to-tr from-[var(--color-primary)]/[0.05] to-transparent" />
+      </motion.div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 items-center">
           {/* Text content - 40% */}
           <motion.div
-            style={{ y: textY, opacity: textOpacity }}
+            style={{
+              y: prefersReducedMotion ? 0 : textY,
+              opacity: textOpacity,
+              rotateX: prefersReducedMotion ? 0 : rotateX,
+              transformPerspective: 1200,
+              transformStyle: "preserve-3d",
+            }}
             className="lg:col-span-2 order-2 lg:order-1"
           >
             <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, y: 24, rotateX: -12 }}
+              whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
+              transition={{ type: "spring", damping: 22, stiffness: 100, mass: 0.8 }}
+              style={{ transformPerspective: 1200 }}
               className="text-sm font-medium text-[var(--color-primary)] uppercase tracking-wider mb-3"
             >
               Featured
             </motion.p>
             <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, y: 24, rotateX: -12 }}
+              whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.1 }}
+              transition={{ type: "spring", damping: 22, stiffness: 100, mass: 0.8, delay: 0.1 }}
+              style={{ transformPerspective: 1200 }}
               className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight leading-tight"
             >
               iPhone 16 Pro
             </motion.h2>
             <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, y: 24, rotateX: -12 }}
+              whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.2 }}
+              transition={{ type: "spring", damping: 22, stiffness: 100, mass: 0.8, delay: 0.2 }}
+              style={{ transformPerspective: 1200 }}
               className="mt-4 text-lg sm:text-xl text-gray-400 max-w-md"
             >
               The most powerful iPhone ever. A18 Pro chip. 48MP Fusion camera. Titanium design.
             </motion.p>
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, y: 24, rotateX: -12 }}
+              whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.3 }}
+              transition={{ type: "spring", damping: 22, stiffness: 100, mass: 0.8, delay: 0.3 }}
+              style={{ transformPerspective: 1200 }}
               className="mt-8"
             >
               <Link
@@ -75,24 +116,32 @@ export default function FeaturedShowcase() {
 
           {/* Image - 60% */}
           <motion.div
-            style={{ y: imageY, scale }}
+            style={{
+              y: prefersReducedMotion ? 0 : imageY,
+              scale,
+              rotateX: prefersReducedMotion ? 0 : useTransform(scrollYProgress, [0, 0.5], [-4, 0]),
+              transformPerspective: 1200,
+              transformStyle: "preserve-3d",
+            }}
             className="lg:col-span-3 order-1 lg:order-2"
           >
-            <div className="relative aspect-[4/3] rounded-3xl overflow-hidden">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92, rotateX: -8 }}
+              whileInView={{ opacity: 1, scale: 1, rotateX: 0 }}
+              viewport={{ once: true }}
+              transition={{ type: "spring", damping: 20, stiffness: 80, mass: 1 }}
+              style={{ transformPerspective: 1200 }}
+              className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl"
+            >
               <img
                 src="https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=900&q=80"
                 alt="iPhone 16 Pro"
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-            </div>
+            </motion.div>
           </motion.div>
         </div>
-      </div>
-
-      {/* Subtle background gradient */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-white/[0.02] to-transparent" />
       </div>
     </section>
   );
