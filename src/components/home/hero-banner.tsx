@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Cpu, Camera, Battery, Smartphone } from "lucide-react";
 
 const heroSlides = [
   {
@@ -32,28 +32,47 @@ const heroSlides = [
   },
 ];
 
+const slideVariants = {
+  enter: { x: 300, opacity: 0 },
+  center: { x: 0, opacity: 1 },
+  exit: { x: -300, opacity: 0 },
+};
+
 export default function HeroBanner() {
   const [current, setCurrent] = useState(0);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % heroSlides.length);
-    }, 5000);
-    return () => clearInterval(timer);
+    setIsClient(true);
   }, []);
+
+  const next = useCallback(() => {
+    setCurrent((prev) => (prev + 1) % heroSlides.length);
+  }, []);
+
+  const prev = useCallback(() => {
+    setCurrent((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(next, 6000);
+    return () => clearInterval(timer);
+  }, [next]);
 
   const slide = heroSlides[current];
 
+  if (!isClient) return null;
+
   return (
     <section className="relative overflow-hidden min-h-[600px]">
-      {/* Background Image */}
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={current}
-          initial={{ opacity: 0, scale: 1.1 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.95 }}
-          transition={{ duration: 0.8 }}
+          variants={slideVariants}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          transition={{ duration: 0.6, ease: "easeInOut" }}
           className="absolute inset-0"
         >
           <div
@@ -64,16 +83,15 @@ export default function HeroBanner() {
         </motion.div>
       </AnimatePresence>
 
-      {/* Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-32">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <AnimatePresence mode="wait">
             <motion.div
               key={current}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -30 }}
-              transition={{ duration: 0.6 }}
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -50 }}
+              transition={{ duration: 0.5 }}
               className="text-center lg:text-left text-white"
             >
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight">
@@ -97,13 +115,17 @@ export default function HeroBanner() {
                 </Link>
               </div>
 
-              {/* Floating Specs */}
               <div className="mt-10 flex flex-wrap gap-3 justify-center lg:justify-start">
                 {slide.badges.map((badge) => (
                   <span
                     key={badge}
-                    className="px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-medium text-white border border-white/30"
+                    className="px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-medium text-white border border-white/30 flex items-center gap-2"
                   >
+                    {badge.includes("120Hz") && <Smartphone className="h-4 w-4" />}
+                    {badge.includes("Chip") && <Cpu className="h-4 w-4" />}
+                    {badge.includes("Camera") && <Camera className="h-4 w-4" />}
+                    {badge.includes("Battery") && <Battery className="h-4 w-4" />}
+                    {!badge.includes("120Hz") && !badge.includes("Chip") && !badge.includes("Camera") && !badge.includes("Battery") && <Smartphone className="h-4 w-4" />}
                     {badge}
                   </span>
                 ))}
@@ -111,33 +133,30 @@ export default function HeroBanner() {
             </motion.div>
           </AnimatePresence>
 
-          {/* Right side - empty for background image focus */}
           <div className="hidden lg:block" />
         </div>
       </div>
 
-      {/* Carousel Controls */}
       <button
-        onClick={() => setCurrent((prev) => (prev - 1 + heroSlides.length) % heroSlides.length)}
+        onClick={prev}
         className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-colors"
       >
         <ChevronLeft className="h-6 w-6" />
       </button>
       <button
-        onClick={() => setCurrent((prev) => (prev + 1) % heroSlides.length)}
+        onClick={next}
         className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-colors"
       >
         <ChevronRight className="h-6 w-6" />
       </button>
 
-      {/* Dots */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-2">
         {heroSlides.map((_, index) => (
           <button
             key={index}
             onClick={() => setCurrent(index)}
-            className={`w-3 h-3 rounded-full transition-all ${
-              index === current ? "bg-white w-8" : "bg-white/50"
+            className={`h-3 rounded-full transition-all duration-300 ${
+              index === current ? "bg-white w-8" : "bg-white/50 w-3"
             }`}
           />
         ))}

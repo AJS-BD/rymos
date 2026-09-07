@@ -43,13 +43,15 @@ export default function AppDownload() {
             </div>
           </div>
 
-          {/* Phone Mockup */}
+          {/* Phone Mockup with Image */}
           <div className="hidden lg:flex justify-center">
-            <div className="w-64 h-[500px] bg-gradient-to-b from-gray-700 to-gray-800 rounded-[3rem] border-4 border-gray-600 flex items-center justify-center">
-              <div className="text-center">
-                <div className="text-6xl mb-4">📱</div>
-                <p className="text-gray-400 text-sm">App Preview</p>
-              </div>
+            <div className="w-64 h-[500px] rounded-[3rem] border-4 border-gray-600 overflow-hidden relative">
+              <img
+                src="https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=400&q=80"
+                alt="RYmos mobile app"
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
             </div>
           </div>
         </div>

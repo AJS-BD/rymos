@@ -2,14 +2,14 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Gamepad2, Camera, Battery, Cpu, Wallet } from "lucide-react";
 
 const steps = [
-  { icon: "🎮", label: "Usage" },
-  { icon: "📷", label: "Camera" },
-  { icon: "🔋", label: "Battery" },
-  { icon: "⚡", label: "Processor" },
-  { icon: "💰", label: "Budget" },
+  { icon: Gamepad2, label: "Usage" },
+  { icon: Camera, label: "Camera" },
+  { icon: Battery, label: "Battery" },
+  { icon: Cpu, label: "Processor" },
+  { icon: Wallet, label: "Budget" },
 ];
 
 export default function FindPhoneQuiz() {
@@ -41,9 +41,9 @@ export default function FindPhoneQuiz() {
             >
               <motion.div
                 whileHover={{ scale: 1.1, rotate: 5 }}
-                className="w-16 h-16 rounded-full bg-white shadow-md flex items-center justify-center text-2xl cursor-pointer"
+                className="w-16 h-16 rounded-full bg-white shadow-md flex items-center justify-center cursor-pointer"
               >
-                {step.icon}
+                <step.icon className="h-8 w-8 text-[var(--color-primary)]" />
               </motion.div>
               {index < steps.length - 1 && (
                 <span className="text-[var(--color-text-muted)] hidden sm:block">

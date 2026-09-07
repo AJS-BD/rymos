@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Camera, Battery, Monitor, HardDrive } from "lucide-react";
 
 export default function SpecBanner() {
   return (
@@ -12,22 +13,22 @@ export default function SpecBanner() {
 
             <div className="mt-8 grid grid-cols-2 gap-4">
               <div className="p-4 bg-white/10 rounded-lg">
-                <div className="text-2xl mb-2">📷</div>
+                <Camera className="h-6 w-6 mb-2 text-white" />
                 <div className="text-sm text-gray-400">Camera</div>
                 <div className="font-bold">500MP Pro-grade</div>
               </div>
               <div className="p-4 bg-white/10 rounded-lg">
-                <div className="text-2xl mb-2">🔋</div>
+                <Battery className="h-6 w-6 mb-2 text-white" />
                 <div className="text-sm text-gray-400">Battery</div>
                 <div className="font-bold">5000mAh All-day</div>
               </div>
               <div className="p-4 bg-white/10 rounded-lg">
-                <div className="text-2xl mb-2">📺</div>
+                <Monitor className="h-6 w-6 mb-2 text-white" />
                 <div className="text-sm text-gray-400">Display</div>
                 <div className="font-bold">120Hz Dynamic AMOLED</div>
               </div>
               <div className="p-4 bg-white/10 rounded-lg">
-                <div className="text-2xl mb-2">💾</div>
+                <HardDrive className="h-6 w-6 mb-2 text-white" />
                 <div className="text-sm text-gray-400">Storage</div>
                 <div className="font-bold">256GB</div>
               </div>
@@ -43,11 +44,12 @@ export default function SpecBanner() {
 
           {/* Image */}
           <div className="relative">
-            <div className="aspect-square bg-gradient-to-br from-gray-700 to-gray-800 rounded-3xl flex items-center justify-center">
-              <div className="text-center p-8">
-                <div className="text-6xl mb-4">📱</div>
-                <p className="text-gray-400 text-sm">Camera Module Close-up</p>
-              </div>
+            <div className="aspect-square bg-gradient-to-br from-gray-700 to-gray-800 rounded-3xl flex items-center justify-center overflow-hidden">
+              <img
+                src="https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=600&q=80"
+                alt="Phone camera module"
+                className="w-full h-full object-cover"
+              />
             </div>
           </div>
         </div>

@@ -13,6 +13,8 @@ import AppDownload from "@/components/home/app-download";
 import Newsletter from "@/components/home/newsletter";
 import Footer from "@/components/layout/footer";
 
+export const dynamic = "force-dynamic";
+
 export default function Home() {
   return (
     <>
