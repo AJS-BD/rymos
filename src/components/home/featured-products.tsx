@@ -1,53 +1,24 @@
+import { supabase } from "@/lib/supabase";
 import ProductCard from "@/components/products/product-card";
 
-const featuredProducts = [
-  {
-    id: "samsung-s24-ultra",
-    name: "Samsung Galaxy S24 Ultra",
-    specs: "256GB • 12GB RAM",
-    price: 129999,
-    originalPrice: 149999,
-    discount: 12,
-    rating: 4.8,
-    reviewCount: 245,
-    image: "/images/products/placeholder.png",
-  },
-  {
-    id: "iphone-15-pro-max",
-    name: "iPhone 15 Pro Max",
-    specs: "256GB • 8GB RAM",
-    price: 164999,
-    originalPrice: 179999,
-    discount: 9,
-    rating: 4.9,
-    reviewCount: 312,
-    image: "/images/products/placeholder.png",
-  },
-  {
-    id: "oneplus-12",
-    name: "OnePlus 12",
-    specs: "256GB • 12GB RAM",
-    price: 79999,
-    originalPrice: 89999,
-    discount: 10,
-    rating: 4.6,
-    reviewCount: 189,
-    image: "/images/products/placeholder.png",
-  },
-  {
-    id: "xiaomi-14-ultra",
-    name: "Xiaomi 14 Ultra",
-    specs: "512GB • 16GB RAM",
-    price: 54999,
-    originalPrice: 64999,
-    discount: 3,
-    rating: 4.5,
-    reviewCount: 98,
-    image: "/images/products/placeholder.png",
-  },
-];
+async function getFeaturedProducts() {
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+    .eq("is_featured", true)
+    .limit(4);
 
-export default function FeaturedProducts() {
+  if (error) {
+    console.error("Error fetching featured products:", error);
+    return [];
+  }
+
+  return data;
+}
+
+export default async function FeaturedProducts() {
+  const products = await getFeaturedProducts();
+
   return (
     <section className="py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -72,8 +43,32 @@ export default function FeaturedProducts() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {featuredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
+          {products.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={{
+                id: product.id,
+                name: product.name,
+                specs: product.specs
+                  ? Object.entries(product.specs)
+                      .slice(0, 2)
+                      .map(([k, v]) => `${k}: ${v}`)
+                      .join(" • ")
+                  : undefined,
+                price: product.price,
+                originalPrice: product.original_price,
+                discount: product.original_price
+                  ? Math.round(
+                      ((product.original_price - product.price) /
+                        product.original_price) *
+                        100
+                    )
+                  : 0,
+                rating: 4.5,
+                reviewCount: Math.floor(Math.random() * 200) + 50,
+                image: "/images/products/placeholder.png",
+              }}
+            />
           ))}
         </div>
       </div>

@@ -1,54 +1,25 @@
+import { supabase } from "@/lib/supabase";
 import ProductCard from "@/components/products/product-card";
 
-const bestSellers = [
-  {
-    id: "airpods-pro-2",
-    name: "AirPods Pro 2nd Gen",
-    price: 24999,
-    originalPrice: 29999,
-    rating: 4.7,
-    reviewCount: 456,
-    image: "/images/products/placeholder.png",
-  },
-  {
-    id: "anker-20w-charger",
-    name: "Anker 20W Charger",
-    price: 1399,
-    originalPrice: 1999,
-    rating: 4.5,
-    reviewCount: 234,
-    image: "/images/products/placeholder.png",
-  },
-  {
-    id: "iphone-15-128gb",
-    name: "iPhone 15 128GB",
-    price: 69999,
-    originalPrice: 79999,
-    rating: 4.8,
-    reviewCount: 567,
-    image: "/images/products/placeholder.png",
-  },
-  {
-    id: "samsung-s23-fe",
-    name: "Samsung Galaxy S23 FE 5G",
-    price: 54999,
-    originalPrice: 64999,
-    rating: 4.6,
-    reviewCount: 345,
-    image: "/images/products/placeholder.png",
-  },
-  {
-    id: "apple-watch-se-2",
-    name: "Apple Watch SE 2nd Gen",
-    price: 29999,
-    originalPrice: 34999,
-    rating: 4.4,
-    reviewCount: 189,
-    image: "/images/products/placeholder.png",
-  },
-];
+async function getBestSellers() {
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+    .eq("is_featured", false)
+    .order("price", { ascending: false })
+    .limit(5);
 
-export default function BestSellers() {
+  if (error) {
+    console.error("Error fetching best sellers:", error);
+    return [];
+  }
+
+  return data;
+}
+
+export default async function BestSellers() {
+  const products = await getBestSellers();
+
   return (
     <section className="py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -57,8 +28,32 @@ export default function BestSellers() {
         </h2>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-          {bestSellers.map((product) => (
-            <ProductCard key={product.id} product={product} />
+          {products.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={{
+                id: product.id,
+                name: product.name,
+                specs: product.specs
+                  ? Object.entries(product.specs)
+                      .slice(0, 2)
+                      .map(([k, v]) => `${k}: ${v}`)
+                      .join(" • ")
+                  : undefined,
+                price: product.price,
+                originalPrice: product.original_price,
+                discount: product.original_price
+                  ? Math.round(
+                      ((product.original_price - product.price) /
+                        product.original_price) *
+                        100
+                    )
+                  : 0,
+                rating: 4.5,
+                reviewCount: Math.floor(Math.random() * 200) + 50,
+                image: "/images/products/placeholder.png",
+              }}
+            />
           ))}
         </div>
       </div>

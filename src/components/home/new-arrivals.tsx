@@ -1,45 +1,24 @@
+import { supabase } from "@/lib/supabase";
 import ProductCard from "@/components/products/product-card";
 
-const newArrivals = [
-  {
-    id: "vivo-v20-5g",
-    name: "Vivo V20 5G",
-    price: 19999,
-    originalPrice: 24999,
-    rating: 4.3,
-    reviewCount: 67,
-    image: "/images/products/placeholder.png",
-  },
-  {
-    id: "realme-12-pro-plus",
-    name: "Realme 12 Pro+ 5G",
-    price: 25999,
-    originalPrice: 29999,
-    rating: 4.4,
-    reviewCount: 89,
-    image: "/images/products/placeholder.png",
-  },
-  {
-    id: "nothing-phone-2a",
-    name: "Nothing Phone (2a)",
-    price: 39999,
-    originalPrice: 44999,
-    rating: 4.5,
-    reviewCount: 123,
-    image: "/images/products/placeholder.png",
-  },
-  {
-    id: "poco-x6-pro-5g",
-    name: "POCO X6 Pro 5G",
-    price: 24999,
-    originalPrice: 29999,
-    rating: 4.6,
-    reviewCount: 156,
-    image: "/images/products/placeholder.png",
-  },
-];
+async function getNewArrivals() {
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+    .eq("is_new_arrival", true)
+    .limit(4);
 
-export default function NewArrivals() {
+  if (error) {
+    console.error("Error fetching new arrivals:", error);
+    return [];
+  }
+
+  return data;
+}
+
+export default async function NewArrivals() {
+  const products = await getNewArrivals();
+
   return (
     <section className="py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -48,8 +27,32 @@ export default function NewArrivals() {
         </h2>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          {newArrivals.map((product) => (
-            <ProductCard key={product.id} product={product} />
+          {products.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={{
+                id: product.id,
+                name: product.name,
+                specs: product.specs
+                  ? Object.entries(product.specs)
+                      .slice(0, 2)
+                      .map(([k, v]) => `${k}: ${v}`)
+                      .join(" • ")
+                  : undefined,
+                price: product.price,
+                originalPrice: product.original_price,
+                discount: product.original_price
+                  ? Math.round(
+                      ((product.original_price - product.price) /
+                        product.original_price) *
+                        100
+                    )
+                  : 0,
+                rating: 4.5,
+                reviewCount: Math.floor(Math.random() * 200) + 50,
+                image: "/images/products/placeholder.png",
+              }}
+            />
           ))}
         </div>
       </div>

@@ -32,6 +32,16 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+.env.local
+
+# Plan / credentials (never commit)
+Plan.md
+plan.md
+**/Plan.md
+**/plan.md
+
+# Project plan (local reference only, never pushed)
+/Plan.md
 
 # vercel
 .vercel
