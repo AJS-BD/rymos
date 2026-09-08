@@ -106,9 +106,9 @@ export default function ProductDetailClient({ product, related }: { product: Pro
       {/* HERO SECTION */}
       <section ref={heroRef} className="relative w-full min-h-[60vh] lg:min-h-[85vh] flex flex-col lg:flex-row">
         {/* Product Image - 60% on desktop */}
-        <motion.div style={{ y: heroImageY, opacity: heroOpacity }} className="relative w-full lg:w-[60%] h-[50vh] lg:h-[85vh] overflow-hidden order-1 lg:order-1">
-          <img src={blurDataUri} alt="" aria-hidden="true" className="absolute inset-0 w-full h-[120%] object-cover object-center scale-110 blur-xl" />
-          <img src={imageUrl} alt={product.name} className="w-full h-[120%] object-cover object-center relative z-[1]" />
+        <motion.div style={{ y: heroImageY, opacity: heroOpacity }} className="relative w-full lg:w-[60%] h-[50vh] lg:h-[85vh] overflow-hidden order-1 lg:order-1 bg-gray-100">
+          <img src={blurDataUri} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover scale-110 blur-xl" />
+          <img src={imageUrl} alt={product.name} className="w-full h-full object-cover object-center relative z-[1] scale-[1.4]" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
         </motion.div>
 
