@@ -463,6 +463,13 @@ img {
   height: auto;
 }
 
+/* Fix: absolutely positioned images should fill their container */
+.relative > img[class*="object-cover"] {
+  max-width: none;
+  width: 100%;
+  height: 100%;
+}
+
 /* Aspect ratio boxes for CLS prevention */
 .aspect-square {
   aspect-ratio: 1 / 1;

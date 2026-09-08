@@ -73,7 +73,7 @@ export default function CartItem({ item, compact = false }: CartItemProps) {
       {/* Product Image */}
       <Link
         href={`/products/${product.id}`}
-        className="w-20 h-20 md:w-24 md:h-24 rounded-lg overflow-hidden bg-[var(--color-bg-alt)] flex-shrink-0 relative"
+        className="block w-20 h-20 md:w-24 md:h-24 rounded-lg overflow-hidden flex-shrink-0 relative"
       >
         <img
           src={imageUrl}
