@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Search, Menu, X, User, ShoppingCart } from "lucide-react";
 import { motion, useScroll, useMotionValueEvent, useTransform, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/auth-context";
@@ -16,29 +16,36 @@ const navLinks = [
 
 export default function Header() {
   const router = useRouter();
+  const pathname = usePathname();
+  const isHomePage = pathname === "/";
   const { isLoggedIn, logout } = useAuth();
   const { itemCount } = useCart();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [scrolled, setScrolled] = useState(false);
+  const [scrolled, setScrolled] = useState(!isHomePage);
   const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
 
   const { scrollY } = useScroll();
 
   useMotionValueEvent(scrollY, "change", (latest) => {
-    setScrolled(latest >= 50);
+    if (isHomePage) {
+      setScrolled(latest > 100);
+    } else {
+      setScrolled(true);
+    }
   });
 
   const headerBg = useTransform(
     scrollY,
-    [0, 80],
-    ["rgba(0, 0, 0, 0)", "rgba(255, 255, 255, 0.95)"]
+    [0, 100],
+    isHomePage
+      ? ["rgba(0, 0, 0, 0)", "rgba(255, 255, 255, 0.95)"]
+      : ["rgba(255, 255, 255, 0.95)", "rgba(255, 255, 255, 0.95)"]
   );
-  const headerBlur = useTransform(scrollY, [0, 80], [0, 20]);
+  const headerBlur = useTransform(scrollY, [0, 100], [0, 20]);
 
-  // Always use dark text for visibility
-  const textColor = "#111827";
+  const textColor = scrolled ? "#111827" : "#ffffff";
 
   const accountItems = isLoggedIn
     ? [
@@ -72,7 +79,7 @@ export default function Header() {
             >
               <motion.span
                 className="text-base sm:text-lg font-normal"
-                style={{ color: textColor }}
+                animate={{ color: textColor }}
                 transition={{ duration: 0.3 }}
               >
                 RYmos
@@ -82,7 +89,7 @@ export default function Header() {
             {/* Navigation - Centered (Desktop) */}
             <nav className="hidden md:flex items-center justify-center gap-8 flex-1">
               {navLinks.map((item) => (
-                <Link
+                <motion.a
                   key={item.label}
                   href={item.href}
                   onClick={(e) => {
@@ -90,10 +97,12 @@ export default function Header() {
                     router.push(item.href);
                   }}
                   className="text-xs font-light cursor-pointer"
-                  style={{ fontFamily: "var(--font-sans)", color: textColor }}
+                  style={{ fontFamily: "var(--font-sans)" }}
+                  animate={{ color: textColor }}
+                  transition={{ duration: 0.3 }}
                 >
                   {item.label}
-                </Link>
+                </motion.a>
               ))}
             </nav>
 
@@ -105,7 +114,7 @@ export default function Header() {
                 className="relative flex items-center"
               >
                 <motion.div
-                  style={{ color: textColor }}
+                  animate={{ color: textColor }}
                   transition={{ duration: 0.3 }}
                 >
                   <ShoppingCart className="h-4 w-4" strokeWidth={1.5} />
@@ -123,7 +132,7 @@ export default function Header() {
                   onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
                   className="cursor-pointer flex items-center"
                   aria-label="Account"
-                  style={{ color: textColor }}
+                  animate={{ color: textColor }}
                   transition={{ duration: 0.3 }}
                 >
                   <User className="h-4 w-4" strokeWidth={1.5} />
@@ -162,7 +171,7 @@ export default function Header() {
                 onClick={() => setSearchOpen(!searchOpen)}
                 className="cursor-pointer flex items-center"
                 aria-label="Search"
-                style={{ color: textColor }}
+                animate={{ color: textColor }}
                 transition={{ duration: 0.3 }}
               >
                 <Search className="h-4 w-4" strokeWidth={1.5} />
@@ -173,7 +182,7 @@ export default function Header() {
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="md:hidden cursor-pointer flex items-center"
                 aria-label="Menu"
-                style={{ color: textColor }}
+                animate={{ color: textColor }}
                 transition={{ duration: 0.3 }}
               >
                 {mobileMenuOpen ? (
