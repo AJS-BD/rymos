@@ -64,11 +64,11 @@ export default function Header() {
             {/* Logo - Left */}
             <Link
               href="/"
-              className="tracking-tight flex-shrink-0"
+              className="flex items-center flex-shrink-0 h-full"
               style={{ fontFamily: "var(--font-sans)" }}
             >
               <motion.span
-                className="text-base sm:text-lg font-normal"
+                className="text-base sm:text-lg font-normal flex items-center"
                 animate={{ color: textColor }}
                 transition={{ duration: 0.3 }}
               >
@@ -77,7 +77,7 @@ export default function Header() {
             </Link>
 
             {/* Navigation - Centered (Desktop) */}
-            <nav className="hidden md:flex items-center gap-8 flex-shrink-0">
+            <nav className="hidden md:flex items-center justify-center gap-8 flex-1">
               {navLinks.map((item) => (
                 <motion.a
                   key={item.label}
@@ -86,7 +86,7 @@ export default function Header() {
                     e.preventDefault();
                     router.push(item.href);
                   }}
-                  className="text-xs font-light cursor-pointer"
+                  className="text-xs font-light cursor-pointer flex items-center"
                   style={{ fontFamily: "var(--font-sans)" }}
                   animate={{ color: textColor }}
                   transition={{ duration: 0.3 }}
@@ -97,12 +97,12 @@ export default function Header() {
             </nav>
 
             {/* Right side - Account, Search & Menu */}
-            <div className="flex items-center gap-4 flex-shrink-0">
+            <div className="flex items-center justify-end gap-4 flex-shrink-0 h-full">
               {/* Account Dropdown */}
-              <div className="relative">
+              <div className="relative flex items-center">
                 <motion.button
                   onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
-                  className="cursor-pointer p-1"
+                  className="cursor-pointer flex items-center"
                   aria-label="Account"
                   animate={{ color: textColor }}
                   transition={{ duration: 0.3 }}
@@ -141,7 +141,7 @@ export default function Header() {
               {/* Search */}
               <motion.button
                 onClick={() => setSearchOpen(!searchOpen)}
-                className="cursor-pointer p-1"
+                className="cursor-pointer flex items-center"
                 aria-label="Search"
                 animate={{ color: textColor }}
                 transition={{ duration: 0.3 }}
@@ -152,7 +152,7 @@ export default function Header() {
               {/* Mobile Menu Toggle */}
               <motion.button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden cursor-pointer p-1"
+                className="md:hidden cursor-pointer flex items-center"
                 aria-label="Menu"
                 animate={{ color: textColor }}
                 transition={{ duration: 0.3 }}

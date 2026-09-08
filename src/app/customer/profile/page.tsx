@@ -5,25 +5,28 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getSupabase, isConfigured } from "@/lib/supabase";
 import { useAuth } from "@/context/auth-context";
-import { User, Mail, Phone, MapPin, Package, MessageSquare, LogOut, Edit, ChevronRight } from "lucide-react";
+import { User, Mail, Phone, Package, MessageSquare, LogOut, ChevronRight, MapPin } from "lucide-react";
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { user, isLoggedIn, logout } = useAuth();
-  const [loading, setLoading] = useState(true);
+  const { user, isLoggedIn, loading, logout } = useAuth();
   const [orders, setOrders] = useState<any[]>([]);
+  const [dataLoading, setDataLoading] = useState(true);
 
   useEffect(() => {
-    if (!isLoggedIn) {
-      router.push("/auth/login");
-      return;
+    // Wait for auth to initialize
+    if (loading) return;
+    
+    if (isLoggedIn) {
+      fetchOrders();
+    } else {
+      setDataLoading(false);
     }
-    fetchOrders();
-  }, [isLoggedIn]);
+  }, [loading, isLoggedIn]);
 
   const fetchOrders = async () => {
     if (!isConfigured() || !user?.id) {
-      setLoading(false);
+      setDataLoading(false);
       return;
     }
     const supabase = getSupabase();
@@ -34,7 +37,7 @@ export default function ProfilePage() {
       .order("created_at", { ascending: false })
       .limit(5);
     if (data) setOrders(data);
-    setLoading(false);
+    setDataLoading(false);
   };
 
   const handleLogout = async () => {
@@ -42,6 +45,18 @@ export default function ProfilePage() {
     router.push("/");
   };
 
+  // Show loading while auth initializes
+  if (loading) {
+    return (
+      <main className="flex-1">
+        <div className="min-h-[80vh] flex items-center justify-center">
+          <div className="w-8 h-8 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
+        </div>
+      </main>
+    );
+  }
+
+  // After loading, if still not logged in, redirect
   if (!isLoggedIn) {
     return (
       <main className="flex-1">
@@ -151,9 +166,9 @@ export default function ProfilePage() {
             </Link>
           </div>
 
-          {loading ? (
+          {dataLoading ? (
             <div className="text-center py-8">
-              <div className="w-8 h-8 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin mx-auto" />
+              <div className="w-6 h-6 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin mx-auto" />
             </div>
           ) : orders.length === 0 ? (
             <div className="text-center py-12">
