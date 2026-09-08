@@ -4,6 +4,8 @@ import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
 import { useCart } from "@/context/cart-context";
+import { useAuth } from "@/context/auth-context";
+import { useRouter } from "next/navigation";
 import { ShoppingCart } from "lucide-react";
 
 export default function HomePage() {
@@ -16,6 +18,8 @@ export default function HomePage() {
   const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
   const heroScale = useTransform(scrollYProgress, [0, 0.5], [1, 0.95]);
   const { addItem } = useCart();
+  const { isLoggedIn } = useAuth();
+  const router = useRouter();
 
   const featuredProducts = [
     { id: "iphone-15-pro-max", name: "iPhone 15 Pro Max", price: 164999, brand: "Apple", img: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=500&q=85" },
@@ -25,6 +29,10 @@ export default function HomePage() {
   ];
 
   const handleAddToCart = (product: any) => {
+    if (!isLoggedIn) {
+      router.push("/auth/login");
+      return;
+    }
     addItem({
       id: product.id,
       name: product.name,

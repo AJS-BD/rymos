@@ -4,6 +4,8 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { getSupabase, isConfigured } from "@/lib/supabase";
 import { motion, useInView } from "framer-motion";
 import { useCart } from "@/context/cart-context";
+import { useAuth } from "@/context/auth-context";
+import { useRouter } from "next/navigation";
 import { ShoppingCart } from "lucide-react";
 
 interface Product {
@@ -122,10 +124,16 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-50px" });
   const { addItem } = useCart();
+  const { isLoggedIn } = useAuth();
+  const router = useRouter();
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!isLoggedIn) {
+      router.push("/auth/login");
+      return;
+    }
     addItem({
       id: product.id,
       name: product.name,

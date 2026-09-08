@@ -108,23 +108,25 @@ export default function Header() {
 
             {/* Right side - Cart, Account, Search & Menu */}
             <div className="flex items-center justify-end gap-4 flex-shrink-0 h-full">
-              {/* Cart Button */}
-              <Link
-                href="/customer/cart"
-                className="relative flex items-center"
-              >
-                <motion.div
-                  animate={{ color: textColor }}
-                  transition={{ duration: 0.3 }}
+              {/* Cart Button - Only show when logged in */}
+              {isLoggedIn && (
+                <Link
+                  href="/customer/cart"
+                  className="relative flex items-center"
                 >
-                  <ShoppingBag className="h-4 w-4" strokeWidth={1.5} />
-                </motion.div>
-                {itemCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-[10px] rounded-full h-3.5 w-3.5 flex items-center justify-center font-medium">
-                    {itemCount}
-                  </span>
-                )}
-              </Link>
+                  <motion.div
+                    animate={{ color: textColor }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <ShoppingBag className="h-4 w-4" strokeWidth={1.5} />
+                  </motion.div>
+                  {itemCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-[10px] rounded-full h-3.5 w-3.5 flex items-center justify-center font-medium">
+                      {itemCount}
+                    </span>
+                  )}
+                </Link>
+              )}
 
               {/* Account Dropdown */}
               <div className="relative flex items-center">

@@ -5,6 +5,8 @@ import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import Link from "next/link";
 import { ChevronRight, ShoppingBag } from "lucide-react";
 import { useCart } from "@/context/cart-context";
+import { useAuth } from "@/context/auth-context";
+import { useRouter } from "next/navigation";
 
 interface Product {
   id: string;
@@ -84,12 +86,18 @@ export default function ProductDetailClient({ product, related }: { product: Pro
   const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
   const { addItem } = useCart();
+  const { isLoggedIn } = useAuth();
+  const router = useRouter();
 
   const imageUrl = product.images?.[0] || productImages[product.name] || fallbackImage;
   const discount = product.original_price ? Math.round(((product.original_price - product.price) / product.original_price) * 100) : 0;
   const specs = product.specs ? Object.entries(product.specs) : [];
 
   const handleAddToCart = () => {
+    if (!isLoggedIn) {
+      router.push("/auth/login");
+      return;
+    }
     addItem({
       id: product.id,
       name: product.name,

@@ -67,7 +67,7 @@ export default function CartDrawer() {
                 {items.length === 0 ? (
                   <div className="text-center py-12">
                     <ShoppingBag className="h-16 w-16 text-[var(--color-border)] mx-auto mb-4" />
-                    <p className="text-[var(--color-text-muted)] mb-4">Your cart is empty</p>
+                    <p className="text-[var(--color-text-muted)] mb-4">Your bag is empty</p>
                     <Link
                       href="/products"
                       onClick={() => setIsOpen(false)}

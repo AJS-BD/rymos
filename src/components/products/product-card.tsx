@@ -7,6 +7,8 @@ import StarRating from "@/components/shared/star-rating";
 import PriceDisplay from "@/components/shared/price-display";
 import { useRef, useCallback } from "react";
 import { useCart } from "@/context/cart-context";
+import { useAuth } from "@/context/auth-context";
+import { useRouter } from "next/navigation";
 
 interface Product {
   id: string;
@@ -43,6 +45,8 @@ export default function ProductCard({ product }: { product: Product }) {
   const prefersReducedMotion = useReducedMotion();
   const cardRef = useRef<HTMLDivElement>(null);
   const { addItem } = useCart();
+  const { isLoggedIn } = useAuth();
+  const router = useRouter();
 
   // Motion values for 3D rotation tracking
   const mouseX = useMotionValue(0);
@@ -92,6 +96,10 @@ export default function ProductCard({ product }: { product: Product }) {
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!isLoggedIn) {
+      router.push("/auth/login");
+      return;
+    }
     addItem({
       id: product.id,
       name: product.name,
