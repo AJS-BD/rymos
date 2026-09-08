@@ -70,7 +70,7 @@ export default function CartItem({ item, compact = false }: CartItemProps) {
       {/* Product Image */}
       <Link
         href={`/products/${product.id}`}
-        className="block w-20 h-20 md:w-24 md:h-24 rounded-lg overflow-hidden flex-shrink-0 bg-cover bg-center bg-no-repeat hover:scale-105 transition-transform"
+        className="block w-20 h-20 md:w-24 md:h-24 rounded-lg overflow-hidden flex-shrink-0 bg-contain bg-center bg-no-repeat"
         style={{ backgroundImage: `url(${imageUrl})` }}
       />
 
