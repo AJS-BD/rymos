@@ -6,6 +6,7 @@ import { ShoppingCart, Heart } from "lucide-react";
 import StarRating from "@/components/shared/star-rating";
 import PriceDisplay from "@/components/shared/price-display";
 import { useRef, useCallback } from "react";
+import { useCart } from "@/context/cart-context";
 
 interface Product {
   id: string;
@@ -41,6 +42,7 @@ export default function ProductCard({ product }: { product: Product }) {
   const imageUrl = productImages[product.name] || "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&q=80";
   const prefersReducedMotion = useReducedMotion();
   const cardRef = useRef<HTMLDivElement>(null);
+  const { addItem } = useCart();
 
   // Motion values for 3D rotation tracking
   const mouseX = useMotionValue(0);
@@ -86,6 +88,20 @@ export default function ProductCard({ product }: { product: Product }) {
     [shadowY, shadowBlur, shadowOpacity] as const,
     ([y, blur, opacity]) => `0px ${y}px ${blur}px rgba(0, 0, 0, ${opacity})`
   );
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addItem({
+      id: product.id,
+      name: product.name,
+      brand: "",
+      price: product.price,
+      stock: 10,
+      images: [imageUrl],
+      category: "",
+    });
+  };
 
   return (
     <motion.div
@@ -188,6 +204,7 @@ export default function ProductCard({ product }: { product: Product }) {
           {/* Add to Cart */}
           <motion.button
             whileTap={{ scale: 0.97 }}
+            onClick={handleAddToCart}
             className="w-full mt-3 sm:mt-4 py-2.5 bg-[var(--color-primary)] text-white rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium hover:bg-[var(--color-primary-hover)] transition-colors flex items-center justify-center gap-2 shadow-sm min-h-[44px] sm:min-h-[48px]"
           >
             <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4" />

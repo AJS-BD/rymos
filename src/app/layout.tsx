@@ -6,6 +6,7 @@ import { CartProvider } from "@/context/cart-context";
 import LoadingScreen from "@/components/ui/loading-screen";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
+import { ScrollToTop } from "@/components/ui/scroll-to-top";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -48,6 +49,7 @@ export default function RootLayout({
         <LoadingScreen />
         <AuthProvider>
           <CartProvider>
+            <ScrollToTop />
             <Header />
             {children}
             <Footer />

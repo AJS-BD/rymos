@@ -65,18 +65,13 @@ export default function LoginPage() {
         return;
       }
 
-      // Store customer_id in localStorage
       if (data?.user?.id) {
         localStorage.setItem("rymos_customer_id", data.user.id);
       }
 
-      // Refresh auth context
       await refreshUser();
-
       setSuccess("Login successful! Redirecting to your profile...");
-      setTimeout(() => {
-        router.push("/customer/profile");
-      }, 1000);
+      router.push("/customer/profile");
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -153,18 +148,13 @@ export default function LoginPage() {
         return;
       }
 
-      // Store customer_id in localStorage
       if (data?.user?.id) {
         localStorage.setItem("rymos_customer_id", data.user.id);
       }
 
-      // Refresh auth context
       await refreshUser();
-
       setSuccess("Login successful! Redirecting to your profile...");
-      setTimeout(() => {
-        router.push("/customer/profile");
-      }, 1000);
+      router.push("/customer/profile");
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -176,7 +166,6 @@ export default function LoginPage() {
     <main className="flex-1">
       <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
-          {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-[var(--color-text)]">Welcome Back</h1>
             <p className="text-[var(--color-text-muted)] mt-2">
@@ -184,7 +173,17 @@ export default function LoginPage() {
             </p>
           </div>
 
-          {/* Method Toggle */}
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+              {error}
+            </div>
+          )}
+          {success && (
+            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
+              {success}
+            </div>
+          )}
+
           <div className="flex bg-[var(--color-bg-alt)] rounded-lg p-1 mb-6">
             <button
               onClick={() => {
@@ -220,19 +219,6 @@ export default function LoginPage() {
             </button>
           </div>
 
-          {/* Error/Success Messages */}
-          {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
-              {error}
-            </div>
-          )}
-          {success && (
-            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
-              {success}
-            </div>
-          )}
-
-          {/* Email Login Form */}
           {method === "email" && (
             <form onSubmit={handleEmailLogin} className="space-y-4">
               <div>
@@ -302,7 +288,6 @@ export default function LoginPage() {
             </form>
           )}
 
-          {/* Phone OTP Form */}
           {method === "phone" && (
             <div className="space-y-4">
               {!otpSent ? (
@@ -392,7 +377,6 @@ export default function LoginPage() {
             </div>
           )}
 
-          {/* Footer */}
           <p className="text-center text-sm text-[var(--color-text-muted)] mt-6">
             Don&apos;t have an account?{" "}
             <Link

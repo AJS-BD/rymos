@@ -64,11 +64,11 @@ export default function Header() {
             {/* Logo - Left */}
             <Link
               href="/"
-              className="flex items-center flex-shrink-0 h-full"
+              className="flex items-center h-full flex-shrink-0"
               style={{ fontFamily: "var(--font-sans)" }}
             >
               <motion.span
-                className="text-base sm:text-lg font-normal flex items-center"
+                className="text-base sm:text-lg font-normal"
                 animate={{ color: textColor }}
                 transition={{ duration: 0.3 }}
               >
@@ -86,7 +86,7 @@ export default function Header() {
                     e.preventDefault();
                     router.push(item.href);
                   }}
-                  className="text-xs font-light cursor-pointer flex items-center"
+                  className="text-xs font-light cursor-pointer"
                   style={{ fontFamily: "var(--font-sans)" }}
                   animate={{ color: textColor }}
                   transition={{ duration: 0.3 }}
