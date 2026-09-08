@@ -151,7 +151,7 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
         <button onClick={handleAddToCart}
           className="w-full mt-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
           <ShoppingCart className="w-4 h-4" />
-          Add to Cart
+          Add to Bag
         </button>
       </a>
     </motion.div>

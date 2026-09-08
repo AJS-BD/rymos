@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import Link from "next/link";
-import { ChevronRight, ShoppingCart } from "lucide-react";
+import { ChevronRight, ShoppingBag } from "lucide-react";
 import { useCart } from "@/context/cart-context";
 
 interface Product {
@@ -151,7 +151,7 @@ export default function ProductDetailClient({ product, related }: { product: Pro
               className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 sm:gap-6">
               <button onClick={handleAddToCart}
                 className="w-full sm:w-auto px-8 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
-                <ShoppingCart className="w-5 h-5" />
+                <ShoppingBag className="w-5 h-5" />
                 Add to Bag
               </button>
               <Link href="#specs"

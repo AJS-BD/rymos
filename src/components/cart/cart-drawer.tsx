@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ShoppingCart, X } from "lucide-react";
+import { ShoppingBag, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "@/context/cart-context";
 import CartItem from "@/components/cart/cart-item";
@@ -19,7 +19,7 @@ export default function CartDrawer() {
         onClick={() => setIsOpen(true)}
         className="p-2 text-[var(--color-text)] hover:text-[var(--color-primary)] relative transition-colors"
       >
-        <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5" />
+        <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5" />
         {itemCount > 0 && (
           <span className="absolute -top-1 -right-1 bg-[var(--color-primary)] text-white text-[10px] rounded-full h-3.5 w-3.5 flex items-center justify-center sm:h-4 sm:w-4 sm:text-xs font-medium">
             {itemCount}
@@ -66,7 +66,7 @@ export default function CartDrawer() {
               <div className="flex-1 overflow-auto p-4">
                 {items.length === 0 ? (
                   <div className="text-center py-12">
-                    <ShoppingCart className="h-16 w-16 text-[var(--color-border)] mx-auto mb-4" />
+                    <ShoppingBag className="h-16 w-16 text-[var(--color-border)] mx-auto mb-4" />
                     <p className="text-[var(--color-text-muted)] mb-4">Your cart is empty</p>
                     <Link
                       href="/products"

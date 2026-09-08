@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { Search, Menu, X, User, ShoppingCart } from "lucide-react";
+import { Search, Menu, X, User, ShoppingBag } from "lucide-react";
 import { motion, useScroll, useMotionValueEvent, useTransform, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/auth-context";
 import { useCart } from "@/context/cart-context";
@@ -117,7 +117,7 @@ export default function Header() {
                   animate={{ color: textColor }}
                   transition={{ duration: 0.3 }}
                 >
-                  <ShoppingCart className="h-4 w-4" strokeWidth={1.5} />
+                  <ShoppingBag className="h-4 w-4" strokeWidth={1.5} />
                 </motion.div>
                 {itemCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-[10px] rounded-full h-3.5 w-3.5 flex items-center justify-center font-medium">

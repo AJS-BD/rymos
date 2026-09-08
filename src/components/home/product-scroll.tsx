@@ -286,7 +286,7 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
       }}
       className="flex-shrink-0 w-[240px] sm:w-[280px] lg:w-[320px] snap-start"
     >
-      <div className="group cursor-pointer">
+      <Link href={`/products/${product.id}`} className="group cursor-pointer block">
         <motion.div
           className="relative aspect-square rounded-2xl overflow-hidden mb-4 bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${product.image})` }}
@@ -300,7 +300,7 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
         <p className="text-sm text-[var(--color-text-muted)] mt-1">
           {product.price}
         </p>
-      </div>
+      </Link>
     </motion.div>
   );
 }

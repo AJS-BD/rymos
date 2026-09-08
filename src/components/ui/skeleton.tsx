@@ -69,7 +69,7 @@ export function ProductCardSkeleton() {
           <div className="absolute inset-0" style={shimmerStyle} />
         </div>
 
-        {/* Add to Cart button */}
+        {/* Add to Bag button */}
         <div
           className="h-9 w-full rounded-lg bg-[var(--color-bg-alt)] overflow-hidden relative"
           style={{ minHeight: 36 }}

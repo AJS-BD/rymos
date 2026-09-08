@@ -129,7 +129,7 @@ export default function HomePage() {
                   className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors inline-flex items-center gap-2"
                 >
                   <ShoppingCart className="w-4 h-4" />
-                  Add to Cart
+                  Add to Bag
                 </button>
               </motion.div>
             ))}

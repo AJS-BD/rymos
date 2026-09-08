@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCart } from "@/context/cart-context";
 import CartItem from "@/components/cart/cart-item";
 import { formatBDT } from "@/lib/utils";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingBag } from "lucide-react";
 
 export default function CartPage() {
   const { items, subtotal, itemCount } = useCart();
@@ -13,8 +13,8 @@ export default function CartPage() {
     return (
       <><main className="flex-1">
           <div className="max-w-2xl mx-auto px-4 py-12 sm:py-16 text-center">
-            <ShoppingCart className="h-12 w-12 sm:h-16 sm:w-16 text-gray-300 mx-auto mb-4" />
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Your Cart is Empty</h1>
+            <ShoppingBag className="h-12 w-12 sm:h-16 sm:w-16 text-gray-300 mx-auto mb-4" />
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Your Bag is Empty</h1>
             <p className="text-gray-500 mt-2 text-sm sm:text-base">Add some products to get started.</p>
             <Link
               href="/products"
@@ -31,7 +31,7 @@ export default function CartPage() {
     <><main className="flex-1">
         <div className="max-w-4xl mx-auto px-4 py-4 sm:py-6 lg:py-8">
           <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">
-            Shopping Cart ({itemCount} items)
+            Shopping Bag ({itemCount} items)
           </h1>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">

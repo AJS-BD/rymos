@@ -193,14 +193,14 @@ export default function ProductCard({ product }: { product: Product }) {
             />
           </div>
 
-          {/* Add to Cart */}
+          {/* Add to Bag */}
           <motion.button
             whileTap={{ scale: 0.97 }}
             onClick={handleAddToCart}
             className="w-full mt-3 sm:mt-4 py-2.5 bg-[var(--color-primary)] text-white rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium hover:bg-[var(--color-primary-hover)] transition-colors flex items-center justify-center gap-2 shadow-sm min-h-[44px] sm:min-h-[48px]"
           >
             <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            Add to Cart
+            Add to Bag
           </motion.button>
         </div>
       </Link>
