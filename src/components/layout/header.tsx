@@ -79,7 +79,7 @@ export default function Header() {
             >
               <motion.span
                 className="text-base sm:text-lg font-normal"
-                animate={{ color: textColor }}
+                style={{ color: textColor }}
                 transition={{ duration: 0.3 }}
               >
                 RYmos
@@ -97,8 +97,7 @@ export default function Header() {
                     router.push(item.href);
                   }}
                   className="text-xs font-light cursor-pointer"
-                  style={{ fontFamily: "var(--font-sans)" }}
-                  animate={{ color: textColor }}
+                  style={{ fontFamily: "var(--font-sans)", color: textColor }}
                   transition={{ duration: 0.3 }}
                 >
                   {item.label}
@@ -115,7 +114,7 @@ export default function Header() {
                   className="relative flex items-center"
                 >
                   <motion.div
-                    animate={{ color: textColor }}
+                    style={{ color: textColor }}
                     transition={{ duration: 0.3 }}
                   >
                     <ShoppingBag className="h-4 w-4" strokeWidth={1.5} />
@@ -134,7 +133,7 @@ export default function Header() {
                   onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
                   className="cursor-pointer flex items-center"
                   aria-label="Account"
-                  animate={{ color: textColor }}
+                  style={{ color: textColor }}
                   transition={{ duration: 0.3 }}
                 >
                   <User className="h-4 w-4" strokeWidth={1.5} />
@@ -173,7 +172,7 @@ export default function Header() {
                 onClick={() => setSearchOpen(!searchOpen)}
                 className="cursor-pointer flex items-center"
                 aria-label="Search"
-                animate={{ color: textColor }}
+                style={{ color: textColor }}
                 transition={{ duration: 0.3 }}
               >
                 <Search className="h-4 w-4" strokeWidth={1.5} />
@@ -184,7 +183,7 @@ export default function Header() {
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="md:hidden cursor-pointer flex items-center"
                 aria-label="Menu"
-                animate={{ color: textColor }}
+                style={{ color: textColor }}
                 transition={{ duration: 0.3 }}
               >
                 {mobileMenuOpen ? (
