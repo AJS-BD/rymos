@@ -52,7 +52,7 @@ export default function CartDrawer() {
               {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-[var(--color-border)]">
                 <h2 className="text-lg font-semibold text-[var(--color-text)]">
-                  Cart ({itemCount})
+                  Bag ({itemCount})
                 </h2>
                 <button
                   onClick={() => setIsOpen(false)}
