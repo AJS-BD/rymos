@@ -141,7 +141,7 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
     <motion.div ref={ref} initial={{ opacity: 0, y: 30 }} animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
       transition={{ duration: 0.6, delay: index * 0.05, ease: [0.25, 0.46, 0.45, 0.94] }}>
       <a href={`/products/${product.id}`} className="group block">
-        <div className="relative aspect-square bg-gray-50 rounded-2xl overflow-hidden mb-4">
+        <div className="relative aspect-square rounded-2xl overflow-hidden mb-4">
           <img src={imageUrl} alt={product.name} loading="lazy"
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]" />
         </div>
