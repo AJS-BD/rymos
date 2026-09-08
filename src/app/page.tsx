@@ -42,7 +42,7 @@ export default function HomePage() {
       <motion.section
         ref={heroRef}
         style={{ opacity: heroOpacity, scale: heroScale }}
-        className="relative h-screen flex items-center justify-center bg-black overflow-hidden"
+        className="relative min-h-screen min-h-dvh flex items-center justify-center bg-black overflow-hidden"
       >
         <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
           <motion.h1
@@ -82,19 +82,15 @@ export default function HomePage() {
           </motion.div>
         </div>
 
-        {/* Hero Image - Full coverage */}
+        {/* Hero Image - Full screen coverage */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1, delay: 0.8 }}
-          className="absolute inset-0 w-full h-full"
+          className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(https://images.unsplash.com/photo-1556656793-08538906a9f8?w=1920&q=85)` }}
         >
-          <img
-            src="https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=1200&q=85"
-            alt="iPhone"
-            className="w-full h-full object-cover object-center"
-          />
-          <div className="absolute inset-0 bg-black/30" />
+          <div className="absolute inset-0 bg-black/50" />
         </motion.div>
       </motion.section>
 
