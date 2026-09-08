@@ -42,7 +42,7 @@ export default function CartItem({ item, compact = false }: CartItemProps) {
           <img
             src={imageUrl}
             alt={product.name}
-            className="w-full h-full object-cover"
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           />
         </div>
         <div className="flex-1 min-w-0">
@@ -78,7 +78,7 @@ export default function CartItem({ item, compact = false }: CartItemProps) {
         <img
           src={imageUrl}
           alt={product.name}
-          className="w-full h-full object-cover hover:scale-105 transition-transform"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat hover:scale-105 transition-transform"
         />
       </Link>
 

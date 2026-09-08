@@ -133,10 +133,9 @@ export default function FeaturedShowcase() {
               style={{ transformPerspective: 1200 }}
               className="relative aspect-[4/3] rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl"
             >
-              <img
-                src="https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=900&q=80"
-                alt="iPhone 16 Pro"
-                className="w-full h-full object-cover"
+              <div
+                className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                style={{ backgroundImage: `url(https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=900&q=80)` }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
             </motion.div>

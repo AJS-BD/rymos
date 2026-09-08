@@ -245,17 +245,14 @@ export default function CategoryPage() {
                     }`}
                   >
                     <div
-                      className={`overflow-hidden bg-black ${
+                      className={`relative overflow-hidden ${
                         viewMode === "list"
                           ? "w-48 h-48 flex-shrink-0"
                           : "aspect-square"
                       }`}
+                      style={{ backgroundImage: `url(${imageUrl})`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" }}
                     >
-                      <img
-                        src={imageUrl}
-                        alt={product.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                      />
+                      <div className="absolute inset-0 group-hover:scale-105 transition-transform" />
                     </div>
                     <div className="p-4 flex-1">
                       <p className="text-xs text-gray-500 uppercase">

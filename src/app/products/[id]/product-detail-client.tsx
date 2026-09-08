@@ -190,8 +190,11 @@ export default function ProductDetailClient({ product, related }: { product: Pro
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 xl:gap-20 items-center">
             <FadeInWhenVisible>
-              <div className="aspect-[4/3] rounded-2xl sm:rounded-3xl overflow-hidden bg-gray-100 relative">
-                <img src={imageUrl} alt={product.name} className="absolute inset-0 w-full h-full object-cover" />
+              <div
+                className="aspect-[4/3] rounded-2xl sm:rounded-3xl overflow-hidden relative bg-cover bg-center bg-no-repeat"
+                style={{ backgroundImage: `url(${imageUrl})` }}
+              >
+                <div className="absolute inset-0" />
               </div>
             </FadeInWhenVisible>
             <FadeInWhenVisible delay={0.2}>

@@ -133,20 +133,12 @@ export default function ProductCard({ product }: { product: Product }) {
         className="group bg-white rounded-xl sm:rounded-2xl border border-[var(--color-border)] overflow-hidden block"
       >
         {/* Image with overflow hidden for zoom */}
-        <div className="relative aspect-square overflow-hidden">
-          <motion.img
-            src={imageUrl}
-            alt={product.name}
-            className="w-full h-full object-cover"
-            whileHover={prefersReducedMotion ? {} : { scale: 1.1 }}
-            transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-          />
-
-          {/* Overlay gradient on hover */}
-          <motion.div
-            className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-          />
-
+        <motion.div
+          className="relative aspect-square overflow-hidden bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${imageUrl})` }}
+          whileHover={prefersReducedMotion ? {} : { scale: 1.05 }}
+          transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+        >
           {/* Discount Badge */}
           {product.discount && product.discount > 0 && (
             <motion.span
@@ -169,7 +161,7 @@ export default function ProductCard({ product }: { product: Product }) {
           >
             <Heart className="h-4 w-4 text-gray-400 hover:text-red-500 transition-colors" />
           </motion.button>
-        </div>
+        </motion.div>
 
         {/* Content */}
         <div className="p-3 sm:p-4 lg:p-5">

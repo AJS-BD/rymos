@@ -237,12 +237,11 @@ export default function WishlistPage() {
                   href={`/products/${product.id}`}
                   className="block"
                 >
-                  <div className="aspect-square relative overflow-hidden bg-black">
-                    <img
-                      src={getProductImage(product)}
-                      alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                    />
+                  <div
+                    className="aspect-square relative overflow-hidden bg-cover bg-center bg-no-repeat"
+                    style={{ backgroundImage: `url(${getProductImage(product)})` }}
+                  >
+                    <div className="absolute inset-0 group-hover:scale-105 transition-transform duration-500" />
                     {discount > 0 && (
                       <span className="absolute top-2 left-2 bg-red-500 text-white text-xs font-medium px-2 py-0.5 rounded">
                         -{discount}%

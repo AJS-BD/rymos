@@ -287,16 +287,13 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
       className="flex-shrink-0 w-[240px] sm:w-[280px] lg:w-[320px] snap-start"
     >
       <div className="group cursor-pointer">
-        <div className="relative aspect-square rounded-2xl overflow-hidden mb-4">
-          <motion.img
-            src={product.image}
-            alt={product.name}
-            className="w-full h-full object-cover"
-            whileHover={prefersReducedMotion ? {} : { scale: 1.1 }}
-            transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        </div>
+        <motion.div
+          className="relative aspect-square rounded-2xl overflow-hidden mb-4 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${product.image})` }}
+          whileHover={prefersReducedMotion ? {} : { scale: 1.05 }}
+          transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+        >
+        </motion.div>
         <h3 className="text-sm sm:text-base font-medium text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors duration-200 line-clamp-2 leading-tight">
           {product.name}
         </h3>

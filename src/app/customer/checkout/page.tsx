@@ -190,7 +190,7 @@ export default function CheckoutPage() {
                         <img
                           src={item.product.images[0]}
                           alt={item.product.name}
-                          className="w-full h-full object-cover"
+                          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">

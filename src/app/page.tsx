@@ -118,13 +118,10 @@ export default function HomePage() {
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 className="group text-center"
               >
-                <div className="aspect-square rounded-2xl overflow-hidden mb-6 bg-black">
-                  <img
-                    src={product.img}
-                    alt={product.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                </div>
+                <div
+                  className="aspect-square rounded-2xl overflow-hidden mb-6 bg-cover bg-center bg-no-repeat transition-transform duration-500 group-hover:scale-105"
+                  style={{ backgroundImage: `url(${product.img})` }}
+                />
                 <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-1">
                   {product.name}
                 </h3>
@@ -167,13 +164,10 @@ export default function HomePage() {
                 </Link>
               </div>
             </div>
-            <div className="aspect-square rounded-3xl overflow-hidden shadow-sm bg-black">
-              <img
-                src="https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=800&q=85"
-                alt="iPhone 16 Pro"
-                className="w-full h-full object-cover"
-              />
-            </div>
+            <div
+              className="aspect-square rounded-3xl overflow-hidden shadow-sm bg-cover bg-center bg-no-repeat"
+              style={{ backgroundImage: `url(https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=800&q=85)` }}
+            />
           </div>
         </div>
       </section>
@@ -197,10 +191,8 @@ export default function HomePage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="relative aspect-video rounded-2xl overflow-hidden group bg-black"
-              >
-                <img src={spec.img} alt={spec.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                className="relative aspect-video rounded-2xl overflow-hidden group bg-cover bg-center bg-no-repeat"
+                style={{ backgroundImage: `url(${spec.img})` }}>
                 <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors" />
                 <div className="absolute bottom-4 left-4">
                   <p className="text-white text-lg font-medium drop-shadow-lg">{spec.title}</p>

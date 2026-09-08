@@ -49,7 +49,7 @@ export default function AppDownload() {
               <img
                 src="https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=400&q=80"
                 alt="RYmos mobile app"
-                className="w-full h-full object-cover"
+                className="absolute inset-0 bg-cover bg-center bg-no-repeat"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
             </div>
