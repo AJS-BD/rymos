@@ -185,12 +185,12 @@ export default function CheckoutPage() {
                     className="flex items-center gap-3 sm:gap-5"
                   >
                     {/* Product Image */}
-                    <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-xl sm:rounded-2xl bg-[#f5f5f7] flex-shrink-0 overflow-hidden">
+                    <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-xl sm:rounded-2xl bg-[#f5f5f7] flex-shrink-0 overflow-hidden relative">
                       {item.product.images && item.product.images.length > 0 ? (
                         <img
                           src={item.product.images[0]}
                           alt={item.product.name}
-                          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                          className="absolute inset-0 w-full h-full object-cover"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
