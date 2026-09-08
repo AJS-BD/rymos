@@ -11,7 +11,7 @@ export default function CartPage() {
 
   if (items.length === 0) {
     return (
-      <main className="flex-1">
+      <main className="flex-1 pt-16 sm:pt-20">
         <div className="max-w-2xl mx-auto px-4 py-12 sm:py-16 text-center">
           <ShoppingBag className="h-12 w-12 sm:h-16 sm:w-16 text-gray-300 mx-auto mb-4" />
           <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Your Bag is Empty</h1>
@@ -28,7 +28,7 @@ export default function CartPage() {
   }
 
   return (
-    <main className="flex-1">
+    <main className="flex-1 pt-16 sm:pt-20">
         <div className="max-w-4xl mx-auto px-4 py-4 sm:py-6 lg:py-8">
           <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">
             Shopping Bag ({itemCount} items)
