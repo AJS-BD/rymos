@@ -426,7 +426,7 @@ export function ParallaxImage({
       <motion.img
         src={src}
         alt={alt}
-        className="absolute inset-0 w-full h-full object-cover"
+        className="w-full h-full object-cover"
         style={{ y: smoothY }}
       />
     </div>
