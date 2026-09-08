@@ -100,7 +100,7 @@ export default function CheckoutPage() {
 
   if (placedOrder) {
     return (
-      <><main className="flex-1">
+      <main className="flex-1 pt-16 sm:pt-20">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -133,13 +133,13 @@ export default function CheckoutPage() {
               Continue Shopping
             </Link>
           </motion.div>
-        </main></>
+      </main>
     );
   }
 
   if (items.length === 0) {
     return (
-      <><main className="flex-1">
+      <main className="flex-1 pt-16 sm:pt-20">
           <div className="max-w-[640px] mx-auto px-4 sm:px-6 py-16 sm:py-24 lg:py-32 text-center">
             <p className="text-xl sm:text-2xl lg:text-[28px] font-semibold text-[#1d1d1f] mb-2 sm:mb-3">Your bag is empty.</p>
             <p className="text-sm sm:text-base lg:text-[19px] text-[#86868b] mb-6 sm:mb-10">
@@ -152,12 +152,12 @@ export default function CheckoutPage() {
               Shop now
             </Link>
           </div>
-        </main></>
+      </main>
     );
   }
 
   return (
-    <><main className="flex-1 bg-[#fbfbfd]">
+    <main className="flex-1 bg-[#fbfbfd] pt-16 sm:pt-20">
         <div className="max-w-[640px] mx-auto px-4 sm:px-6 py-8 sm:py-12 lg:py-20">
           {/* Title */}
           <motion.h1
@@ -405,6 +405,6 @@ export default function CheckoutPage() {
             </Link>
           </div>
         </div>
-      </main></>
+      </main>
   );
 }
