@@ -194,7 +194,7 @@ export default function ProductImageUpload({
               <img
                 src={url}
                 alt={`Product image ${index + 1}`}
-                className="absolute inset-0 w-full h-full object-cover"
+                className="w-full h-full object-cover"
                 onError={(e) => {
                   (e.target as HTMLImageElement).style.display = "none";
                   (e.target as HTMLImageElement).nextElementSibling?.classList.remove("hidden");

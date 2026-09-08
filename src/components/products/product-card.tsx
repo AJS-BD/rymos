@@ -133,11 +133,11 @@ export default function ProductCard({ product }: { product: Product }) {
         className="group bg-white rounded-xl sm:rounded-2xl border border-[var(--color-border)] overflow-hidden block"
       >
         {/* Image with overflow hidden for zoom */}
-        <div className="relative aspect-square overflow-hidden">
+        <div className="relative aspect-square overflow-hidden bg-black">
           <motion.img
             src={imageUrl}
             alt={product.name}
-            className="absolute inset-0 w-full h-full object-cover"
+            className="w-full h-full object-cover"
             whileHover={prefersReducedMotion ? {} : { scale: 1.1 }}
             transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
           />

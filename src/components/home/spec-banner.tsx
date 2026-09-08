@@ -44,11 +44,11 @@ export default function SpecBanner() {
 
           {/* Image */}
           <div className="relative order-first lg:order-last">
-            <div className="aspect-square rounded-2xl sm:rounded-3xl overflow-hidden">
+            <div className="aspect-square bg-gradient-to-br from-gray-700 to-gray-800 rounded-2xl sm:rounded-3xl flex items-center justify-center overflow-hidden">
               <img
                 src="https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=600&q=80"
                 alt="Phone camera module"
-                className="absolute inset-0 w-full h-full object-cover"
+                className="w-full h-full object-cover"
               />
             </div>
           </div>

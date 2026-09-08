@@ -245,7 +245,7 @@ export default function CategoryPage() {
                     }`}
                   >
                     <div
-                      className={`overflow-hidden ${
+                      className={`overflow-hidden bg-black ${
                         viewMode === "list"
                           ? "w-48 h-48 flex-shrink-0"
                           : "aspect-square"
@@ -254,7 +254,7 @@ export default function CategoryPage() {
                       <img
                         src={imageUrl}
                         alt={product.name}
-                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                       />
                     </div>
                     <div className="p-4 flex-1">

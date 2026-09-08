@@ -136,7 +136,7 @@ export default function FeaturedShowcase() {
               <img
                 src="https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=900&q=80"
                 alt="iPhone 16 Pro"
-                className="absolute inset-0 w-full h-full object-cover"
+                className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
             </motion.div>
