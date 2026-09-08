@@ -58,6 +58,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     let customerId = localStorage.getItem("rymos_customer_id");
 
+    if (customerId) {
+      // Validate existing customer ID
+      const { data: existingCustomer } = await supabase
+        .from("customers")
+        .select("id")
+        .eq("id", customerId)
+        .maybeSingle();
+
+      if (!existingCustomer) {
+        customerId = null; // Invalid ID, clear it
+      }
+    }
+
     if (!customerId) {
       // Try to find existing customer by phone
       let { data: existingCustomer } = await supabase
