@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
 type Phase = "loading" | "fading" | "done";
@@ -8,8 +9,17 @@ type Phase = "loading" | "fading" | "done";
 export default function LoadingScreen() {
   const [progress, setProgress] = useState(0);
   const [phase, setPhase] = useState<Phase>("loading");
+  const [showLoader, setShowLoader] = useState(true);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const fadeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pathname = usePathname();
+
+  // Reset loading state on route change
+  useEffect(() => {
+    setShowLoader(true);
+    setPhase("loading");
+    setProgress(0);
+  }, [pathname]);
 
   // Cleanup all timers on unmount
   useEffect(() => {
@@ -61,7 +71,7 @@ export default function LoadingScreen() {
   }, [phase]);
 
   // Completely unmount when done
-  if (phase === "done") return null;
+  if (phase === "done" || !showLoader) return null;
 
   return (
     <motion.div
