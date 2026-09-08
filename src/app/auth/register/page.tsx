@@ -2,11 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { getSupabase, isConfigured } from "@/lib/supabase";
 import { useAuth } from "@/context/auth-context";
 import { User, Mail, Phone, Eye, EyeOff, ArrowRight, Check } from "lucide-react";
 
 export default function RegisterPage() {
+  const router = useRouter();
+  const { refreshUser } = useAuth();
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -16,7 +19,6 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const { refreshUser } = useAuth();
 
   const validateEmail = (email: string) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -52,7 +54,6 @@ export default function RegisterPage() {
     setError("");
     setSuccess("");
 
-    // Validation
     if (!fullName.trim()) {
       setError("Please enter your full name.");
       return;
@@ -118,17 +119,15 @@ export default function RegisterPage() {
         return;
       }
 
-      // Store customer_id in localStorage
       if (data?.user?.id) {
         localStorage.setItem("rymos_customer_id", data.user.id);
       }
 
-      // Refresh auth context
       await refreshUser();
 
       setSuccess("Account created successfully! Redirecting to your profile...");
       setTimeout(() => {
-        window.location.href = "/customer/profile";
+        router.push("/customer/profile");
       }, 1500);
     } catch {
       setError("Something went wrong. Please try again.");
@@ -141,7 +140,6 @@ export default function RegisterPage() {
     <main className="flex-1">
       <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
-          {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-[var(--color-text)]">Create Account</h1>
             <p className="text-[var(--color-text-muted)] mt-2">
@@ -149,7 +147,6 @@ export default function RegisterPage() {
             </p>
           </div>
 
-          {/* Error/Success Messages */}
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
               {error}
@@ -161,7 +158,6 @@ export default function RegisterPage() {
             </div>
           )}
 
-          {/* Registration Form */}
           <form onSubmit={handleRegister} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-[var(--color-text)] mb-1.5">
@@ -235,7 +231,6 @@ export default function RegisterPage() {
                   )}
                 </button>
               </div>
-              {/* Password Strength Indicator */}
               {password && (
                 <div className="mt-2">
                   <div className="flex gap-1">
@@ -298,7 +293,6 @@ export default function RegisterPage() {
             </button>
           </form>
 
-          {/* Terms */}
           <p className="text-xs text-center text-[var(--color-text-muted)] mt-4">
             By creating an account, you agree to our{" "}
             <Link href="/terms" className="text-[var(--color-primary)] hover:underline">
@@ -310,7 +304,6 @@ export default function RegisterPage() {
             </Link>
           </p>
 
-          {/* Footer */}
           <p className="text-center text-sm text-[var(--color-text-muted)] mt-6">
             Already have an account?{" "}
             <Link

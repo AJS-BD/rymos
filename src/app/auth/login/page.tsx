@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { getSupabase, isConfigured } from "@/lib/supabase";
 import { useAuth } from "@/context/auth-context";
 import { Mail, Phone, Eye, EyeOff, ArrowRight, Smartphone } from "lucide-react";
@@ -9,6 +10,8 @@ import { Mail, Phone, Eye, EyeOff, ArrowRight, Smartphone } from "lucide-react";
 type LoginMethod = "email" | "phone";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const { refreshUser } = useAuth();
   const [method, setMethod] = useState<LoginMethod>("email");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -19,7 +22,6 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const { refreshUser } = useAuth();
 
   const validateEmail = (email: string) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -73,7 +75,7 @@ export default function LoginPage() {
 
       setSuccess("Login successful! Redirecting to your profile...");
       setTimeout(() => {
-        window.location.href = "/customer/profile";
+        router.push("/customer/profile");
       }, 1000);
     } catch {
       setError("Something went wrong. Please try again.");
@@ -161,7 +163,7 @@ export default function LoginPage() {
 
       setSuccess("Login successful! Redirecting to your profile...");
       setTimeout(() => {
-        window.location.href = "/customer/profile";
+        router.push("/customer/profile");
       }, 1000);
     } catch {
       setError("Something went wrong. Please try again.");

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Search, Menu, X, User } from "lucide-react";
@@ -31,24 +31,18 @@ export default function Header() {
   const headerBg = useTransform(
     scrollY,
     [0, 80],
-    ["rgba(255, 255, 255, 0)", "rgba(255, 255, 255, 0.72)"]
+    ["rgba(0, 0, 0, 0)", "rgba(255, 255, 255, 0.95)"]
   );
-  const headerBlur = useTransform(scrollY, [0, 80], [0, 24]);
-  const headerBorder = useTransform(
-    scrollY,
-    [0, 80],
-    ["rgba(0, 0, 0, 0)", "rgba(0, 0, 0, 0.08)"]
-  );
+  const headerBlur = useTransform(scrollY, [0, 80], [0, 20]);
 
   const textColor = scrolled ? "#111827" : "#ffffff";
 
-  // Account items based on login status
   const accountItems = isLoggedIn
     ? [
         { label: "Profile", href: "/customer/profile" },
         { label: "Track Order", href: "/track-order" },
         { label: "Messages", href: "/customer/messages" },
-        { label: "Sign Out", href: "/auth/login", action: logout },
+        { label: "Sign Out", href: "#", action: logout },
       ]
     : [
         { label: "Sign In", href: "/auth/login" },
@@ -63,33 +57,27 @@ export default function Header() {
           backgroundColor: headerBg,
           backdropFilter: useTransform(headerBlur, (v) => `blur(${v}px)`),
           WebkitBackdropFilter: useTransform(headerBlur, (v) => `blur(${v}px)`),
-          borderBottom: useTransform(
-            headerBorder,
-            (v) => `1px solid ${v}`
-          ),
         }}
       >
         <div className="max-w-[1024px] mx-auto px-5 sm:px-6">
-          <div className="flex items-center h-11 sm:h-12">
+          <div className="flex items-center justify-between h-12 sm:h-14">
             {/* Logo - Left */}
-            <div className="flex-1 flex items-center">
-              <Link
-                href="/"
-                className="tracking-tight"
-                style={{ fontFamily: "var(--font-sans)" }}
+            <Link
+              href="/"
+              className="tracking-tight flex-shrink-0"
+              style={{ fontFamily: "var(--font-sans)" }}
+            >
+              <motion.span
+                className="text-base sm:text-lg font-normal"
+                animate={{ color: textColor }}
+                transition={{ duration: 0.3 }}
               >
-                <motion.span
-                  className="text-base sm:text-lg font-normal"
-                  animate={{ color: textColor }}
-                  transition={{ duration: 0.3 }}
-                >
-                  RYmos
-                </motion.span>
-              </Link>
-            </div>
+                RYmos
+              </motion.span>
+            </Link>
 
-            {/* Navigation - Centered */}
-            <nav className="hidden md:flex items-center gap-8">
+            {/* Navigation - Centered (Desktop) */}
+            <nav className="hidden md:flex items-center gap-8 flex-shrink-0">
               {navLinks.map((item) => (
                 <motion.a
                   key={item.label}
@@ -109,12 +97,12 @@ export default function Header() {
             </nav>
 
             {/* Right side - Account, Search & Menu */}
-            <div className="flex-1 flex items-center justify-end gap-4">
+            <div className="flex items-center gap-4 flex-shrink-0">
               {/* Account Dropdown */}
               <div className="relative">
                 <motion.button
                   onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
-                  className="cursor-pointer"
+                  className="cursor-pointer p-1"
                   aria-label="Account"
                   animate={{ color: textColor }}
                   transition={{ duration: 0.3 }}
@@ -137,9 +125,7 @@ export default function Header() {
                           href={item.href}
                           onClick={() => {
                             setAccountDropdownOpen(false);
-                            if (item.action) {
-                              item.action();
-                            }
+                            if (item.action) item.action();
                           }}
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
                           style={{ fontFamily: "var(--font-sans)" }}
@@ -155,7 +141,7 @@ export default function Header() {
               {/* Search */}
               <motion.button
                 onClick={() => setSearchOpen(!searchOpen)}
-                className="cursor-pointer"
+                className="cursor-pointer p-1"
                 aria-label="Search"
                 animate={{ color: textColor }}
                 transition={{ duration: 0.3 }}
@@ -166,7 +152,7 @@ export default function Header() {
               {/* Mobile Menu Toggle */}
               <motion.button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden cursor-pointer"
+                className="md:hidden cursor-pointer p-1"
                 aria-label="Menu"
                 animate={{ color: textColor }}
                 transition={{ duration: 0.3 }}
@@ -178,30 +164,30 @@ export default function Header() {
                 )}
               </motion.button>
             </div>
-
-            {/* Search Bar */}
-            {searchOpen && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
-                className="overflow-hidden"
-              >
-                <div className="pb-3">
-                  <input
-                    type="text"
-                    placeholder="Search rymos.com"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full px-4 py-2.5 text-sm bg-[var(--color-bg-alt)] rounded-lg border-none focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30"
-                    style={{ fontFamily: "var(--font-sans)" }}
-                    autoFocus
-                  />
-                </div>
-              </motion.div>
-            )}
           </div>
+
+          {/* Search Bar */}
+          {searchOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="overflow-hidden"
+            >
+              <div className="pb-3">
+                <input
+                  type="text"
+                  placeholder="Search rymos.com"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full px-4 py-2.5 text-sm bg-[var(--color-bg-alt)] rounded-lg border-none focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30"
+                  style={{ fontFamily: "var(--font-sans)" }}
+                  autoFocus
+                />
+              </div>
+            </motion.div>
+          )}
         </div>
       </motion.header>
 
@@ -247,9 +233,7 @@ export default function Header() {
                     href={item.href}
                     onClick={() => {
                       setMobileMenuOpen(false);
-                      if (item.action) {
-                        item.action();
-                      }
+                      if (item.action) item.action();
                     }}
                     className="block text-center text-lg font-light text-[var(--color-text)] hover:text-[var(--color-text-muted)] transition-colors duration-200 py-2"
                     style={{ fontFamily: "var(--font-sans)" }}
