@@ -45,7 +45,7 @@ export default function Header() {
   );
   const headerBlur = useTransform(scrollY, [0, 100], [0, 20]);
 
-  const textColor = scrolled ? "#111827" : "#ffffff";
+  const textColor = "#111827";
 
   const accountItems = isLoggedIn
     ? [
