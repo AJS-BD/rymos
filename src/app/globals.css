@@ -464,10 +464,18 @@ img {
 }
 
 /* Fix: absolutely positioned images should fill their container */
-.relative > img[class*="object-cover"] {
-  max-width: none;
-  width: 100%;
-  height: 100%;
+[style*="background-image"] {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Override global img styles for absolutely positioned images */
+img.absolute {
+  max-width: none !important;
+  height: 100% !important;
+  width: 100% !important;
+  object-fit: cover !important;
 }
 
 /* Aspect ratio boxes for CLS prevention */
