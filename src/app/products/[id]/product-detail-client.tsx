@@ -106,9 +106,8 @@ export default function ProductDetailClient({ product, related }: { product: Pro
       {/* HERO SECTION */}
       <section ref={heroRef} className="relative w-full min-h-[60vh] lg:min-h-[85vh] flex flex-col lg:flex-row">
         {/* Product Image - 60% on desktop */}
-        <motion.div style={{ y: heroImageY, opacity: heroOpacity }} className="relative w-full lg:w-[60%] h-[50vh] lg:h-[85vh] overflow-hidden order-1 lg:order-1 bg-gray-100">
-          <img src={blurDataUri} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover scale-110 blur-xl" />
-          <img src={imageUrl} alt={product.name} className="w-full h-full object-cover object-center relative z-[1] scale-[1.4]" />
+        <motion.div style={{ y: heroImageY, opacity: heroOpacity }} className="relative w-full lg:w-[60%] h-[50vh] lg:h-[85vh] overflow-hidden order-1 lg:order-1">
+          <img src={imageUrl} alt={product.name} className="absolute inset-0 w-full h-full object-cover object-center" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
         </motion.div>
 
@@ -192,8 +191,7 @@ export default function ProductDetailClient({ product, related }: { product: Pro
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 xl:gap-20 items-center">
             <FadeInWhenVisible>
               <div className="aspect-[4/3] rounded-2xl sm:rounded-3xl overflow-hidden bg-gray-100 relative">
-                <img src={blurDataUri} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover scale-110 blur-xl" />
-                <img src={imageUrl} alt={product.name} className="w-full h-full object-cover relative z-[1]" />
+                <img src={imageUrl} alt={product.name} className="absolute inset-0 w-full h-full object-cover" />
               </div>
             </FadeInWhenVisible>
             <FadeInWhenVisible delay={0.2}>
@@ -224,9 +222,8 @@ export default function ProductDetailClient({ product, related }: { product: Pro
               <FadeInWhenVisible key={p.id} delay={idx * 0.1}>
                 <Link href={`/products/${p.id}`} className="flex-shrink-0 w-56 sm:w-72 lg:w-80 snap-start group">
                   <div className="aspect-square bg-white rounded-2xl sm:rounded-3xl overflow-hidden relative shadow-sm">
-                    <img src={blurDataUri} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover scale-110 blur-xl" />
                     <img src={relatedImages[p.name] || "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&q=80"} alt={p.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 relative z-[1]" />
+                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   </div>
                   <h3 className="mt-4 text-sm sm:text-base font-medium text-gray-900 group-hover:text-blue-600 transition-colors">{p.name}</h3>
                   <p className="mt-1 text-xs sm:text-sm text-gray-500">৳{p.price.toLocaleString()}</p>
