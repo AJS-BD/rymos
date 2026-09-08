@@ -37,7 +37,8 @@ export default function Header() {
   );
   const headerBlur = useTransform(scrollY, [0, 80], [0, 20]);
 
-  const textColor = scrolled ? "#111827" : "#ffffff";
+  // Always use dark text for visibility
+  const textColor = "#111827";
 
   const accountItems = isLoggedIn
     ? [
@@ -71,7 +72,7 @@ export default function Header() {
             >
               <motion.span
                 className="text-base sm:text-lg font-normal"
-                animate={{ color: textColor }}
+                style={{ color: textColor }}
                 transition={{ duration: 0.3 }}
               >
                 RYmos
@@ -81,7 +82,7 @@ export default function Header() {
             {/* Navigation - Centered (Desktop) */}
             <nav className="hidden md:flex items-center justify-center gap-8 flex-1">
               {navLinks.map((item) => (
-                <motion.a
+                <Link
                   key={item.label}
                   href={item.href}
                   onClick={(e) => {
@@ -89,12 +90,10 @@ export default function Header() {
                     router.push(item.href);
                   }}
                   className="text-xs font-light cursor-pointer"
-                  style={{ fontFamily: "var(--font-sans)" }}
-                  animate={{ color: textColor }}
-                  transition={{ duration: 0.3 }}
+                  style={{ fontFamily: "var(--font-sans)", color: textColor }}
                 >
                   {item.label}
-                </motion.a>
+                </Link>
               ))}
             </nav>
 
@@ -106,7 +105,7 @@ export default function Header() {
                 className="relative flex items-center"
               >
                 <motion.div
-                  animate={{ color: textColor }}
+                  style={{ color: textColor }}
                   transition={{ duration: 0.3 }}
                 >
                   <ShoppingCart className="h-4 w-4" strokeWidth={1.5} />
@@ -124,7 +123,7 @@ export default function Header() {
                   onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
                   className="cursor-pointer flex items-center"
                   aria-label="Account"
-                  animate={{ color: textColor }}
+                  style={{ color: textColor }}
                   transition={{ duration: 0.3 }}
                 >
                   <User className="h-4 w-4" strokeWidth={1.5} />
@@ -163,7 +162,7 @@ export default function Header() {
                 onClick={() => setSearchOpen(!searchOpen)}
                 className="cursor-pointer flex items-center"
                 aria-label="Search"
-                animate={{ color: textColor }}
+                style={{ color: textColor }}
                 transition={{ duration: 0.3 }}
               >
                 <Search className="h-4 w-4" strokeWidth={1.5} />
@@ -174,7 +173,7 @@ export default function Header() {
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="md:hidden cursor-pointer flex items-center"
                 aria-label="Menu"
-                animate={{ color: textColor }}
+                style={{ color: textColor }}
                 transition={{ duration: 0.3 }}
               >
                 {mobileMenuOpen ? (
