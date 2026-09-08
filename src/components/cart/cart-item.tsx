@@ -38,13 +38,10 @@ export default function CartItem({ item, compact = false }: CartItemProps) {
   if (compact) {
     return (
       <div className="flex items-center gap-3 py-3 border-b border-[var(--color-border)] last:border-0">
-        <div className="w-14 h-14 rounded-lg overflow-hidden bg-[var(--color-bg-alt)] flex-shrink-0 relative">
-          <img
-            src={imageUrl}
-            alt={product.name}
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-        </div>
+        <div
+          className="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${imageUrl})` }}
+        />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-[var(--color-text)] truncate">
             {product.name}
@@ -73,14 +70,9 @@ export default function CartItem({ item, compact = false }: CartItemProps) {
       {/* Product Image */}
       <Link
         href={`/products/${product.id}`}
-        className="block w-20 h-20 md:w-24 md:h-24 rounded-lg overflow-hidden flex-shrink-0 relative"
-      >
-        <img
-          src={imageUrl}
-          alt={product.name}
-          className="absolute inset-0 w-full h-full object-cover hover:scale-105 transition-transform"
-        />
-      </Link>
+        className="block w-20 h-20 md:w-24 md:h-24 rounded-lg overflow-hidden flex-shrink-0 bg-cover bg-center bg-no-repeat hover:scale-105 transition-transform"
+        style={{ backgroundImage: `url(${imageUrl})` }}
+      />
 
       {/* Product Info */}
       <div className="flex-1 min-w-0">
