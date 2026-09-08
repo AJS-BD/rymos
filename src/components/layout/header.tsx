@@ -64,7 +64,7 @@ export default function Header() {
             {/* Logo - Left */}
             <Link
               href="/"
-              className="flex items-center h-full flex-shrink-0"
+              className="flex items-center justify-center flex-shrink-0 h-full"
               style={{ fontFamily: "var(--font-sans)" }}
             >
               <motion.span
@@ -77,7 +77,7 @@ export default function Header() {
             </Link>
 
             {/* Navigation - Centered (Desktop) */}
-            <nav className="hidden md:flex items-center justify-center gap-8 flex-1">
+            <nav className="hidden md:flex items-center justify-center gap-8 flex-1 h-full">
               {navLinks.map((item) => (
                 <motion.a
                   key={item.label}
@@ -86,7 +86,7 @@ export default function Header() {
                     e.preventDefault();
                     router.push(item.href);
                   }}
-                  className="text-xs font-light cursor-pointer"
+                  className="text-xs font-light cursor-pointer h-full flex items-center"
                   style={{ fontFamily: "var(--font-sans)" }}
                   animate={{ color: textColor }}
                   transition={{ duration: 0.3 }}
@@ -99,10 +99,10 @@ export default function Header() {
             {/* Right side - Account, Search & Menu */}
             <div className="flex items-center justify-end gap-4 flex-shrink-0 h-full">
               {/* Account Dropdown */}
-              <div className="relative flex items-center">
+              <div className="relative flex items-center h-full">
                 <motion.button
                   onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
-                  className="cursor-pointer flex items-center"
+                  className="cursor-pointer flex items-center justify-center h-full"
                   aria-label="Account"
                   animate={{ color: textColor }}
                   transition={{ duration: 0.3 }}
@@ -141,7 +141,7 @@ export default function Header() {
               {/* Search */}
               <motion.button
                 onClick={() => setSearchOpen(!searchOpen)}
-                className="cursor-pointer flex items-center"
+                className="cursor-pointer flex items-center justify-center h-full"
                 aria-label="Search"
                 animate={{ color: textColor }}
                 transition={{ duration: 0.3 }}
@@ -152,7 +152,7 @@ export default function Header() {
               {/* Mobile Menu Toggle */}
               <motion.button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden cursor-pointer flex items-center"
+                className="md:hidden cursor-pointer flex items-center justify-center h-full"
                 aria-label="Menu"
                 animate={{ color: textColor }}
                 transition={{ duration: 0.3 }}

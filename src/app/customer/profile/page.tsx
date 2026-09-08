@@ -14,29 +14,33 @@ export default function ProfilePage() {
   const [dataLoading, setDataLoading] = useState(true);
 
   useEffect(() => {
-    // Wait for auth to initialize
+    // Wait for auth to initialize before doing anything
     if (loading) return;
     
-    if (isLoggedIn) {
+    if (isLoggedIn && user?.id) {
       fetchOrders();
     } else {
       setDataLoading(false);
     }
-  }, [loading, isLoggedIn]);
+  }, [loading, isLoggedIn, user?.id]);
 
   const fetchOrders = async () => {
     if (!isConfigured() || !user?.id) {
       setDataLoading(false);
       return;
     }
-    const supabase = getSupabase();
-    const { data } = await supabase
-      .from("orders")
-      .select("*")
-      .eq("customer_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(5);
-    if (data) setOrders(data);
+    try {
+      const supabase = getSupabase();
+      const { data } = await supabase
+        .from("orders")
+        .select("*")
+        .eq("customer_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(5);
+      if (data) setOrders(data);
+    } catch (err) {
+      console.error("Failed to fetch orders:", err);
+    }
     setDataLoading(false);
   };
 
@@ -50,26 +54,42 @@ export default function ProfilePage() {
     return (
       <main className="flex-1">
         <div className="min-h-[80vh] flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
+          <div className="text-center">
+            <div className="w-10 h-10 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-gray-500">Loading your profile...</p>
+          </div>
         </div>
       </main>
     );
   }
 
-  // After loading, if still not logged in, redirect
+  // After loading, if not logged in, show login prompt (not redirect)
   if (!isLoggedIn) {
     return (
       <main className="flex-1">
         <div className="min-h-[80vh] flex items-center justify-center">
-          <div className="text-center">
-            <h1 className="text-2xl font-semibold text-gray-900 mb-4">Please sign in</h1>
-            <p className="text-gray-500 mb-6">You need to be logged in to view your profile.</p>
-            <Link
-              href="/auth/login"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-            >
-              Sign In
-            </Link>
+          <div className="text-center max-w-md px-6">
+            <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-6">
+              <User className="h-10 w-10 text-gray-400" />
+            </div>
+            <h1 className="text-2xl font-semibold text-gray-900 mb-3">Welcome to RYmos</h1>
+            <p className="text-gray-500 mb-8">
+              Sign in to view your profile, track orders, and manage your account.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Link
+                href="/auth/login"
+                className="inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/auth/register"
+                className="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+              >
+                Create Account
+              </Link>
+            </div>
           </div>
         </div>
       </main>
@@ -81,13 +101,13 @@ export default function ProfilePage() {
       <div className="max-w-4xl mx-auto px-6 py-12">
         {/* Profile Header */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-8">
-          <div className="flex items-center gap-6">
-            <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center">
+          <div className="flex flex-col sm:flex-row items-center gap-6">
+            <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
               <User className="h-10 w-10 text-blue-600" />
             </div>
-            <div className="flex-1">
+            <div className="flex-1 text-center sm:text-left">
               <h1 className="text-2xl font-semibold text-gray-900">{user?.fullName || "User"}</h1>
-              <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-500">
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 mt-2 text-sm text-gray-500">
                 {user?.email && (
                   <span className="flex items-center gap-1">
                     <Mail className="h-4 w-4" />
