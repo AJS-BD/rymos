@@ -79,8 +79,8 @@ export default function LoadingScreen() {
       animate={{ opacity: phase === "loading" ? 1 : 0 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 1.0, ease: "easeInOut" }}
-      className="fixed inset-0 z-[100] bg-[#000000] flex items-center justify-center"
-      style={{ pointerEvents: phase === "loading" ? "auto" : "none" }}
+      className="fixed inset-0 z-40 bg-[#000000] flex items-center justify-center"
+      style={{ pointerEvents: "none" }}
     >
       <div className="text-center">
         <motion.div
