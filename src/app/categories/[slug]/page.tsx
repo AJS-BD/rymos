@@ -117,7 +117,7 @@ export default function CategoryPage() {
 
   if (loading) {
     return (
-      <><main className="flex-1">
+      <main className="flex-1 pt-16 sm:pt-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="animate-pulse">
               <div className="h-8 bg-gray-200 rounded w-48 mb-2" />
@@ -129,12 +129,12 @@ export default function CategoryPage() {
               </div>
             </div>
           </div>
-        </main></>
+        </main>
     );
   }
 
   return (
-    <><main className="flex-1">
+    <main className="flex-1 pt-16 sm:pt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Breadcrumb */}
           <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6">
@@ -279,6 +279,6 @@ export default function CategoryPage() {
             </div>
           )}
         </div>
-      </main></>
+      </main>
   );
 }

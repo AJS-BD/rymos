@@ -134,7 +134,7 @@ export default function FaqPage() {
   const configured = isConfigured();
 
   return (
-    <><main className="flex-1">
+    <main className="flex-1 pt-16 sm:pt-20">
         {/* Hero */}
         <section className="bg-[var(--color-dark-banner)] text-white py-16 sm:py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -195,6 +195,6 @@ export default function FaqPage() {
             </div>
           </div>
         </section>
-      </main></>
+      </main>
   );
 }

@@ -44,19 +44,60 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (!session?.user) {
       localStorage.removeItem(USER_STORAGE_KEY);
+      localStorage.removeItem("rymos_customer_id");
       setUser(null);
       setLoading(false);
       return;
     }
 
-    const customerId = localStorage.getItem("rymos_customer_id") || null;
+    // Look up or create customer in customers table
+    const email = session.user.email || null;
+    const phone = session.user.phone || null;
     const meta = session.user.user_metadata || {};
+    const fullName = meta.full_name || meta.name || "User";
+
+    let customerId = localStorage.getItem("rymos_customer_id");
+
+    if (!customerId) {
+      // Try to find existing customer by phone
+      let { data: existingCustomer } = await supabase
+        .from("customers")
+        .select("id")
+        .eq("phone", phone)
+        .maybeSingle();
+
+      if (existingCustomer) {
+        customerId = existingCustomer.id;
+      } else {
+        // Create new customer
+        const { data: newCustomer, error: createError } = await supabase
+          .from("customers")
+          .insert({
+            username: phone || `user_${session.user.id.slice(0, 8)}`,
+            full_name: fullName,
+            phone: phone || "",
+            address: "",
+            customer_type: "online",
+            created_via: "online_signup",
+          })
+          .select("id")
+          .single();
+
+        if (!createError && newCustomer) {
+          customerId = newCustomer.id;
+        }
+      }
+
+      if (customerId) {
+        localStorage.setItem("rymos_customer_id", customerId);
+      }
+    }
 
     const authUser: AuthUser = {
       id: session.user.id,
-      email: session.user.email || null,
-      phone: session.user.phone || null,
-      fullName: meta.full_name || meta.name || "User",
+      email,
+      phone,
+      fullName,
       customerId,
     };
 

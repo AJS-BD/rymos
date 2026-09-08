@@ -181,7 +181,7 @@ export default function CreditApplication() {
 
   if (submitted) {
     return (
-      <><main className="flex-1">
+      <main className="flex-1 pt-16 sm:pt-20">
           <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full text-center">
               <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
@@ -197,12 +197,12 @@ export default function CreditApplication() {
               </a>
             </div>
           </div>
-        </main></>
+        </main>
     );
   }
 
   return (
-    <><main className="flex-1">
+    <main className="flex-1 pt-16 sm:pt-20">
         <div className="min-h-screen bg-gray-50 py-8 px-4">
           <div className="max-w-3xl mx-auto">
             <div className="mb-8">
@@ -591,6 +591,6 @@ export default function CreditApplication() {
         </form>
           </div>
         </div>
-      </main></>
+      </main>
   );
 }

@@ -87,29 +87,29 @@ export default function CustomerOrders() {
 
   if (loading) {
     return (
-      <><main className="flex-1">
+      <main className="flex-1 pt-16 sm:pt-20">
           <div className="flex items-center justify-center h-64">
             <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
           </div>
-        </main></>
+        </main>
     );
   }
 
   if (!isConfigured()) {
     return (
-      <><main className="flex-1">
+      <main className="flex-1 pt-16 sm:pt-20">
           <div className="max-w-2xl mx-auto px-4 py-16 text-center">
             <AlertCircle className="w-12 h-12 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-500">
               Supabase is not configured. Please check environment variables.
             </p>
           </div>
-        </main></>
+        </main>
     );
   }
 
   return (
-    <><main className="flex-1">
+    <main className="flex-1 pt-16 sm:pt-20">
         <div className="max-w-4xl mx-auto px-4 py-8">
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-gray-900">My Orders</h1>
@@ -177,6 +177,6 @@ export default function CustomerOrders() {
         </div>
       )}
         </div>
-      </main></>
+      </main>
   );
 }

@@ -148,7 +148,7 @@ export default function CreditStatus() {
   };
 
   return (
-    <><main className="flex-1">
+    <main className="flex-1 pt-16 sm:pt-20">
         <div className="min-h-screen bg-gray-50 py-8 px-4">
           <div className="max-w-4xl mx-auto">
             <div className="mb-8">
@@ -337,6 +337,6 @@ export default function CreditStatus() {
         )}
       </div>
         </div>
-      </main></>
+      </main>
   );
 }

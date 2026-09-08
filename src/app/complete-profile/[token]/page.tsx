@@ -98,17 +98,17 @@ function CompleteProfileContent() {
 
   if (loading) {
     return (
-      <><main className="flex-1">
+      <main className="flex-1 pt-16 sm:pt-20">
           <div className="min-h-screen bg-gray-50 flex items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
           </div>
-        </main></>
+        </main>
     );
   }
 
   if (alreadyCompleted) {
     return (
-      <><main className="flex-1">
+      <main className="flex-1 pt-16 sm:pt-20">
           <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-lg shadow-sm border p-8 max-w-md w-full text-center">
               <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
@@ -116,13 +116,13 @@ function CompleteProfileContent() {
               <p className="text-gray-500">Your profile has already been completed. Thank you!</p>
             </div>
           </div>
-        </main></>
+        </main>
     );
   }
 
   if (success) {
     return (
-      <><main className="flex-1">
+      <main className="flex-1 pt-16 sm:pt-20">
           <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-lg shadow-sm border p-8 max-w-md w-full text-center">
               <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
@@ -130,13 +130,13 @@ function CompleteProfileContent() {
               <p className="text-gray-500">Your profile has been successfully updated. Thank you for completing your information.</p>
             </div>
           </div>
-        </main></>
+        </main>
     );
   }
 
   if (error) {
     return (
-      <><main className="flex-1">
+      <main className="flex-1 pt-16 sm:pt-20">
           <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-lg shadow-sm border p-8 max-w-md w-full text-center">
               <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
@@ -144,12 +144,12 @@ function CompleteProfileContent() {
               <p className="text-gray-500">{error}</p>
             </div>
           </div>
-        </main></>
+        </main>
     );
   }
 
   return (
-    <><main className="flex-1">
+    <main className="flex-1 pt-16 sm:pt-20">
         <div className="min-h-screen bg-gray-50 py-8 px-4">
           <div className="max-w-lg mx-auto">
             <div className="bg-white rounded-lg shadow-sm border p-6">
@@ -251,7 +251,7 @@ function CompleteProfileContent() {
             </div>
           </div>
         </div>
-      </main></>
+      </main>
   );
 }
 

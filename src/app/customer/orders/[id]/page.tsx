@@ -148,17 +148,17 @@ export default function CustomerOrderDetail({
 
   if (loading) {
     return (
-      <><main className="flex-1">
+      <main className="flex-1 pt-16 sm:pt-20">
           <div className="flex items-center justify-center h-64">
             <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
           </div>
-        </main></>
+        </main>
     );
   }
 
   if (error || !order) {
     return (
-      <><main className="flex-1">
+      <main className="flex-1 pt-16 sm:pt-20">
           <div className="max-w-2xl mx-auto px-4 py-16 text-center">
             <AlertCircle className="w-12 h-12 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-500">{error || "Order not found."}</p>
@@ -169,12 +169,12 @@ export default function CustomerOrderDetail({
               ← Back to orders
             </Link>
           </div>
-        </main></>
+        </main>
     );
   }
 
   return (
-    <><main className="flex-1">
+    <main className="flex-1 pt-16 sm:pt-20">
         <div className="max-w-4xl mx-auto px-4 py-8">
           {/* Header */}
       <div className="flex items-start justify-between mb-6">
@@ -470,6 +470,6 @@ export default function CustomerOrderDetail({
         </div>
       </div>
         </div>
-      </main></>
+      </main>
   );
 }

@@ -21,7 +21,7 @@ export default async function ProductDetail({ params }: { params: Promise<{ id: 
 
   if (!product) {
     return (
-      <main className="flex-1">
+      <main className="flex-1 pt-16 sm:pt-20">
         <div className="max-w-7xl mx-auto px-4 py-16 text-center">
           <h1 className="text-2xl font-bold text-gray-900">Product Not Found</h1>
           <p className="text-gray-500 mt-2">The product you&apos;re looking for doesn&apos;t exist.</p>

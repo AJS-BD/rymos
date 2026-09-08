@@ -144,7 +144,7 @@ export default function CustomerMessages() {
   };
 
   return (
-    <><main className="flex-1">
+    <main className="flex-1 pt-16 sm:pt-20">
         <div className="min-h-screen bg-gray-50 flex flex-col">
           {/* Header */}
           <header className="bg-white border-b px-4 py-3 flex items-center gap-3 sticky top-0 z-10">
@@ -204,6 +204,6 @@ export default function CustomerMessages() {
             disabled={sending}
           />
         </div>
-      </main></>
+      </main>
   );
 }

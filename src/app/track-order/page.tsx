@@ -192,7 +192,7 @@ export default function TrackOrderPage() {
   const currentStatus = order ? statusConfig[order.status] || statusConfig.pending : null;
 
   return (
-    <><main className="flex-1">
+    <main className="flex-1 pt-16 sm:pt-20">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
           <div className="text-center mb-8">
@@ -440,6 +440,6 @@ export default function TrackOrderPage() {
             </div>
           )}
         </div>
-      </main></>
+      </main>
   );
 }
