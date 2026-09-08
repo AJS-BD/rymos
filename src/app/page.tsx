@@ -3,6 +3,8 @@
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
+import { useCart } from "@/context/cart-context";
+import { ShoppingCart } from "lucide-react";
 
 export default function HomePage() {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -13,6 +15,26 @@ export default function HomePage() {
 
   const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
   const heroScale = useTransform(scrollYProgress, [0, 0.5], [1, 0.95]);
+  const { addItem } = useCart();
+
+  const featuredProducts = [
+    { id: "1", name: "iPhone 15 Pro Max", price: 164999, brand: "Apple", img: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=500&q=85" },
+    { id: "2", name: "Samsung Galaxy S24 Ultra", price: 129999, brand: "Samsung", img: "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=500&q=85" },
+    { id: "3", name: "OnePlus 12", price: 79999, brand: "OnePlus", img: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=500&q=85" },
+    { id: "4", name: "Xiaomi 14 Ultra", price: 54999, brand: "Xiaomi", img: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500&q=85" },
+  ];
+
+  const handleAddToCart = (product: any) => {
+    addItem({
+      id: product.id,
+      name: product.name,
+      brand: product.brand,
+      price: product.price,
+      stock: 10,
+      images: [product.img],
+      category: "smartphones",
+    });
+  };
 
   return (
     <main className="flex-1">
@@ -86,14 +108,9 @@ export default function HomePage() {
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[
-              { name: "iPhone 15 Pro Max", price: "From ৳164,999", img: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=500&q=85" },
-              { name: "Samsung Galaxy S24 Ultra", price: "From ৳129,999", img: "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=500&q=85" },
-              { name: "OnePlus 12", price: "From ৳79,999", img: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=500&q=85" },
-              { name: "Xiaomi 14 Ultra", price: "From ৳54,999", img: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500&q=85" },
-            ].map((product, index) => (
+            {featuredProducts.map((product, index) => (
               <motion.div
-                key={product.name}
+                key={product.id}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -111,14 +128,15 @@ export default function HomePage() {
                   {product.name}
                 </h3>
                 <p className="text-base text-gray-500">
-                  {product.price}
+                  ৳{product.price.toLocaleString()}
                 </p>
-                <Link
-                  href="/products"
-                  className="inline-block mt-3 text-blue-500 hover:text-blue-600 text-sm font-normal"
+                <button
+                  onClick={() => handleAddToCart(product)}
+                  className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors inline-flex items-center gap-2"
                 >
-                  Buy →
-                </Link>
+                  <ShoppingCart className="w-4 h-4" />
+                  Add to Cart
+                </button>
               </motion.div>
             ))}
           </div>

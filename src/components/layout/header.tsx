@@ -3,9 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Search, Menu, X, User } from "lucide-react";
+import { Search, Menu, X, User, ShoppingCart } from "lucide-react";
 import { motion, useScroll, useMotionValueEvent, useTransform, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/auth-context";
+import { useCart } from "@/context/cart-context";
 
 const navLinks = [
   { label: "Products", href: "/products" },
@@ -16,6 +17,7 @@ const navLinks = [
 export default function Header() {
   const router = useRouter();
   const { isLoggedIn, logout } = useAuth();
+  const { itemCount } = useCart();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -64,7 +66,7 @@ export default function Header() {
             {/* Logo - Left */}
             <Link
               href="/"
-              className="flex items-center justify-center flex-shrink-0 h-full"
+              className="flex items-center h-full flex-shrink-0"
               style={{ fontFamily: "var(--font-sans)" }}
             >
               <motion.span
@@ -77,7 +79,7 @@ export default function Header() {
             </Link>
 
             {/* Navigation - Centered (Desktop) */}
-            <nav className="hidden md:flex items-center justify-center gap-8 flex-1 h-full">
+            <nav className="hidden md:flex items-center justify-center gap-8 flex-1">
               {navLinks.map((item) => (
                 <motion.a
                   key={item.label}
@@ -86,7 +88,7 @@ export default function Header() {
                     e.preventDefault();
                     router.push(item.href);
                   }}
-                  className="text-xs font-light cursor-pointer h-full flex items-center"
+                  className="text-xs font-light cursor-pointer"
                   style={{ fontFamily: "var(--font-sans)" }}
                   animate={{ color: textColor }}
                   transition={{ duration: 0.3 }}
@@ -96,13 +98,31 @@ export default function Header() {
               ))}
             </nav>
 
-            {/* Right side - Account, Search & Menu */}
+            {/* Right side - Cart, Account, Search & Menu */}
             <div className="flex items-center justify-end gap-4 flex-shrink-0 h-full">
+              {/* Cart Button */}
+              <Link
+                href="/customer/cart"
+                className="relative flex items-center"
+              >
+                <motion.div
+                  animate={{ color: textColor }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <ShoppingCart className="h-4 w-4" strokeWidth={1.5} />
+                </motion.div>
+                {itemCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-[10px] rounded-full h-3.5 w-3.5 flex items-center justify-center font-medium">
+                    {itemCount}
+                  </span>
+                )}
+              </Link>
+
               {/* Account Dropdown */}
-              <div className="relative flex items-center h-full">
+              <div className="relative flex items-center">
                 <motion.button
                   onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
-                  className="cursor-pointer flex items-center justify-center h-full"
+                  className="cursor-pointer flex items-center"
                   aria-label="Account"
                   animate={{ color: textColor }}
                   transition={{ duration: 0.3 }}
@@ -141,7 +161,7 @@ export default function Header() {
               {/* Search */}
               <motion.button
                 onClick={() => setSearchOpen(!searchOpen)}
-                className="cursor-pointer flex items-center justify-center h-full"
+                className="cursor-pointer flex items-center"
                 aria-label="Search"
                 animate={{ color: textColor }}
                 transition={{ duration: 0.3 }}
@@ -152,7 +172,7 @@ export default function Header() {
               {/* Mobile Menu Toggle */}
               <motion.button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden cursor-pointer flex items-center justify-center h-full"
+                className="md:hidden cursor-pointer flex items-center"
                 aria-label="Menu"
                 animate={{ color: textColor }}
                 transition={{ duration: 0.3 }}
