@@ -90,8 +90,8 @@ export default function HomePage() {
           className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[500px] sm:w-[600px] lg:w-[800px] h-[300px] sm:h-[400px] lg:h-[500px]"
           style={{
             backgroundImage: "url(https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=1200&q=85)",
-            backgroundSize: "contain",
-            backgroundPosition: "center bottom",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
             backgroundRepeat: "no-repeat",
           }}
         />
