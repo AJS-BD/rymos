@@ -287,11 +287,11 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
       className="flex-shrink-0 w-[240px] sm:w-[280px] lg:w-[320px] snap-start"
     >
       <div className="group cursor-pointer">
-        <div className="relative aspect-square rounded-2xl overflow-hidden mb-4 bg-black">
+        <div className="relative aspect-square rounded-2xl overflow-hidden mb-4">
           <motion.img
             src={product.image}
             alt={product.name}
-            className="w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-cover"
             whileHover={prefersReducedMotion ? {} : { scale: 1.1 }}
             transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
           />

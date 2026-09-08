@@ -119,7 +119,7 @@ export function ImageZoom({
       <motion.img
         src={src}
         alt={alt}
-        className="w-full h-full object-cover"
+        className="absolute inset-0 w-full h-full object-cover"
         whileHover={{
           scale: zoomScale,
         }}
