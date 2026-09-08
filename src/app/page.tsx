@@ -18,10 +18,10 @@ export default function HomePage() {
   const { addItem } = useCart();
 
   const featuredProducts = [
-    { id: "1", name: "iPhone 15 Pro Max", price: 164999, brand: "Apple", img: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=500&q=85" },
-    { id: "2", name: "Samsung Galaxy S24 Ultra", price: 129999, brand: "Samsung", img: "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=500&q=85" },
-    { id: "3", name: "OnePlus 12", price: 79999, brand: "OnePlus", img: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=500&q=85" },
-    { id: "4", name: "Xiaomi 14 Ultra", price: 54999, brand: "Xiaomi", img: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500&q=85" },
+    { id: "iphone-15-pro-max", name: "iPhone 15 Pro Max", price: 164999, brand: "Apple", img: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=500&q=85" },
+    { id: "samsung-s24-ultra", name: "Samsung Galaxy S24 Ultra", price: 129999, brand: "Samsung", img: "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=500&q=85" },
+    { id: "oneplus-12", name: "OnePlus 12", price: 79999, brand: "OnePlus", img: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=500&q=85" },
+    { id: "xiaomi-14-ultra", name: "Xiaomi 14 Ultra", price: 54999, brand: "Xiaomi", img: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500&q=85" },
   ];
 
   const handleAddToCart = (product: any) => {
@@ -82,19 +82,20 @@ export default function HomePage() {
           </motion.div>
         </div>
 
-        {/* Hero Image */}
+        {/* Hero Image - Full coverage */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1, delay: 0.8 }}
-          className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[500px] sm:w-[600px] lg:w-[800px] h-[300px] sm:h-[400px] lg:h-[500px]"
-          style={{
-            backgroundImage: "url(https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=1200&q=85)",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundRepeat: "no-repeat",
-          }}
-        />
+          className="absolute inset-0 w-full h-full"
+        >
+          <img
+            src="https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=1200&q=85"
+            alt="iPhone"
+            className="w-full h-full object-cover object-center"
+          />
+          <div className="absolute inset-0 bg-black/30" />
+        </motion.div>
       </motion.section>
 
       {/* Product Showcase */}
@@ -158,16 +159,10 @@ export default function HomePage() {
                 The most powerful iPhone ever. A18 Pro chip. 48MP Fusion camera. Titanium design.
               </p>
               <div className="flex items-center gap-8">
-                <Link
-                  href="/products"
-                  className="text-blue-500 hover:text-blue-600 text-lg font-normal"
-                >
+                <Link href="/products" className="text-blue-500 hover:text-blue-600 text-lg font-normal">
                   Learn more →
                 </Link>
-                <Link
-                  href="/products"
-                  className="text-blue-500 hover:text-blue-600 text-lg font-normal"
-                >
+                <Link href="/products" className="text-blue-500 hover:text-blue-600 text-lg font-normal">
                   Buy
                 </Link>
               </div>
@@ -204,11 +199,8 @@ export default function HomePage() {
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 className="relative aspect-video bg-gray-50 rounded-2xl overflow-hidden group"
               >
-                <img
-                  src={spec.img}
-                  alt={spec.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
+                <img src={spec.img} alt={spec.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors" />
                 <div className="absolute bottom-4 left-4">
                   <p className="text-white text-lg font-medium drop-shadow-lg">{spec.title}</p>
@@ -239,9 +231,7 @@ export default function HomePage() {
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 className="bg-white p-8 rounded-2xl shadow-sm"
               >
-                <p className="text-lg text-gray-900 leading-relaxed mb-6">
-                  &ldquo;{testimonial.content}&rdquo;
-                </p>
+                <p className="text-lg text-gray-900 leading-relaxed mb-6">&ldquo;{testimonial.content}&rdquo;</p>
                 <div className="border-t border-gray-100 pt-4">
                   <p className="font-semibold text-gray-900">{testimonial.name}</p>
                   <p className="text-sm text-gray-500">{testimonial.location}</p>
