@@ -123,7 +123,8 @@ export default function CheckoutPage() {
             .single();
 
           if (createError) {
-            setError("Failed to create customer. Please try again.");
+            console.error("Customer create error:", createError);
+            setError(`Failed to create customer: ${createError.message}`);
             setIsPlacing(false);
             return;
           }
