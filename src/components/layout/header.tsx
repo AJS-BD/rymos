@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { Search, Menu, X, User, ShoppingBag } from "lucide-react";
+import { Menu, X, User, ShoppingBag } from "lucide-react";
 import { motion, useScroll, useMotionValueEvent, useTransform, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/auth-context";
 import { useCart } from "@/context/cart-context";
@@ -21,8 +21,6 @@ export default function Header() {
   const { isLoggedIn, logout } = useAuth();
   const { itemCount } = useCart();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const [scrolled, setScrolled] = useState(!isHomePage);
   const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
 
@@ -45,7 +43,8 @@ export default function Header() {
   );
   const headerBlur = useTransform(scrollY, [0, 100], [0, 20]);
 
-  const textColor = "#111827";
+  const textColor = isHomePage && !scrolled ? "#ffffff" : "#111827";
+  const textShadow = isHomePage && !scrolled ? "0 1px 2px rgba(0, 0, 0, 0.3)" : "none";
 
   const accountItems = isLoggedIn
     ? [
@@ -79,7 +78,7 @@ export default function Header() {
             >
               <motion.span
                 className="text-base sm:text-lg font-normal"
-                style={{ color: textColor }}
+                style={{ color: textColor, textShadow }}
                 transition={{ duration: 0.3 }}
               >
                 RYmos
@@ -97,7 +96,7 @@ export default function Header() {
                     router.push(item.href);
                   }}
                   className="text-xs font-light cursor-pointer"
-                  style={{ fontFamily: "var(--font-sans)", color: textColor }}
+                  style={{ fontFamily: "var(--font-sans)", color: textColor, textShadow }}
                   transition={{ duration: 0.3 }}
                 >
                   {item.label}
@@ -105,7 +104,7 @@ export default function Header() {
               ))}
             </nav>
 
-            {/* Right side - Cart, Account, Search & Menu */}
+            {/* Right side - Cart, Account & Menu */}
             <div className="flex items-center justify-end gap-4 flex-shrink-0 h-full">
               {/* Cart Button - Only show when logged in */}
               {isLoggedIn && (
@@ -114,7 +113,7 @@ export default function Header() {
                   className="relative flex items-center"
                 >
                   <motion.div
-                    style={{ color: textColor }}
+                    style={{ color: textColor, textShadow }}
                     transition={{ duration: 0.3 }}
                   >
                     <ShoppingBag className="h-4 w-4" strokeWidth={1.5} />
@@ -133,7 +132,7 @@ export default function Header() {
                   onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
                   className="cursor-pointer flex items-center"
                   aria-label="Account"
-                  style={{ color: textColor }}
+                  style={{ color: textColor, textShadow }}
                   transition={{ duration: 0.3 }}
                 >
                   <User className="h-4 w-4" strokeWidth={1.5} />
@@ -167,23 +166,12 @@ export default function Header() {
                 </AnimatePresence>
               </div>
 
-              {/* Search */}
-              <motion.button
-                onClick={() => setSearchOpen(!searchOpen)}
-                className="cursor-pointer flex items-center"
-                aria-label="Search"
-                style={{ color: textColor }}
-                transition={{ duration: 0.3 }}
-              >
-                <Search className="h-4 w-4" strokeWidth={1.5} />
-              </motion.button>
-
               {/* Mobile Menu Toggle */}
               <motion.button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="md:hidden cursor-pointer flex items-center"
                 aria-label="Menu"
-                style={{ color: textColor }}
+                style={{ color: textColor, textShadow }}
                 transition={{ duration: 0.3 }}
               >
                 {mobileMenuOpen ? (
@@ -194,29 +182,6 @@ export default function Header() {
               </motion.button>
             </div>
           </div>
-
-          {/* Search Bar */}
-          {searchOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-              className="overflow-hidden"
-            >
-              <div className="pb-3">
-                <input
-                  type="text"
-                  placeholder="Search rymos.com"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-4 py-2.5 text-sm bg-[var(--color-bg-alt)] rounded-lg border-none focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30"
-                  style={{ fontFamily: "var(--font-sans)" }}
-                  autoFocus
-                />
-              </div>
-            </motion.div>
-          )}
         </div>
       </motion.header>
 

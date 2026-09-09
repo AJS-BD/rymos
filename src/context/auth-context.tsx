@@ -21,6 +21,7 @@ interface AuthContextType {
   register: (email: string, password: string, fullName: string, phone: string) => Promise<{ error?: string }>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  updateUserProfile: (fullName: string, phone: string, address: string) => Promise<{ error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -223,14 +224,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await supabase.auth.signOut();
     localStorage.removeItem(USER_STORAGE_KEY);
     localStorage.removeItem("rymos_customer_id");
+    localStorage.removeItem("rymos_cart");
     setUser(null);
   }, []);
+
+  const updateUserProfile = useCallback(async (fullName: string, phone: string, address: string) => {
+    if (!isConfigured() || !user?.customerId) {
+      return { error: "Not configured or no customer record." };
+    }
+
+    const supabase = getSupabase();
+    const { error } = await supabase
+      .from("customers")
+      .update({ full_name: fullName, phone: phone, address: address })
+      .eq("id", user.customerId);
+
+    if (error) {
+      return { error: error.message || "Failed to update profile." };
+    }
+
+    // Update local user state immediately
+    const updatedUser: AuthUser = {
+      ...user,
+      fullName,
+      phone,
+    };
+    setUser(updatedUser);
+    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updatedUser));
+
+    return {};
+  }, [user]);
 
   const isLoggedIn = !!user;
 
   return (
     <AuthContext.Provider
-      value={{ user, isLoggedIn, loading, login, loginWithOtp, verifyOtp, register, logout, refreshUser }}
+      value={{ user, isLoggedIn, loading, login, loginWithOtp, verifyOtp, register, logout, refreshUser, updateUserProfile }}
     >
       {children}
     </AuthContext.Provider>

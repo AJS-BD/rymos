@@ -18,6 +18,10 @@ export default function CheckoutPage() {
   const [isPlacing, setIsPlacing] = useState(false);
   const [error, setError] = useState("");
   const [placedOrder, setPlacedOrder] = useState<{ orderNumber: string } | null>(null);
+  const [monthlyIncome, setMonthlyIncome] = useState("");
+  const [occupation, setOccupation] = useState("");
+  const [employer, setEmployer] = useState("");
+  const [installmentPeriod, setInstallmentPeriod] = useState("");
 
   const total = subtotal;
 
@@ -34,6 +38,25 @@ export default function CheckoutPage() {
       return;
     }
 
+    if (orderType === "credit") {
+      if (!monthlyIncome.trim() || isNaN(Number(monthlyIncome)) || Number(monthlyIncome) <= 0) {
+        setError("Please enter a valid monthly income.");
+        return;
+      }
+      if (!occupation.trim()) {
+        setError("Please enter your occupation.");
+        return;
+      }
+      if (!employer.trim()) {
+        setError("Please enter your employer.");
+        return;
+      }
+      if (!installmentPeriod.trim()) {
+        setError("Please select an installment period.");
+        return;
+      }
+    }
+
     setIsPlacing(true);
 
     try {
@@ -42,7 +65,21 @@ export default function CheckoutPage() {
       const customerId = localStorage.getItem("rymos_customer_id");
 
       if (!customerId) {
-        setError("Unable to identify customer. Please refresh and try again.");
+        setError("Unable to identify customer. Please log in again.");
+        setIsPlacing(false);
+        return;
+      }
+
+      // Validate customer exists in database
+      const { data: existingCustomer, error: customerErr } = await supabase
+        .from("customers")
+        .select("id")
+        .eq("id", customerId)
+        .maybeSingle();
+
+      if (customerErr || !existingCustomer) {
+        setError("Customer account not found. Please log in again.");
+        localStorage.removeItem("rymos_customer_id");
         setIsPlacing(false);
         return;
       }
@@ -71,6 +108,15 @@ export default function CheckoutPage() {
           }
         : null;
 
+      const creditApplication = orderType === "credit"
+        ? {
+            monthly_income: Number(monthlyIncome),
+            occupation: occupation.trim(),
+            employer: employer.trim(),
+            installment_period: Number(installmentPeriod),
+          }
+        : null;
+
       const { error: insertError } = await supabase.from("orders").insert({
         order_number: orderNumber,
         customer_id: customerId,
@@ -85,6 +131,7 @@ export default function CheckoutPage() {
         payment_method: orderType === "credit" ? "credit" : "cod",
         shipping_address: shippingAddressObj,
         pickup_note: orderType === "pickup" ? pickupNote.trim() || null : null,
+        credit_application: creditApplication,
       });
 
       if (insertError) throw insertError;
@@ -339,15 +386,67 @@ export default function CheckoutPage() {
                   <h2 className="text-xl sm:text-2xl lg:text-[28px] font-semibold tracking-tight text-[#1d1d1f] mb-4 sm:mb-6 lg:mb-8">
                     Credit Application
                   </h2>
-                  <p className="text-sm sm:text-base lg:text-[18px] text-[#86868b] leading-relaxed">
-                    Apply for credit to buy your items now and pay later.
-                  </p>
-                  <Link
-                    href="/customer/credit-application"
-                    className="inline-block mt-4 text-sm sm:text-base lg:text-[18px] text-[#0071E3] hover:underline transition-colors"
-                  >
-                    Apply for Credit
-                  </Link>
+                  <div className="space-y-3 sm:space-y-4">
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-[#1d1d1f] mb-1.5">
+                        Monthly Income <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="number"
+                        value={monthlyIncome}
+                        onChange={(e) => setMonthlyIncome(e.target.value)}
+                        placeholder="e.g. 50000"
+                        className="w-full px-4 py-3 sm:py-3.5 text-sm sm:text-base lg:text-[18px] bg-white border border-[#e8e8ed] rounded-xl sm:rounded-2xl focus:outline-none focus:border-[#0071E3] focus:ring-2 focus:ring-[#0071E3]/20 transition-all duration-300 placeholder:text-[#86868b]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-[#1d1d1f] mb-1.5">
+                        Occupation <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={occupation}
+                        onChange={(e) => setOccupation(e.target.value)}
+                        placeholder="e.g. Software Engineer"
+                        className="w-full px-4 py-3 sm:py-3.5 text-sm sm:text-base lg:text-[18px] bg-white border border-[#e8e8ed] rounded-xl sm:rounded-2xl focus:outline-none focus:border-[#0071E3] focus:ring-2 focus:ring-[#0071E3]/20 transition-all duration-300 placeholder:text-[#86868b]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-[#1d1d1f] mb-1.5">
+                        Employer <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={employer}
+                        onChange={(e) => setEmployer(e.target.value)}
+                        placeholder="Company name"
+                        className="w-full px-4 py-3 sm:py-3.5 text-sm sm:text-base lg:text-[18px] bg-white border border-[#e8e8ed] rounded-xl sm:rounded-2xl focus:outline-none focus:border-[#0071E3] focus:ring-2 focus:ring-[#0071E3]/20 transition-all duration-300 placeholder:text-[#86868b]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-[#1d1d1f] mb-1.5">
+                        Installment Period <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        value={installmentPeriod}
+                        onChange={(e) => setInstallmentPeriod(e.target.value)}
+                        className="w-full px-4 py-3 sm:py-3.5 text-sm sm:text-base lg:text-[18px] bg-white border border-[#e8e8ed] rounded-xl sm:rounded-2xl focus:outline-none focus:border-[#0071E3] focus:ring-2 focus:ring-[#0071E3]/20 transition-all duration-300 appearance-none"
+                      >
+                        <option value="" disabled>Select period</option>
+                        <option value="3">3 months</option>
+                        <option value="6">6 months</option>
+                        <option value="12">12 months</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="mt-4 sm:mt-6">
+                    <Link
+                      href="/customer/credit-application"
+                      className="text-xs sm:text-sm text-[#86868b] hover:text-[#0071E3] transition-colors duration-200"
+                    >
+                      Or apply through the full credit application form →
+                    </Link>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -383,9 +482,27 @@ export default function CheckoutPage() {
             ) : (
               <button
                 onClick={handlePlaceOrder}
-                disabled={orderType === "cod" && !shippingAddress.trim()}
+                disabled={
+                  (orderType === "cod" && !shippingAddress.trim()) ||
+                  (orderType === "credit" && (
+                    !monthlyIncome.trim() ||
+                    isNaN(Number(monthlyIncome)) ||
+                    Number(monthlyIncome) <= 0 ||
+                    !occupation.trim() ||
+                    !employer.trim() ||
+                    !installmentPeriod.trim()
+                  ))
+                }
                 className={`w-full sm:w-auto px-8 py-3 text-base sm:text-lg lg:text-[20px] font-medium rounded-lg transition-colors duration-200 min-h-[48px] ${
-                  orderType === "cod" && !shippingAddress.trim()
+                  (orderType === "cod" && !shippingAddress.trim()) ||
+                  (orderType === "credit" && (
+                    !monthlyIncome.trim() ||
+                    isNaN(Number(monthlyIncome)) ||
+                    Number(monthlyIncome) <= 0 ||
+                    !occupation.trim() ||
+                    !employer.trim() ||
+                    !installmentPeriod.trim()
+                  ))
                     ? "bg-gray-200 text-gray-400 cursor-not-allowed"
                     : "bg-[#0071E3] text-white hover:bg-[#0077ED]"
                 }`}

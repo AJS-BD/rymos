@@ -5,13 +5,17 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getSupabase, isConfigured } from "@/lib/supabase";
 import { useAuth } from "@/context/auth-context";
-import { User, Mail, Phone, Package, MessageSquare, LogOut, ChevronRight, MapPin } from "lucide-react";
+import { User, Mail, Phone, Package, MessageSquare, LogOut, ChevronRight, MapPin, Pencil, X, Check } from "lucide-react";
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { user, isLoggedIn, loading, logout } = useAuth();
+  const { user, isLoggedIn, loading, logout, updateUserProfile } = useAuth();
   const [orders, setOrders] = useState<any[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({ fullName: "", phone: "", address: "" });
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   useEffect(() => {
     // Wait for auth to initialize before doing anything
@@ -47,6 +51,33 @@ export default function ProfilePage() {
   const handleLogout = async () => {
     await logout();
     router.push("/");
+  };
+
+  const startEditing = () => {
+    setEditForm({
+      fullName: user?.fullName || "",
+      phone: user?.phone || "",
+      address: "",
+    });
+    setSaveError(null);
+    setIsEditing(true);
+  };
+
+  const cancelEditing = () => {
+    setIsEditing(false);
+    setSaveError(null);
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    setSaveError(null);
+    const { error } = await updateUserProfile(editForm.fullName, editForm.phone, editForm.address);
+    if (error) {
+      setSaveError(error);
+    } else {
+      setIsEditing(false);
+    }
+    setSaving(false);
   };
 
   // Show loading while auth initializes
@@ -106,7 +137,18 @@ export default function ProfilePage() {
               <User className="h-10 w-10 text-blue-600" />
             </div>
             <div className="flex-1 text-center sm:text-left">
-              <h1 className="text-2xl font-semibold text-gray-900">{user?.fullName || "User"}</h1>
+              <div className="flex items-center justify-center sm:justify-start gap-3">
+                <h1 className="text-2xl font-semibold text-gray-900">{user?.fullName || "User"}</h1>
+                {!isEditing && (
+                  <button
+                    onClick={startEditing}
+                    className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                    aria-label="Edit profile"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
               <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 mt-2 text-sm text-gray-500">
                 {user?.email && (
                   <span className="flex items-center gap-1">
@@ -131,6 +173,99 @@ export default function ProfilePage() {
             </button>
           </div>
         </div>
+
+        {/* Edit Form */}
+        {isEditing && (
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-8">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold text-gray-900">Edit Profile</h2>
+              <button
+                onClick={cancelEditing}
+                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                aria-label="Cancel editing"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {saveError && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
+                {saveError}
+              </div>
+            )}
+
+            <div className="space-y-5">
+              <div>
+                <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Full Name
+                </label>
+                <input
+                  id="fullName"
+                  type="text"
+                  value={editForm.fullName}
+                  onChange={(e) => setEditForm({ ...editForm, fullName: e.target.value })}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                  placeholder="Enter your full name"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Phone
+                </label>
+                <input
+                  id="phone"
+                  type="text"
+                  value={editForm.phone}
+                  onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                  placeholder="Enter your phone number"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Address
+                </label>
+                <textarea
+                  id="address"
+                  value={editForm.address}
+                  onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
+                  rows={3}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all resize-none"
+                  placeholder="Enter your address"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 mt-6">
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {saving ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Check className="h-4 w-4" />
+                    Save
+                  </>
+                )}
+              </button>
+              <button
+                onClick={cancelEditing}
+                disabled={saving}
+                className="px-5 py-2.5 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 disabled:opacity-50 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">

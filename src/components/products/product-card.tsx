@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ShoppingCart, Heart } from "lucide-react";
 import StarRating from "@/components/shared/star-rating";
 import PriceDisplay from "@/components/shared/price-display";
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, useState } from "react";
 import { useCart } from "@/context/cart-context";
 import { useAuth } from "@/context/auth-context";
 import { useRouter } from "next/navigation";
@@ -40,6 +40,8 @@ const productImages: Record<string, string> = {
   "POCO X6 Pro 5G": "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=400&q=80",
 };
 
+const FALLBACK_IMAGE = "/images/placeholder.svg";
+
 export default function ProductCard({ product }: { product: Product }) {
   const imageUrl = productImages[product.name] || "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&q=80";
   const prefersReducedMotion = useReducedMotion();
@@ -47,6 +49,7 @@ export default function ProductCard({ product }: { product: Product }) {
   const { addItem } = useCart();
   const { isLoggedIn } = useAuth();
   const router = useRouter();
+  const [imgError, setImgError] = useState(false);
 
   // Motion values for 3D rotation tracking
   const mouseX = useMotionValue(0);
@@ -147,6 +150,15 @@ export default function ProductCard({ product }: { product: Product }) {
           whileHover={prefersReducedMotion ? {} : { scale: 1.05 }}
           transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
         >
+          {/* Accessible img tag with fallback */}
+          <img
+            src={imgError ? FALLBACK_IMAGE : imageUrl}
+            alt={product.name}
+            onError={() => setImgError(true)}
+            className="absolute inset-0 w-full h-full object-cover opacity-0 pointer-events-none"
+            aria-hidden="true"
+          />
+
           {/* Discount Badge */}
           {product.discount && product.discount > 0 && (
             <motion.span

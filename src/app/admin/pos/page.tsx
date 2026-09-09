@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { getSupabase, isConfigured } from "@/lib/supabase";
+import { formatBDT } from "@/lib/utils";
 import { Search, ShoppingCart, X, Plus, Minus, Trash2, CreditCard, Banknote, Smartphone, User, Phone, QrCode, MessageCircle, Mail } from "lucide-react";
 import QRCode from 'qrcode';
 
@@ -106,14 +107,6 @@ export default function POSPage() {
 
   const subtotal = cart.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
   const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-
-  const formatBDT = (amount: number) => {
-    return new Intl.NumberFormat('en-BD', {
-      style: 'currency',
-      currency: 'BDT',
-      minimumFractionDigits: 0,
-    }).format(amount).replace('BDT', '৳');
-  };
 
   const handleCheckout = async () => {
     if (cart.length === 0) return;

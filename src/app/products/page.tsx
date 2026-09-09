@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, Suspense } from "react";
 import { getSupabase, isConfigured } from "@/lib/supabase";
 import { motion, useInView } from "framer-motion";
 import { useCart } from "@/context/cart-context";
 import { useAuth } from "@/context/auth-context";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ShoppingCart } from "lucide-react";
+import { formatBDT } from "@/lib/utils";
 
 interface Product {
   id: string;
@@ -20,17 +21,12 @@ interface Product {
   is_new_arrival: boolean;
 }
 
-const CATEGORIES = [
-  "All",
-  "Smartphones",
-  "Audio",
-  "Chargers",
-  "Cases & Protection",
-  "Wearables",
-  "Power Banks",
-] as const;
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+}
 
-type Category = (typeof CATEGORIES)[number];
 type SortOption = "name" | "price-asc" | "price-desc";
 
 const productImages: Record<string, string> = {
@@ -50,9 +46,6 @@ const productImages: Record<string, string> = {
   "POCO X6 Pro 5G": "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=600&q=80",
 };
 
-const formatPrice = (price: number) =>
-  new Intl.NumberFormat("en-BD", { style: "currency", currency: "BDT", minimumFractionDigits: 0 }).format(price);
-
 function SearchBar({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
     <div className="relative max-w-lg mx-auto">
@@ -65,15 +58,21 @@ function SearchBar({ value, onChange }: { value: string; onChange: (v: string) =
   );
 }
 
-function CategoryFilter({ categories, active, onSelect }: { categories: readonly string[]; active: Category; onSelect: (c: Category) => void }) {
+function CategoryFilter({ categories, active, onSelect }: { categories: Category[]; active: string; onSelect: (c: string) => void }) {
   return (
     <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
+      <button
+        onClick={() => onSelect("all")}
+        className={`px-4 sm:px-5 py-2 rounded-full text-sm font-light transition-all duration-200 ${active === "all" ? "bg-gray-900 text-white shadow-sm" : "bg-transparent text-gray-500 border border-gray-200 hover:border-gray-900 hover:text-gray-900"}`}
+      >
+        All
+      </button>
       {categories.map((cat) => {
-        const isActive = cat === active;
+        const isActive = cat.slug === active;
         return (
-          <button key={cat} onClick={() => onSelect(cat as Category)}
+          <button key={cat.id} onClick={() => onSelect(cat.slug)}
             className={`px-4 sm:px-5 py-2 rounded-full text-sm font-light transition-all duration-200 ${isActive ? "bg-gray-900 text-white shadow-sm" : "bg-transparent text-gray-500 border border-gray-200 hover:border-gray-900 hover:text-gray-900"}`}>
-            {cat}
+            {cat.name}
           </button>
         );
       })}
@@ -154,7 +153,7 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
         </div>
         <div className="space-y-1">
           <h3 className="text-sm sm:text-base font-light text-gray-900 leading-snug line-clamp-2">{product.name}</h3>
-          <p className="text-sm sm:text-base font-light text-gray-500">{formatPrice(product.price)}</p>
+          <p className="text-sm sm:text-base font-light text-gray-500">{formatBDT(product.price)}</p>
         </div>
         <button onClick={handleAddToCart}
           className="w-full mt-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
@@ -179,26 +178,40 @@ function SkeletonCard() {
 }
 
 export default function ProductsPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-white flex items-center justify-center"><p className="text-gray-500">Loading...</p></div>}>
+      <ProductsPageContent />
+    </Suspense>
+  );
+}
+
+function ProductsPageContent() {
+  const searchParams = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<Category>("All");
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [sortOption, setSortOption] = useState<SortOption>("name");
 
   useEffect(() => {
-    async function loadProducts() {
+    async function loadData() {
       if (!isConfigured()) { setLoading(false); return; }
       const supabase = getSupabase();
-      const { data } = await supabase.from("products").select("*").order("name");
-      if (data) setProducts(data);
+      const [productsRes, categoriesRes] = await Promise.all([
+        supabase.from("products").select("*").order("name"),
+        supabase.from("categories").select("*").order("sort_order"),
+      ]);
+      if (productsRes.data) setProducts(productsRes.data);
+      if (categoriesRes.data) setCategories(categoriesRes.data);
       setLoading(false);
     }
-    loadProducts();
+    loadData();
   }, []);
 
   const filteredProducts = useMemo(() => {
     let result = products;
-    if (selectedCategory !== "All") result = result.filter((p) => p.category === selectedCategory);
+    if (selectedCategory !== "all") result = result.filter((p) => p.category === selectedCategory);
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       result = result.filter((p) => p.name.toLowerCase().includes(query) || p.brand?.toLowerCase().includes(query));
@@ -228,7 +241,7 @@ export default function ProductsPage() {
 
       <section className="py-6 sm:py-8 bg-white border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-6 sm:px-8">
-          <CategoryFilter categories={CATEGORIES} active={selectedCategory} onSelect={setSelectedCategory} />
+          <CategoryFilter categories={categories} active={selectedCategory} onSelect={setSelectedCategory} />
         </div>
       </section>
 
@@ -244,8 +257,8 @@ export default function ProductsPage() {
           ) : filteredProducts.length === 0 ? (
             <div className="text-center py-20">
               <p className="text-lg font-light text-gray-500">No products found.</p>
-              {(searchQuery || selectedCategory !== "All") && (
-                <button onClick={() => { setSearchQuery(""); setSelectedCategory("All"); }} className="mt-4 text-sm font-light text-blue-600 hover:text-blue-700">Clear filters</button>
+              {(searchQuery || selectedCategory !== "all") && (
+                <button onClick={() => { setSearchQuery(""); setSelectedCategory("all"); }} className="mt-4 text-sm font-light text-blue-600 hover:text-blue-700">Clear filters</button>
               )}
             </div>
           ) : (
