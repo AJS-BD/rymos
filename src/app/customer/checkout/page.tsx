@@ -62,24 +62,81 @@ export default function CheckoutPage() {
     try {
       const supabase = getSupabase();
 
-      const customerId = localStorage.getItem("rymos_customer_id");
+      let customerId = localStorage.getItem("rymos_customer_id");
+
+      if (customerId) {
+        // Validate existing customer ID
+        const { data: existingCustomer } = await supabase
+          .from("customers")
+          .select("id")
+          .eq("id", customerId)
+          .maybeSingle();
+
+        if (!existingCustomer) {
+          customerId = null; // Stale ID, clear it
+          localStorage.removeItem("rymos_customer_id");
+        }
+      }
+
+      if (!customerId) {
+        // Try to find or create customer from auth session
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        if (!session?.user) {
+          setError("Please log in to place an order.");
+          setIsPlacing(false);
+          return;
+        }
+
+        const phone = session.user.phone || null;
+        const meta = session.user.user_metadata || {};
+        const fullName = meta.full_name || meta.name || "User";
+
+        // Look up by phone first
+        if (phone) {
+          const { data: byPhone } = await supabase
+            .from("customers")
+            .select("id")
+            .eq("phone", phone)
+            .maybeSingle();
+
+          if (byPhone) {
+            customerId = byPhone.id;
+          }
+        }
+
+        // If still not found, create new customer
+        if (!customerId) {
+          const { data: newCustomer, error: createError } = await supabase
+            .from("customers")
+            .insert({
+              username: phone || `user_${session.user.id.slice(0, 8)}`,
+              full_name: fullName,
+              phone: phone || "",
+              address: "",
+              customer_type: "online",
+              created_via: "online_signup",
+            })
+            .select("id")
+            .single();
+
+          if (createError) {
+            setError("Failed to create customer. Please try again.");
+            setIsPlacing(false);
+            return;
+          }
+          customerId = newCustomer.id;
+        }
+
+        if (customerId) {
+          localStorage.setItem("rymos_customer_id", customerId);
+        }
+      }
 
       if (!customerId) {
         setError("Unable to identify customer. Please log in again.");
-        setIsPlacing(false);
-        return;
-      }
-
-      // Validate customer exists in database
-      const { data: existingCustomer, error: customerErr } = await supabase
-        .from("customers")
-        .select("id")
-        .eq("id", customerId)
-        .maybeSingle();
-
-      if (customerErr || !existingCustomer) {
-        setError("Customer account not found. Please log in again.");
-        localStorage.removeItem("rymos_customer_id");
         setIsPlacing(false);
         return;
       }
