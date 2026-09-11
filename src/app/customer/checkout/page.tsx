@@ -94,7 +94,7 @@ export default function CheckoutPage() {
         const meta = session.user.user_metadata || {};
         const fullName = meta.full_name || meta.name || "User";
 
-        // Look up by phone first
+        // Look up by phone first (most reliable)
         if (phone) {
           const { data: byPhone } = await supabase
             .from("customers")
@@ -107,28 +107,63 @@ export default function CheckoutPage() {
           }
         }
 
-        // If still not found, create new customer
+        // If still not found, look up by user_id from auth session
         if (!customerId) {
+          const { data: byUserId } = await supabase
+            .from("customers")
+            .select("id")
+            .eq("auth_user_id", session.user.id)
+            .maybeSingle();
+
+          if (byUserId) {
+            customerId = byUserId.id;
+          }
+        }
+
+        // If still not found, create new customer with unique username
+        if (!customerId) {
+          // Generate a unique username to avoid UNIQUE constraint violations
+          const baseUsername = phone || `user_${session.user.id.slice(0, 8)}`;
+          const uniqueUsername = `${baseUsername}_${Date.now().toString(36)}`;
+
           const { data: newCustomer, error: createError } = await supabase
             .from("customers")
             .insert({
-              username: phone || `user_${session.user.id.slice(0, 8)}`,
+              username: uniqueUsername,
               full_name: fullName,
               phone: phone || "",
               address: "",
               customer_type: "online",
               created_via: "online_signup",
+              auth_user_id: session.user.id,
             })
             .select("id")
             .single();
 
           if (createError) {
             console.error("Customer create error:", createError);
-            setError(`Failed to create customer: ${createError.message}`);
-            setIsPlacing(false);
-            return;
+            
+            // If unique constraint violation, try to find the existing customer
+            if (createError.code === "23505") {
+              const { data: existingByUsername } = await supabase
+                .from("customers")
+                .select("id")
+                .eq("username", baseUsername)
+                .maybeSingle();
+              
+              if (existingByUsername) {
+                customerId = existingByUsername.id;
+              }
+            }
+            
+            if (!customerId) {
+              setError(`Failed to create customer: ${createError.message}`);
+              setIsPlacing(false);
+              return;
+            }
+          } else {
+            customerId = newCustomer.id;
           }
-          customerId = newCustomer.id;
         }
 
         if (customerId) {
