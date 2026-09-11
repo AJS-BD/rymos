@@ -14,6 +14,10 @@ export default function LoadingScreen() {
   const fadeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pathname = usePathname();
 
+  // Disable loading screen on admin pages
+  const isAdmin = pathname.startsWith("/admin");
+  if (isAdmin) return null;
+
   // Reset loading state on route change
   useEffect(() => {
     setShowLoader(true);
@@ -70,8 +74,7 @@ export default function LoadingScreen() {
     }
   }, [phase]);
 
-  // Completely unmount when done
-  if (phase === "done" || !showLoader) return null;
+
 
   return (
     <motion.div
