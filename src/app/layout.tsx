@@ -38,11 +38,16 @@ export const metadata: Metadata = {
   },
 };
 
+import { headers } from "next/headers";
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = headers().get("x-pathname") || "";
+  const isAdmin = pathname.startsWith("/admin");
+
   return (
     <html lang="en" className={`${inter.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
@@ -50,9 +55,9 @@ export default function RootLayout({
         <AuthProvider>
           <CartProvider>
             <ScrollToTop />
-            <Header />
+            {!isAdmin && <Header />}
             {children}
-            <Footer />
+            {!isAdmin && <Footer />}
           </CartProvider>
         </AuthProvider>
       </body>
