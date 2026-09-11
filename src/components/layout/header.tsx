@@ -17,6 +17,12 @@ const navLinks = [
 export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
+
+  // Don't render header on admin pages
+  if (pathname.startsWith("/admin")) {
+    return null;
+  }
+
   const isHomePage = pathname === "/";
   const { isLoggedIn, logout } = useAuth();
   const { itemCount } = useCart();
