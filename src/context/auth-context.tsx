@@ -73,31 +73,63 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (!customerId) {
-      // Try to find existing customer by phone
-      let { data: existingCustomer } = await supabase
+      // Try to find existing customer by auth_user_id first
+      const { data: byAuth } = await supabase
         .from("customers")
         .select("id")
-        .eq("phone", phone)
+        .eq("auth_user_id", session.user.id)
         .maybeSingle();
 
-      if (existingCustomer) {
-        customerId = existingCustomer.id;
-      } else {
-        // Create new customer
+      if (byAuth) {
+        customerId = byAuth.id;
+      }
+
+      // Then try by phone
+      if (!customerId && phone) {
+        const { data: existingCustomer } = await supabase
+          .from("customers")
+          .select("id")
+          .eq("phone", phone)
+          .maybeSingle();
+
+        if (existingCustomer) {
+          customerId = existingCustomer.id;
+        }
+      }
+
+      // Create new customer if still not found
+      if (!customerId) {
+        const baseUsername = phone || `user_${session.user.id.slice(0, 8)}`;
+        const uniqueUsername = `${baseUsername}_${Date.now().toString(36)}`;
+
         const { data: newCustomer, error: createError } = await supabase
           .from("customers")
           .insert({
-            username: phone || `user_${session.user.id.slice(0, 8)}`,
+            username: uniqueUsername,
             full_name: fullName,
             phone: phone || "",
             address: "",
             customer_type: "online",
             created_via: "online_signup",
+            auth_user_id: session.user.id,
           })
           .select("id")
           .single();
 
-        if (!createError && newCustomer) {
+        if (createError) {
+          // If unique constraint violation, try to find existing
+          if (createError.code === "23505") {
+            const { data: existingByUsername } = await supabase
+              .from("customers")
+              .select("id")
+              .eq("username", baseUsername)
+              .maybeSingle();
+            
+            if (existingByUsername) {
+              customerId = existingByUsername.id;
+            }
+          }
+        } else if (newCustomer) {
           customerId = newCustomer.id;
         }
       }
