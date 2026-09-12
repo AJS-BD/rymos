@@ -13,16 +13,16 @@ export default function LoadingScreen() {
   const isAdmin = pathname.startsWith("/admin");
   if (isAdmin) return null;
 
-  // Show loader SYNCHRONOUSLY before browser paints (fires before useEffect)
+  // Show loader BEFORE browser paints
   useLayoutEffect(() => {
     if (hideTimeoutRef.current) {
       clearTimeout(hideTimeoutRef.current);
       hideTimeoutRef.current = null;
     }
-    // Show loader immediately, before browser paints new page
+    // Show loader synchronously before paint
     setVisible(true);
 
-    // Hide after 350ms (page content is already rendered underneath)
+    // Hide after short delay (page content is rendered underneath)
     hideTimeoutRef.current = setTimeout(() => {
       setVisible(false);
     }, 350);
@@ -48,7 +48,7 @@ export default function LoadingScreen() {
     <AnimatePresence>
       {visible && (
         <motion.div
-          initial={{ opacity: 0 }}
+          initial={{ opacity: 1 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3, ease: "easeInOut" }}
