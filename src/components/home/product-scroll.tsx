@@ -39,9 +39,9 @@ const FALLBACK_IMAGES = [
   "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&q=80",
 ];
 
-function getProductImage(name: string, fallbackIndex: number): string {
+function getProductImage(name: string): string {
   if (PRODUCT_IMAGE_MAP[name]) return PRODUCT_IMAGE_MAP[name];
-  return FALLBACK_IMAGES[fallbackIndex % FALLBACK_IMAGES.length];
+  return FALLBACK_IMAGES[Math.abs(name.split('').reduce((a, c) => a + c.charCodeAt(0), 0)) % FALLBACK_IMAGES.length];
 }
 
 // Default fallback products if Supabase is unavailable
@@ -101,8 +101,8 @@ export default function ProductScroll() {
         const supabase = getSupabase();
         const { data, error } = await supabase
           .from("products")
-          .select("id, name, price, image_url")
-          .eq("is_active", true)
+          .select("id, name, price, images")
+          .is("deleted_at", null)
           .order("created_at", { ascending: false })
           .limit(8);
 
@@ -111,11 +111,11 @@ export default function ProductScroll() {
           return;
         }
 
-        const mappedProducts: Product[] = data.map((item: any, index: number) => ({
+        const mappedProducts: Product[] = data.map((item: any) => ({
           id: String(item.id),
           name: item.name,
           price: item.price ? `৳${Number(item.price).toLocaleString()}` : "",
-          image: item.image_url || getProductImage(item.name, index),
+          image: item.images?.[0] || getProductImage(item.name),
         }));
 
         setProducts(mappedProducts);

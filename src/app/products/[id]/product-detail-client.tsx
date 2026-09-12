@@ -32,41 +32,7 @@ interface RelatedProduct {
 
 const blurDataUri = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 4'%3E%3Crect width='4' height='4' fill='%23f3f4f6'/%3E%3C/svg%3E";
 
-const productImages: Record<string, string> = {
-  "Samsung Galaxy S24 Ultra": "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=1200&q=80",
-  "iPhone 15 Pro Max": "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=1200&q=80",
-  "iPhone 15 128GB": "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=1200&q=80",
-  "OnePlus 12": "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=1200&q=80",
-  "Xiaomi 14 Ultra": "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=1200&q=80",
-  "Samsung Galaxy S23 FE 5G": "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=1200&q=80",
-  "AirPods Pro 2nd Gen": "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=1200&q=80",
-  "Anker 20W Charger": "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=1200&q=80",
-  "Apple Watch SE 2nd Gen": "https://images.unsplash.com/photo-1551816230-ef5deaed4a26?w=1200&q=80",
-  "Apple Watch Series 9": "https://images.unsplash.com/photo-1551816230-ef5deaed4a26?w=1200&q=80",
-  "Vivo V20 5G": "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=1200&q=80",
-  "Realme 12 Pro+ 5G": "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=1200&q=80",
-  "Nothing Phone (2a)": "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=1200&q=80",
-  "POCO X6 Pro 5G": "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=1200&q=80",
-};
-
 const fallbackImage = "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=1200&q=80";
-
-const relatedImages: Record<string, string> = {
-  "Samsung Galaxy S24 Ultra": "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=400&q=80",
-  "iPhone 15 Pro Max": "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400&q=80",
-  "iPhone 15 128GB": "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400&q=80",
-  "OnePlus 12": "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=400&q=80",
-  "Xiaomi 14 Ultra": "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=400&q=80",
-  "Samsung Galaxy S23 FE 5G": "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=400&q=80",
-  "AirPods Pro 2nd Gen": "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=400&q=80",
-  "Anker 20W Charger": "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=400&q=80",
-  "Apple Watch SE 2nd Gen": "https://images.unsplash.com/photo-1551816230-ef5deaed4a26?w=400&q=80",
-  "Apple Watch Series 9": "https://images.unsplash.com/photo-1551816230-ef5deaed4a26?w=400&q=80",
-  "Vivo V20 5G": "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=400&q=80",
-  "Realme 12 Pro+ 5G": "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=400&q=80",
-  "Nothing Phone (2a)": "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=400&q=80",
-  "POCO X6 Pro 5G": "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=400&q=80",
-};
 
 function FadeInWhenVisible({ children, delay = 0, className = "" }: { children: React.ReactNode; delay?: number; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -89,7 +55,7 @@ export default function ProductDetailClient({ product, related }: { product: Pro
   const { isLoggedIn } = useAuth();
   const router = useRouter();
 
-  const imageUrl = product.images?.[0] || productImages[product.name] || fallbackImage;
+  const imageUrl = product.images?.[0] || fallbackImage;
   const discount = product.original_price ? Math.round(((product.original_price - product.price) / product.original_price) * 100) : 0;
   const specs = product.specs ? Object.entries(product.specs) : [];
 
@@ -233,7 +199,7 @@ export default function ProductDetailClient({ product, related }: { product: Pro
               <FadeInWhenVisible key={p.id} delay={idx * 0.1}>
                 <Link href={`/products/${p.id}`} className="flex-shrink-0 w-56 sm:w-72 lg:w-80 snap-start group">
                   <div className="aspect-square bg-white rounded-2xl sm:rounded-3xl overflow-hidden relative shadow-sm">
-                    <img src={relatedImages[p.name] || "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&q=80"} alt={p.name}
+                    <img src={p.images?.[0] || "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&q=80"} alt={p.name}
                       className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   </div>
                   <h3 className="mt-4 text-sm sm:text-base font-medium text-gray-900 group-hover:text-blue-600 transition-colors">{p.name}</h3>

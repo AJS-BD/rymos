@@ -15,6 +15,7 @@ interface Product {
   category: string | null;
   is_featured: boolean;
   is_new_arrival: boolean;
+  images?: string[];
 }
 
 export default function AdminProducts() {
@@ -212,10 +213,10 @@ export default function AdminProducts() {
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-3">
                         <div
-                          className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-                          style={{ background: "var(--color-bg-alt)" }}
+                          className="w-9 h-9 rounded-lg flex-shrink-0 bg-cover bg-center bg-no-repeat"
+                          style={{ backgroundImage: `url(${product.images?.[0] || "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=100&q=80"})` }}
                         >
-                          <Package className="h-4 w-4" style={{ color: "var(--color-text-muted)" }} />
+                          <Package className="h-4 w-4 opacity-0" style={{ color: "var(--color-text-muted)" }} />
                         </div>
                         <div className="min-w-0">
                           <p className="font-medium text-[13px] truncate" style={{ color: "var(--color-text)" }}>
