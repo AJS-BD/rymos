@@ -36,17 +36,18 @@ async function getProductReviews(productId: string) {
   try {
     const supabase = getSupabase();
     const { data } = await supabase
-      .from("product_reviews")
-      .select("id, rating, title, content, is_verified_purchase, created_at, customers(full_name)")
+      .from("reviews")
+      .select("id, rating, content, is_verified_purchase, created_at, customer_name")
       .eq("product_id", productId)
       .eq("is_approved", true)
       .order("created_at", { ascending: false });
-    // Supabase returns customers as an array for joins; normalize to single object
     return (data || []).map((review: any) => ({
-      ...review,
-      customers: Array.isArray(review.customers)
-        ? review.customers[0] || null
-        : review.customers || null,
+      id: review.id,
+      rating: review.rating,
+      content: review.content,
+      is_verified_purchase: review.is_verified_purchase,
+      created_at: review.created_at,
+      customers: { full_name: review.customer_name },
     }));
   } catch (error) {
     console.error("Error fetching reviews:", error);
