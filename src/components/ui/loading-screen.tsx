@@ -1,95 +1,85 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-
-type Phase = "loading" | "fading" | "done";
+import { motion } from "framer-motion";
 
 export default function LoadingScreen() {
-  const [progress, setProgress] = useState(0);
-  const [phase, setPhase] = useState<Phase>("loading");
-  const [showLoader, setShowLoader] = useState(true);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const fadeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [visible, setVisible] = useState(false);
+  const [fading, setFading] = useState(false);
   const pathname = usePathname();
+  const showTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Disable loading screen on admin pages
   const isAdmin = pathname.startsWith("/admin");
   if (isAdmin) return null;
 
-  // Reset loading state on route change
   useEffect(() => {
-    setShowLoader(true);
-    setPhase("loading");
-    setProgress(0);
+    // Clear any pending timers
+    if (showTimeoutRef.current) {
+      clearTimeout(showTimeoutRef.current);
+      showTimeoutRef.current = null;
+    }
+    if (hideTimeoutRef.current) {
+      clearTimeout(hideTimeoutRef.current);
+      hideTimeoutRef.current = null;
+    }
+
+    setFading(false);
+    setVisible(false);
+
+    // Only show loading screen if the page doesn't render within 400ms
+    showTimeoutRef.current = setTimeout(() => {
+      setVisible(true);
+    }, 400);
+
+    return () => {
+      if (showTimeoutRef.current) {
+        clearTimeout(showTimeoutRef.current);
+        showTimeoutRef.current = null;
+      }
+      if (hideTimeoutRef.current) {
+        clearTimeout(hideTimeoutRef.current);
+        hideTimeoutRef.current = null;
+      }
+    };
   }, [pathname]);
 
-  // Cleanup all timers on unmount
+  // Auto-hide loading screen after 1.2s max
   useEffect(() => {
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-      if (fadeTimeoutRef.current) clearTimeout(fadeTimeoutRef.current);
-    };
-  }, []);
-
-  // Loading phase: animate progress bar
-  useEffect(() => {
-    if (phase !== "loading") return;
-
-    const duration = 1800;
-    const intervalMs = 30;
-    const steps = duration / intervalMs;
-    let current = 0;
-
-    intervalRef.current = setInterval(() => {
-      current += 1;
-      const eased = 1 - Math.pow(1 - current / steps, 3);
-      setProgress(Math.min(eased * 100, 100));
-
-      if (current >= steps) {
-        if (intervalRef.current) {
-          clearInterval(intervalRef.current);
-          intervalRef.current = null;
+    if (visible && !fading) {
+      hideTimeoutRef.current = setTimeout(() => {
+        setFading(true);
+        setTimeout(() => {
+          setVisible(false);
+          setFading(false);
+        }, 400);
+      }, 1200);
+      return () => {
+        if (hideTimeoutRef.current) {
+          clearTimeout(hideTimeoutRef.current);
+          hideTimeoutRef.current = null;
         }
-        fadeTimeoutRef.current = setTimeout(() => {
-          setPhase("fading");
-        }, 200);
-      }
-    }, intervalMs);
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-    };
-  }, [phase]);
-
-  // After fade-out animation completes, remove from DOM
-  useEffect(() => {
-    if (phase === "fading") {
-      const timer = setTimeout(() => setPhase("done"), 1000);
-      return () => clearTimeout(timer);
+      };
     }
-  }, [phase]);
+  }, [visible, fading]);
 
-
+  if (!visible) return null;
 
   return (
     <motion.div
-      initial={{ opacity: 1 }}
-      animate={{ opacity: phase === "loading" ? 1 : 0 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 1.0, ease: "easeInOut" }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: fading ? 0 : 1 }}
+      transition={{ duration: 0.4, ease: "easeInOut" }}
       className="fixed inset-0 z-[100] bg-[#000000] flex items-center justify-center"
-      style={{ pointerEvents: phase === "loading" ? "auto" : "none" }}
+      style={{ pointerEvents: fading ? "none" : "auto" }}
     >
       <div className="text-center">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
           className="mb-8"
         >
           <span className="text-4xl font-semibold text-white tracking-tight">
@@ -100,13 +90,14 @@ export default function LoadingScreen() {
         <motion.div
           initial={{ opacity: 0, width: 0 }}
           animate={{ opacity: 1, width: 200 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
+          transition={{ duration: 0.5, delay: 0.15 }}
           className="h-[2px] bg-white/10 rounded-full overflow-hidden mx-auto"
         >
           <motion.div
             className="h-full bg-white rounded-full"
-            style={{ width: `${progress}%` }}
-            transition={{ duration: 0.1 }}
+            initial={{ width: "0%" }}
+            animate={{ width: "100%" }}
+            transition={{ duration: 0.8, ease: "easeInOut" }}
           />
         </motion.div>
       </div>
