@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback } from "react";
 import { getSupabase } from "@/lib/supabase";
-import { Upload, X, Image as ImageIcon, Loader2 } from "lucide-react";
+import { Upload, X, Image as ImageIcon, Loader2, Link2 } from "lucide-react";
 
 const BUCKET_NAME = "product-images";
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -21,6 +21,8 @@ export default function ProductImageUpload({
 }: ProductImageUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showUrlInput, setShowUrlInput] = useState(false);
+  const [urlInput, setUrlInput] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const ensureBucket = useCallback(async () => {
@@ -122,6 +124,21 @@ export default function ProductImageUpload({
     [images, onChange]
   );
 
+  const handleAddUrl = useCallback(() => {
+    if (!urlInput.trim()) return;
+    // Basic URL validation
+    try {
+      new URL(urlInput.trim());
+    } catch {
+      setError("Please enter a valid URL");
+      return;
+    }
+    onChange([...images, urlInput.trim()]);
+    setUrlInput("");
+    setShowUrlInput(false);
+    setError(null);
+  }, [urlInput, images, onChange]);
+
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
@@ -177,6 +194,38 @@ export default function ProductImageUpload({
           disabled={disabled || uploading}
         />
       </div>
+
+      {/* Add by URL */}
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setShowUrlInput(!showUrlInput)}
+          className="flex items-center gap-1 text-sm text-gray-600 hover:text-black transition-colors"
+        >
+          <Link2 className="h-4 w-4" />
+          Add by URL
+        </button>
+      </div>
+
+      {showUrlInput && (
+        <div className="flex gap-2">
+          <input
+            type="url"
+            value={urlInput}
+            onChange={(e) => setUrlInput(e.target.value)}
+            placeholder="https://example.com/image.jpg"
+            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black"
+          />
+          <button
+            type="button"
+            onClick={handleAddUrl}
+            disabled={!urlInput.trim()}
+            className="px-4 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Add
+          </button>
+        </div>
+      )}
 
       {/* Error message */}
       {error && (
