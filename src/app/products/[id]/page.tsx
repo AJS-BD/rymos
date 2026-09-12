@@ -15,6 +15,47 @@ async function getRelatedProducts(category: string, excludeId: string) {
   return data || [];
 }
 
+async function getYouTubeReviews(productId: string) {
+  if (!isConfigured()) return [];
+  try {
+    const supabase = getSupabase();
+    const { data } = await supabase
+      .from("youtube_reviews")
+      .select("id, youtube_url, title, creator_name, thumbnail_url")
+      .eq("product_id", productId)
+      .order("created_at", { ascending: false });
+    return data || [];
+  } catch (error) {
+    console.error("Error fetching youtube_reviews:", error);
+    return [];
+  }
+}
+
+async function getProductReviews(productId: string) {
+  if (!isConfigured()) return [];
+  try {
+    const supabase = getSupabase();
+    const { data } = await supabase
+      .from("product_reviews")
+      .select("id, rating, title, content, is_verified_purchase, created_at, customers(full_name)")
+      .eq("product_id", productId)
+      .eq("is_approved", true)
+      .order("created_at", { ascending: false });
+    // Supabase returns customers as an array for joins; normalize to single object
+    return (data || []).map((review: any) => ({
+      ...review,
+      customers: Array.isArray(review.customers)
+        ? review.customers[0] || null
+        : review.customers || null,
+    }));
+  } catch (error) {
+    console.error("Error fetching reviews:", error);
+    return [];
+  }
+}
+
+export const dynamic = "force-dynamic";
+
 export default async function ProductDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const product = await getProduct(id);
@@ -30,7 +71,18 @@ export default async function ProductDetail({ params }: { params: Promise<{ id: 
     );
   }
 
-  const related = await getRelatedProducts(product.category, product.id);
+  const [related, youtubeReviews, reviews] = await Promise.all([
+    getRelatedProducts(product.category, product.id),
+    getYouTubeReviews(product.id),
+    getProductReviews(product.id),
+  ]);
 
-  return <ProductDetailClient product={product} related={related} />;
+  return (
+    <ProductDetailClient
+      product={product}
+      related={related}
+      youtubeReviews={youtubeReviews}
+      reviews={reviews}
+    />
+  );
 }
