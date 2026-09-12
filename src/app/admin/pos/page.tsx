@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { getSupabase, isConfigured } from "@/lib/supabase";
 import { formatBDT } from "@/lib/utils";
-import { Search, ShoppingCart, X, Plus, Minus, Trash2, CreditCard, Banknote, Smartphone, User, Phone, QrCode, MessageCircle, Mail } from "lucide-react";
+import { Search, ShoppingCart, X, Plus, Minus, Trash2, CreditCard, Banknote, Smartphone, User, Phone, QrCode, MessageCircle, Mail, Link2 } from "lucide-react";
 import QRCode from 'qrcode';
 
 interface Product {
@@ -47,6 +47,10 @@ export default function POSPage() {
   const [profileToken, setProfileToken] = useState<string | null>(null);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>("");
   const [profileUrl, setProfileUrl] = useState<string>("");
+  const [showLinkModal, setShowLinkModal] = useState(false);
+  const [productLink, setProductLink] = useState("");
+  const [linkLoading, setLinkLoading] = useState(false);
+  const [linkError, setLinkError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadProducts() {
@@ -103,6 +107,47 @@ export default function POSPage() {
 
   const removeFromCart = (productId: string) => {
     setCart(prev => prev.filter(item => item.product.id !== productId));
+  };
+
+  const handleAddByLink = async () => {
+    if (!productLink.trim()) return;
+    setLinkLoading(true);
+    setLinkError(null);
+
+    try {
+      // Extract product ID from link
+      const supabase = getSupabase();
+      const url = new URL(productLink);
+      const pathParts = url.pathname.split("/");
+      const productId = pathParts[pathParts.length - 1];
+
+      if (!productId) {
+        setLinkError("Could not extract product ID from link");
+        setLinkLoading(false);
+        return;
+      }
+
+      // Fetch product from database
+      const { data: product, error } = await supabase
+        .from("products")
+        .select("*")
+        .eq("id", productId)
+        .single();
+
+      if (error || !product) {
+        setLinkError("Product not found");
+        setLinkLoading(false);
+        return;
+      }
+
+      // Add to cart
+      addToCart(product);
+      setShowLinkModal(false);
+      setProductLink("");
+    } catch (err: any) {
+      setLinkError("Invalid link format");
+    }
+    setLinkLoading(false);
   };
 
   const subtotal = cart.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
@@ -231,6 +276,13 @@ export default function POSPage() {
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm"
             />
           </div>
+          <button
+            onClick={() => setShowLinkModal(true)}
+            className="flex items-center gap-1 px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition-colors"
+          >
+            <Link2 className="h-4 w-4" />
+            Add by Link
+          </button>
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
@@ -532,6 +584,58 @@ export default function POSPage() {
             >
               New Sale
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Add by Link Modal */}
+      {showLinkModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg w-full max-w-md p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold flex items-center gap-2">
+                <Link2 className="h-5 w-5" />
+                Add Product by Link
+              </h2>
+              <button onClick={() => setShowLinkModal(false)}>
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <p className="text-sm text-gray-600 mb-4">
+              Paste a product detail page URL to quickly add it to the cart.
+            </p>
+
+            <div className="space-y-3">
+              <input
+                type="url"
+                value={productLink}
+                onChange={(e) => setProductLink(e.target.value)}
+                placeholder="https://rymos.vercel.app/products/xxxxx"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                autoFocus
+              />
+
+              {linkError && (
+                <p className="text-red-500 text-sm">{linkError}</p>
+              )}
+
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowLinkModal(false)}
+                  className="flex-1 py-2 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleAddByLink}
+                  disabled={linkLoading || !productLink.trim()}
+                  className="flex-1 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {linkLoading ? "Adding..." : "Add to Cart"}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
