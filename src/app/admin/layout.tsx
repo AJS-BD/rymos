@@ -43,66 +43,30 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   };
 
   return (
-    <div className="min-h-screen flex" style={{ background: "var(--color-bg-alt)" }}>
+    <div className="min-h-screen flex bg-[var(--color-bg-alt)]">
       {/* Mobile Header */}
-      <div
-        className="lg:hidden fixed top-0 left-0 right-0 z-40 px-4 py-3 flex items-center justify-between backdrop-blur-xl"
-        style={{ background: "rgba(255,255,255,0.8)", borderBottom: "1px solid #e5e5e7" }}
-      >
-        <button
-          onClick={() => setSidebarOpen(true)}
-          className="p-2 rounded-lg transition-colors"
-          style={{ color: "var(--color-text)" }}
-          aria-label="Open menu"
-        >
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 px-4 py-3 flex items-center justify-between backdrop-blur-xl border-b border-gray-200">
+        <button onClick={() => setSidebarOpen(true)} className="p-2 rounded-lg" aria-label="Open menu">
           <Menu className="h-5 w-5" />
         </button>
-        <Link
-          href="/admin/dashboard"
-          className="text-lg font-semibold tracking-tight"
-          style={{ color: "var(--color-text)" }}
-        >
-          RYmos
-        </Link>
+        <Link href="/admin/dashboard" className="text-lg font-semibold tracking-tight">RYmos</Link>
         <div className="w-9" />
       </div>
 
       {/* Mobile Overlay */}
       {sidebarOpen && (
-        <div
-          className="lg:hidden fixed inset-0 z-40"
-          style={{ background: "rgba(0,0,0,0.3)", backdropFilter: "blur(4px)" }}
-          onClick={() => setSidebarOpen(false)}
-        />
+        <div className="lg:hidden fixed inset-0 z-40 bg-black/30 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
       )}
 
       {/* Sidebar */}
-      <aside
-        className={`fixed lg:static inset-y-0 left-0 z-50 w-[260px] flex flex-col transform transition-transform duration-300 ease-out lg:transform-none ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-        }`}
-        style={{ background: "var(--color-bg)", borderRight: "1px solid #e5e5e7" }}
-      >
+      <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-[260px] flex flex-col transform transition-transform duration-300 ease-out lg:transform-none ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"} bg-[var(--color-bg)] border-r border-gray-200`}>
         {/* Sidebar Header */}
         <div className="p-5 pb-4 flex items-center justify-between">
           <div>
-            <Link
-              href="/admin/dashboard"
-              className="text-[17px] font-semibold tracking-tight"
-              style={{ color: "var(--color-text)" }}
-            >
-              RYmos
-            </Link>
-            <p className="text-[11px] mt-0.5" style={{ color: "var(--color-text-muted)" }}>
-              Admin Panel
-            </p>
+            <Link href="/admin/dashboard" className="text-[17px] font-semibold tracking-tight">RYmos</Link>
+            <p className="text-[11px] mt-0.5 text-gray-500">Admin Panel</p>
           </div>
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="lg:hidden p-1.5 rounded-lg transition-colors"
-            style={{ color: "var(--color-text-muted)" }}
-            aria-label="Close menu"
-          >
+          <button onClick={() => setSidebarOpen(false)} className="lg:hidden p-1.5 rounded-lg text-gray-500" aria-label="Close menu">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -116,26 +80,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 key={item.href}
                 href={item.href}
                 onClick={() => setSidebarOpen(false)}
-                className="flex items-center gap-2.5 px-3 py-[7px] text-[13px] font-medium rounded-lg transition-all duration-150"
-                style={{
-                  color: active ? "#0071E3" : "var(--color-text)",
-                  background: active ? "rgba(0,113,227,0.08)" : "transparent",
-                }}
-                onMouseEnter={(e) => {
-                  if (!active) {
-                    e.currentTarget.style.background = "var(--color-bg-alt)";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!active) {
-                    e.currentTarget.style.background = "transparent";
-                  }
-                }}
+                className={`flex items-center gap-2.5 px-3 py-[7px] text-[13px] font-medium rounded-lg transition-all duration-150 ${active ? "text-blue-600 bg-blue-50" : "text-gray-700 hover:bg-gray-50"}`}
               >
-                <item.icon
-                  className="h-[15px] w-[15px]"
-                  style={{ color: active ? "#0071E3" : "var(--color-text-muted)" }}
-                />
+                <item.icon className={`h-[15px] w-[15px] ${active ? "text-blue-600" : "text-gray-500"}`} />
                 {item.label}
               </Link>
             );
@@ -143,19 +90,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </nav>
 
         {/* Footer */}
-        <div className="p-3" style={{ borderTop: "1px solid #e5e5e7" }}>
-          <Link
-            href="/"
-            className="flex items-center gap-2.5 px-3 py-[7px] text-[13px] font-medium rounded-lg transition-colors"
-            style={{ color: "var(--color-text)" }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = "var(--color-bg-alt)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "transparent";
-            }}
-          >
-            <LogOut className="h-[15px] w-[15px]" style={{ color: "var(--color-text-muted)" }} />
+        <div className="p-3 border-t border-gray-200">
+          <Link href="/" className="flex items-center gap-2.5 px-3 py-[7px] text-[13px] font-medium rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+            <LogOut className="h-[15px] w-[15px] text-gray-500" />
             Back to Store
           </Link>
         </div>

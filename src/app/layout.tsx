@@ -3,10 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/auth-context";
 import { CartProvider } from "@/context/cart-context";
-import LoadingScreen from "@/components/ui/loading-screen";
-import Header from "@/components/layout/header";
-import Footer from "@/components/layout/footer";
-import { ScrollToTop } from "@/components/ui/scroll-to-top";
+import ShopChrome from "@/components/layout/shop-chrome";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -46,13 +43,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
-        <LoadingScreen />
         <AuthProvider>
           <CartProvider>
-            <ScrollToTop />
-            <Header />
-            {children}
-            <Footer />
+            <ShopChrome>{children}</ShopChrome>
           </CartProvider>
         </AuthProvider>
       </body>
