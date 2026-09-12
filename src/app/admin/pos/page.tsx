@@ -251,9 +251,20 @@ export default function POSPage() {
               onClick={() => addToCart(product)}
               className="p-2 sm:p-4 bg-white rounded-lg border hover:shadow-md transition-shadow text-left"
             >
-              <div className="aspect-square bg-gray-100 rounded-lg mb-2 sm:mb-3 flex items-center justify-center">
-                <Smartphone className="h-8 w-8 sm:h-12 sm:w-12 text-gray-300" />
-              </div>
+              {/* Product Image */}
+              {product.images && product.images.length > 0 ? (
+                <div className="aspect-square rounded-lg mb-2 sm:mb-3 overflow-hidden relative">
+                  <img
+                    src={product.images[0]}
+                    alt={product.name}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                </div>
+              ) : (
+                <div className="aspect-square bg-gray-100 rounded-lg mb-2 sm:mb-3 flex items-center justify-center">
+                  <Smartphone className="h-8 w-8 sm:h-12 sm:w-12 text-gray-300" />
+                </div>
+              )}
               <h3 className="font-medium text-xs sm:text-sm text-gray-900 truncate">{product.name}</h3>
               <p className="text-xs text-gray-500">{product.brand}</p>
               <div className="flex items-center justify-between mt-1 sm:mt-2">
@@ -305,9 +316,20 @@ export default function POSPage() {
           ) : (
             cart.map(item => (
               <div key={item.product.id} className="flex gap-2 sm:gap-3 p-2 sm:p-3 bg-gray-50 rounded-lg">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-200 rounded flex items-center justify-center flex-shrink-0">
-                  <Smartphone className="h-5 w-5 sm:h-6 sm:w-6 text-gray-400" />
-                </div>
+                {/* Cart Item Image */}
+                {item.product.images && item.product.images.length > 0 ? (
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded overflow-hidden flex-shrink-0">
+                    <img
+                      src={item.product.images[0]}
+                      alt={item.product.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-200 rounded flex items-center justify-center flex-shrink-0">
+                    <Smartphone className="h-5 w-5 sm:h-6 sm:w-6 text-gray-400" />
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-xs sm:text-sm truncate">{item.product.name}</p>
                   <p className="text-xs text-gray-500">{formatBDT(item.product.price)}</p>
