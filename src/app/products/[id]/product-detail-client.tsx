@@ -1,15 +1,12 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useScroll, useTransform, useInView } from "framer-motion";
+import { useRef, useState } from "react";
+import { motion, useScroll, useTransform, useInView, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { ChevronRight, ShoppingBag, Shield, Truck, RotateCcw, Award } from "lucide-react";
+import { ChevronRight, ChevronLeft, ShoppingBag, Shield, Truck, RotateCcw, Award, Play, X } from "lucide-react";
 import { useCart } from "@/context/cart-context";
 import { useAuth } from "@/context/auth-context";
 import { useRouter } from "next/navigation";
-import StickyProductBar from "@/components/products/sticky-product-bar";
-import YouTubeReviewsSection from "@/components/products/youtube-reviews-section";
-import CustomerReviewsSection from "@/components/products/customer-reviews-section";
 
 interface Product {
   id: string;
@@ -25,39 +22,8 @@ interface Product {
   images?: string[];
 }
 
-interface RelatedProduct {
-  id: string;
-  name: string;
-  price: number;
-  category: string;
-  images?: string[];
-}
-
-interface YouTubeReview {
-  id: string;
-  youtube_url: string;
-  title: string;
-  creator_name: string;
-  thumbnail_url?: string;
-}
-
-interface Review {
-  id: string;
-  rating: number;
-  title?: string | null;
-  content: string;
-  is_verified_purchase: boolean;
-  created_at: string;
-  customers?: {
-    full_name: string;
-  } | null;
-}
-
 interface ProductDetailClientProps {
   product: Product;
-  related: RelatedProduct[];
-  youtubeReviews?: YouTubeReview[];
-  reviews?: Review[];
 }
 
 const fallbackImage = "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=1200&q=80";
@@ -73,8 +39,25 @@ function FadeInWhenVisible({ children, delay = 0, className = "" }: { children: 
   );
 }
 
-export default function ProductDetailClient({ product, related, youtubeReviews = [], reviews = [] }: ProductDetailClientProps) {
+const specCategoryOrder = ["display", "processor", "rear_camera", "front_camera", "battery", "charging", "storage", "ram", "os", "weight", "water_resistance", "colors"];
+const specCategoryLabels: Record<string, string> = {
+  display: "Display",
+  processor: "Processor",
+  rear_camera: "Rear Camera",
+  front_camera: "Front Camera",
+  battery: "Battery",
+  charging: "Charging",
+  storage: "Storage",
+  ram: "RAM",
+  os: "Operating System",
+  weight: "Weight",
+  water_resistance: "Water Resistance",
+  colors: "Available Colors",
+};
+
+export default function ProductDetailClient({ product }: ProductDetailClientProps) {
   const heroRef = useRef<HTMLDivElement>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
   const heroImageY = useTransform(scrollYProgress, [0, 1], [0, 150]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
@@ -83,10 +66,26 @@ export default function ProductDetailClient({ product, related, youtubeReviews =
   const { isLoggedIn } = useAuth();
   const router = useRouter();
 
-  const imageUrl = product.images?.[0] || fallbackImage;
+  const images = product.images?.length ? product.images : [fallbackImage];
+  const imageUrl = images[currentImageIndex] || fallbackImage;
   const discount = product.original_price ? Math.round(((product.original_price - product.price) / product.original_price) * 100) : 0;
-  const specs = product.specs ? Object.entries(product.specs).filter(([key]) => key !== "description") : [];
   const description = product.description || product.specs?.description || "Experience the perfect blend of innovation and design.";
+
+  // Sort and filter specs
+  const orderedSpecs: [string, string][] = [];
+  for (const key of specCategoryOrder) {
+    if (product.specs?.[key]) {
+      orderedSpecs.push([key, product.specs[key]]);
+    }
+  }
+  // Add any remaining specs not in the order list
+  if (product.specs) {
+    for (const [key, value] of Object.entries(product.specs)) {
+      if (!specCategoryOrder.includes(key) && key !== "description") {
+        orderedSpecs.push([key, value]);
+      }
+    }
+  }
 
   const handleAddToCart = () => {
     if (!isLoggedIn) {
@@ -104,30 +103,48 @@ export default function ProductDetailClient({ product, related, youtubeReviews =
     });
   };
 
-  return (
-    <div className="min-h-screen bg-white">
-      {/* STICKY PRODUCT BAR */}
-      <StickyProductBar product={product} heroRef={heroRef} />
+  const nextImage = () => setCurrentImageIndex((prev) => (prev + 1) % images.length);
+  const prevImage = () => setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
 
+  return (
+    <div className="min-h-screen bg-white pt-16 sm:pt-20">
       {/* HERO SECTION */}
       <section ref={heroRef} className="relative w-full min-h-[60vh] lg:min-h-[85vh] flex flex-col lg:flex-row">
         {/* Product Image - 60% on desktop */}
         <motion.div
           style={{ y: heroImageY, opacity: heroOpacity }}
-          className="relative w-full lg:w-[60%] h-[50vh] lg:h-[85vh] overflow-hidden order-1 lg:order-1"
+          className="relative w-full lg:w-[60%] h-[50vh] lg:h-[85vh] overflow-hidden order-1 lg:order-1 bg-gray-100"
         >
           <img src={imageUrl} alt={product.name} className="absolute inset-0 w-full h-full object-cover object-center" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
+          
+          {/* Image Navigation Arrows */}
+          {images.length > 1 && (
+            <>
+              <button onClick={prevImage} className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-lg hover:bg-white transition-colors">
+                <ChevronLeft className="w-5 h-5 text-gray-800" />
+              </button>
+              <button onClick={nextImage} className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-lg hover:bg-white transition-colors">
+                <ChevronRight className="w-5 h-5 text-gray-800" />
+              </button>
+            </>
+          )}
+
+          {/* Image Dots */}
+          {images.length > 1 && (
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+              {images.map((_, idx) => (
+                <button key={idx} onClick={() => setCurrentImageIndex(idx)}
+                  className={`w-2 h-2 rounded-full transition-all ${idx === currentImageIndex ? "bg-white w-6" : "bg-white/50"}`} />
+              ))}
+            </div>
+          )}
         </motion.div>
 
         {/* Product Info - 40% on desktop */}
         <div className="w-full lg:w-[40%] flex items-center justify-center px-6 sm:px-10 lg:px-16 py-10 lg:py-20 order-2 lg:order-2 bg-white">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            className="max-w-lg text-center lg:text-left"
-          >
+          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.3 }}
+            className="max-w-lg text-center lg:text-left">
             {product.brand && (
               <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
                 className="text-xs sm:text-sm font-light tracking-widest uppercase text-gray-400 mb-3">
@@ -205,22 +222,24 @@ export default function ProductDetailClient({ product, related, youtubeReviews =
       </section>
 
       {/* SPECIFICATIONS SECTION */}
-      {specs.length > 0 && (
+      {orderedSpecs.length > 0 && (
         <section id="specs" className="py-16 sm:py-24 lg:py-32 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <FadeInWhenVisible>
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-center text-gray-900 tracking-tight mb-12 sm:mb-16">
                 Specifications
               </h2>
             </FadeInWhenVisible>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-              {specs.map(([key, value], idx) => (
-                <FadeInWhenVisible key={key} delay={idx * 0.08}>
-                  <div className="bg-gray-50 rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-10 text-center shadow-sm hover:shadow-md transition-shadow duration-300 h-full flex flex-col justify-center min-h-[140px] sm:min-h-[180px]">
-                    <p className="text-xs sm:text-sm text-gray-400 uppercase tracking-wider mb-3 font-medium">
-                      {key.replace(/_/g, " ")}
-                    </p>
-                    <p className="text-base sm:text-lg lg:text-xl font-semibold text-gray-900">{value}</p>
+            <div className="divide-y divide-gray-100 border-y border-gray-100">
+              {orderedSpecs.map(([key, value], idx) => (
+                <FadeInWhenVisible key={key} delay={idx * 0.05}>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-6 py-4 sm:py-5">
+                    <div className="text-sm font-medium text-gray-500 uppercase tracking-wider">
+                      {specCategoryLabels[key] || key.replace(/_/g, " ")}
+                    </div>
+                    <div className="sm:col-span-2 text-sm sm:text-base text-gray-900 font-light leading-relaxed">
+                      {value}
+                    </div>
                   </div>
                 </FadeInWhenVisible>
               ))}
@@ -229,8 +248,33 @@ export default function ProductDetailClient({ product, related, youtubeReviews =
         </section>
       )}
 
+      {/* PRODUCT IMAGE CAROUSEL */}
+      {images.length > 1 && (
+        <section className="py-16 sm:py-24 lg:py-32 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <FadeInWhenVisible>
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-center text-gray-900 tracking-tight mb-12 sm:mb-16">
+                Gallery
+              </h2>
+            </FadeInWhenVisible>
+            <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide">
+              {images.map((img, idx) => (
+                <motion.div key={idx} initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }} transition={{ delay: idx * 0.1 }}
+                  className="flex-shrink-0 w-72 sm:w-96 lg:w-[480px] snap-start">
+                  <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-gray-100 shadow-sm">
+                    <img src={img} alt={`${product.name} - Image ${idx + 1}`}
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* FEATURED IMAGE SECTION */}
-      <section className="py-16 sm:py-24 lg:py-32 bg-gray-50">
+      <section className="py-16 sm:py-24 lg:py-32 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 xl:gap-20 items-center">
             <FadeInWhenVisible>
@@ -255,39 +299,6 @@ export default function ProductDetailClient({ product, related, youtubeReviews =
           </div>
         </div>
       </section>
-
-      {/* YOUTUBE REVIEWS SECTION */}
-      <YouTubeReviewsSection youtubeReviews={youtubeReviews} />
-
-      {/* CUSTOMER REVIEWS SECTION */}
-      <CustomerReviewsSection reviews={reviews} />
-
-      {/* RELATED PRODUCTS */}
-      {related.length > 0 && (
-        <section className="py-16 sm:py-24 lg:py-32 bg-gray-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <FadeInWhenVisible>
-              <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-900 tracking-tight mb-8 sm:mb-12">
-                You may also like
-              </h2>
-            </FadeInWhenVisible>
-          </div>
-          <div className="flex gap-4 sm:gap-6 overflow-x-auto pb-4 sm:pb-6 snap-x snap-mandatory scrollbar-hide px-4 sm:px-6 lg:px-8">
-            {related.map((p, idx) => (
-              <FadeInWhenVisible key={p.id} delay={idx * 0.1}>
-                <Link href={`/products/${p.id}`} className="flex-shrink-0 w-56 sm:w-72 lg:w-80 snap-start group">
-                  <div className="aspect-square bg-white rounded-2xl sm:rounded-3xl overflow-hidden relative shadow-sm">
-                    <img src={p.images?.[0] || "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&q=80"} alt={p.name}
-                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  </div>
-                  <h3 className="mt-4 text-sm sm:text-base font-medium text-gray-900 group-hover:text-blue-600 transition-colors">{p.name}</h3>
-                  <p className="mt-1 text-xs sm:text-sm text-gray-500">৳{p.price.toLocaleString()}</p>
-                </Link>
-              </FadeInWhenVisible>
-            ))}
-          </div>
-        </section>
-      )}
     </div>
   );
 }
