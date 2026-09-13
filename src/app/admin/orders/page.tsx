@@ -153,8 +153,12 @@ export default function AdminOrders() {
 
       if (historyError) throw historyError;
 
-      // Refresh orders list from database to ensure consistency
-      await fetchOrders();
+      // Update local state immediately for instant UI feedback
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.id === orderId ? { ...o, status: newStatus, updated_at: now } : o
+        )
+      );
     } catch (err) {
       console.error("Failed to update order status:", err);
     } finally {
