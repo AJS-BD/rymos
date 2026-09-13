@@ -279,12 +279,11 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                 Gallery
               </h2>
             </FadeInWhenVisible>
-            <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
               {images.map((img, idx) => (
                 <motion.div key={idx} initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }} transition={{ delay: idx * 0.05 }}
-                  className="flex-shrink-0 w-64 sm:w-80 lg:w-96 snap-start">
-                  <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-gray-100 shadow-sm">
+                  viewport={{ once: true }} transition={{ delay: idx * 0.05 }}>
+                  <div className="aspect-square rounded-xl sm:rounded-2xl overflow-hidden bg-gray-100">
                     <img src={img} alt={`${product.name} - Image ${idx + 1}`}
                       className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
                   </div>
