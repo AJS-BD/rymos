@@ -1,9 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { motion, useScroll, useTransform, useInView, AnimatePresence } from "framer-motion";
+import { useRef, useState, useEffect } from "react";
+import { motion, useInView, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { ChevronRight, ChevronLeft, ShoppingBag, Shield, Truck, RotateCcw, Award, Play, X } from "lucide-react";
+import { ChevronRight, ShoppingBag, Shield, Truck, RotateCcw, Award } from "lucide-react";
 import { useCart } from "@/context/cart-context";
 import { useAuth } from "@/context/auth-context";
 import { useRouter } from "next/navigation";
@@ -57,10 +57,8 @@ const specCategoryLabels: Record<string, string> = {
 
 export default function ProductDetailClient({ product }: ProductDetailClientProps) {
   const heroRef = useRef<HTMLDivElement>(null);
+  const [showStickyBar, setShowStickyBar] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
-  const heroImageY = useTransform(scrollYProgress, [0, 1], [0, 150]);
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
   const { addItem } = useCart();
   const { isLoggedIn } = useAuth();
@@ -78,7 +76,6 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
       orderedSpecs.push([key, product.specs[key]]);
     }
   }
-  // Add any remaining specs not in the order list
   if (product.specs) {
     for (const [key, value] of Object.entries(product.specs)) {
       if (!specCategoryOrder.includes(key) && key !== "description") {
@@ -86,6 +83,18 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
       }
     }
   }
+
+  // Show sticky bar when scrolled past hero section
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!heroRef.current) return;
+      const heroBottom = heroRef.current.getBoundingClientRect().bottom;
+      setShowStickyBar(heroBottom < 80);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const handleAddToCart = () => {
     if (!isLoggedIn) {
@@ -103,43 +112,56 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
     });
   };
 
-  const nextImage = () => setCurrentImageIndex((prev) => (prev + 1) % images.length);
-  const prevImage = () => setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
-
   return (
     <div className="min-h-screen bg-white pt-16 sm:pt-20">
+      {/* STICKY PRODUCT BAR */}
+      <AnimatePresence>
+        {showStickyBar && (
+          <motion.div
+            initial={{ y: -60, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -60, opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="fixed top-12 sm:top-14 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-b border-gray-200 shadow-sm"
+          >
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex items-center justify-between h-12 sm:h-14">
+                <h2 className="text-sm font-medium text-gray-900 truncate flex-1 mr-4">
+                  {product.name}
+                </h2>
+                <span className="text-base sm:text-lg font-semibold text-gray-900 mr-4">
+                  ৳{product.price.toLocaleString()}
+                </span>
+                <button
+                  onClick={handleAddToCart}
+                  className="flex items-center gap-2 px-4 sm:px-5 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                >
+                  <ShoppingBag className="w-4 h-4" />
+                  Add to Bag
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* HERO SECTION */}
       <section ref={heroRef} className="relative w-full min-h-[60vh] lg:min-h-[85vh] flex flex-col lg:flex-row">
         {/* Product Image - 60% on desktop */}
-        <motion.div
-          style={{ y: heroImageY, opacity: heroOpacity }}
-          className="relative w-full lg:w-[60%] h-[50vh] lg:h-[85vh] overflow-hidden order-1 lg:order-1 bg-gray-100"
-        >
-          <img src={imageUrl} alt={product.name} className="absolute inset-0 w-full h-full object-cover object-center" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
-          
-          {/* Image Navigation Arrows */}
-          {images.length > 1 && (
-            <>
-              <button onClick={prevImage} className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-lg hover:bg-white transition-colors">
-                <ChevronLeft className="w-5 h-5 text-gray-800" />
-              </button>
-              <button onClick={nextImage} className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-lg hover:bg-white transition-colors">
-                <ChevronRight className="w-5 h-5 text-gray-800" />
-              </button>
-            </>
-          )}
-
-          {/* Image Dots */}
-          {images.length > 1 && (
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-              {images.map((_, idx) => (
-                <button key={idx} onClick={() => setCurrentImageIndex(idx)}
-                  className={`w-2 h-2 rounded-full transition-all ${idx === currentImageIndex ? "bg-white w-6" : "bg-white/50"}`} />
-              ))}
-            </div>
-          )}
-        </motion.div>
+        <div className="relative w-full lg:w-[60%] h-[50vh] lg:h-[85vh] overflow-hidden order-1 lg:order-1 bg-gray-100">
+          <AnimatePresence mode="wait">
+            <motion.img
+              key={currentImageIndex}
+              src={imageUrl}
+              alt={product.name}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.4 }}
+              className="absolute inset-0 w-full h-full object-cover object-center"
+            />
+          </AnimatePresence>
+        </div>
 
         {/* Product Info - 40% on desktop */}
         <div className="w-full lg:w-[40%] flex items-center justify-center px-6 sm:px-10 lg:px-16 py-10 lg:py-20 order-2 lg:order-2 bg-white">
@@ -248,8 +270,8 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
         </section>
       )}
 
-      {/* PRODUCT IMAGE CAROUSEL */}
-      {images.length > 1 && (
+      {/* PRODUCT IMAGE GALLERY */}
+      {images.length > 0 && (
         <section className="py-16 sm:py-24 lg:py-32 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <FadeInWhenVisible>
@@ -260,8 +282,8 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
             <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide">
               {images.map((img, idx) => (
                 <motion.div key={idx} initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }} transition={{ delay: idx * 0.1 }}
-                  className="flex-shrink-0 w-72 sm:w-96 lg:w-[480px] snap-start">
+                  viewport={{ once: true }} transition={{ delay: idx * 0.05 }}
+                  className="flex-shrink-0 w-64 sm:w-80 lg:w-96 snap-start">
                   <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-gray-100 shadow-sm">
                     <img src={img} alt={`${product.name} - Image ${idx + 1}`}
                       className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
