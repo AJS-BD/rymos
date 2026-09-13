@@ -72,6 +72,7 @@ export default function AdminOrders() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
+  const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchOrders();
@@ -123,12 +124,42 @@ export default function AdminOrders() {
     }
   };
 
-  const handleStatusChange = (orderId: string, newStatus: OrderStatus) => {
-    setOrders((prev) =>
-      prev.map((order) =>
-        order.id === orderId ? { ...order, status: newStatus } : order
-      )
-    );
+  const handleStatusChange = async (orderId: string, currentStatus: OrderStatus, newStatus: OrderStatus) => {
+    if (!isConfigured() || updatingOrderId === orderId) return;
+
+    setUpdatingOrderId(orderId);
+    try {
+      const supabase = getSupabase();
+      const now = new Date().toISOString();
+
+      // Update order status in DB
+      const { error: updateError } = await supabase
+        .from("orders")
+        .update({ status: newStatus, updated_at: now })
+        .eq("id", orderId);
+
+      if (updateError) throw updateError;
+
+      // Insert status history record
+      const { error: historyError } = await supabase
+        .from("order_status_history")
+        .insert({
+          order_id: orderId,
+          from_status: currentStatus,
+          to_status: newStatus,
+          changed_by: "admin",
+          note: `Status changed from ${currentStatus} to ${newStatus}`,
+        });
+
+      if (historyError) throw historyError;
+
+      // Refresh orders list from database to ensure consistency
+      await fetchOrders();
+    } catch (err) {
+      console.error("Failed to update order status:", err);
+    } finally {
+      setUpdatingOrderId(null);
+    }
   };
 
   const getStatusCounts = () => {
@@ -355,8 +386,8 @@ export default function AdminOrders() {
                         <OrderActions
                           orderId={order.id}
                           currentStatus={order.status}
-                          onStatusChange={(newStatus) =>
-                            handleStatusChange(order.id, newStatus)
+                          onStatusChange={(currentStatus, newStatus) =>
+                            handleStatusChange(order.id, currentStatus, newStatus)
                           }
                         />
                       </div>

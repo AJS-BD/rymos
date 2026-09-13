@@ -28,7 +28,7 @@ const navItems = [
   { href: "/admin/coupons", label: "Coupons", icon: Tag },
   { href: "/admin/customers", label: "Customers", icon: Users },
   { href: "/admin/credit-applications", label: "Credit", icon: CreditCard },
-  { href: "/admin/installments", label: "কিস্তি বাকি", icon: Wallet },
+  { href: "/admin/installments", label: "Instalment", icon: Wallet },
   { href: "/admin/messages", label: "Messages", icon: MessageSquare },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];

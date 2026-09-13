@@ -210,7 +210,7 @@ export default function CheckoutPage() {
           }
         : null;
 
-      const { error: insertError } = await supabase.from("orders").insert({
+      const { data: insertedOrder, error: insertError } = await supabase.from("orders").insert({
         order_number: orderNumber,
         customer_id: customerId,
         status: "pending",
@@ -225,9 +225,30 @@ export default function CheckoutPage() {
         shipping_address: shippingAddressObj,
         pickup_note: orderType === "pickup" ? pickupNote.trim() || null : null,
         credit_application: creditApplication,
-      });
+      }).select("id").single();
 
       if (insertError) throw insertError;
+
+      // If credit order, also create a credit_applications record
+      if (orderType === "credit" && insertedOrder) {
+        const { error: creditAppError } = await supabase.from("credit_applications").insert({
+          customer_id: customerId,
+          order_id: insertedOrder.id,
+          status: "pending",
+          requested_amount: total,
+          proposed_down_payment: 0,
+          proposed_installments: Number(installmentPeriod),
+          monthly_income: Number(monthlyIncome),
+          occupation: occupation.trim(),
+          employer: employer.trim(),
+          application_type: "checkout",
+        });
+
+        if (creditAppError) {
+          console.error("Failed to create credit application:", creditAppError);
+          // Don't throw here - the order was already created successfully
+        }
+      }
 
       clearCart();
       setPlacedOrder({ orderNumber });

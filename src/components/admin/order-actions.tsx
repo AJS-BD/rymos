@@ -9,7 +9,7 @@ import {
   XCircle,
   Loader2,
 } from "lucide-react";
-import { getSupabase, isConfigured } from "@/lib/supabase";
+import { isConfigured } from "@/lib/supabase";
 
 export type OrderStatus =
   | "pending"
@@ -108,7 +108,7 @@ const ACTION_BUTTONS: {
 interface OrderActionsProps {
   orderId: string;
   currentStatus: OrderStatus;
-  onStatusChange: (newStatus: OrderStatus) => void;
+  onStatusChange: (currentStatus: OrderStatus, newStatus: OrderStatus) => void;
 }
 
 export default function OrderActions({
@@ -118,39 +118,13 @@ export default function OrderActions({
 }: OrderActionsProps) {
   const [updating, setUpdating] = useState(false);
 
-  const handleStatusUpdate = async (newStatus: OrderStatus) => {
+  const handleStatusUpdate = (newStatus: OrderStatus) => {
     if (!isConfigured() || updating) return;
 
     setUpdating(true);
-    try {
-      const supabase = getSupabase();
-      const now = new Date().toISOString();
-
-      const { error: updateError } = await supabase
-        .from("orders")
-        .update({ status: newStatus, updated_at: now })
-        .eq("id", orderId);
-
-      if (updateError) throw updateError;
-
-      const { error: historyError } = await supabase
-        .from("order_status_history")
-        .insert({
-          order_id: orderId,
-          from_status: currentStatus,
-          to_status: newStatus,
-          changed_by: "admin",
-          note: `Status changed from ${currentStatus} to ${newStatus}`,
-        });
-
-      if (historyError) throw historyError;
-
-      onStatusChange(newStatus);
-    } catch (err) {
-      console.error("Failed to update order status:", err);
-    } finally {
-      setUpdating(false);
-    }
+    onStatusChange(currentStatus, newStatus);
+    // Brief spinner for visual feedback; parent handles DB + refresh
+    setTimeout(() => setUpdating(false), 500);
   };
 
   const availableActions = ACTION_BUTTONS.filter((action) =>
