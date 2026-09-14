@@ -72,7 +72,7 @@ interface Order {
   customers: {
     full_name: string;
     phone: string;
-    email?: string;
+    username?: string;
     address?: string;
   };
 }
@@ -100,7 +100,7 @@ export default function OrderDetail() {
       const supabase = getSupabase();
       const { data, error: fetchError } = await supabase
         .from("orders")
-        .select("*, customers(full_name, phone, email, address)")
+        .select("*, customers(full_name, phone, address, username)")
         .eq("id", id)
         .single();
 
@@ -486,10 +486,10 @@ export default function OrderDetail() {
                 <Phone className="w-3.5 h-3.5 text-gray-400" />
                 <span>{order.customers?.phone}</span>
               </div>
-              {order.customers?.email && (
+              {order.customers?.username && (
                 <div className="flex items-center gap-2">
                   <span className="text-gray-400">@</span>
-                  <span>{order.customers.email}</span>
+                  <span>{order.customers.username}</span>
                 </div>
               )}
               {order.customers?.address && (

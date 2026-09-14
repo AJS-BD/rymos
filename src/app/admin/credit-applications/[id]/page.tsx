@@ -71,7 +71,7 @@ export default function ReviewApplication({ params }: { params: Promise<{ id: st
       const supabase = getSupabase();
       const { data, error: fetchError } = await supabase
         .from("credit_applications")
-        .select("*, customers(full_name, phone, address, email)")
+        .select("*, customers(full_name, phone, address, username)")
         .eq("id", id)
         .single();
 
