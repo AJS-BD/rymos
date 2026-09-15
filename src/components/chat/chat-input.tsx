@@ -40,7 +40,7 @@ export default function ChatInput({
           placeholder={placeholder}
           disabled={disabled}
           rows={1}
-          className="flex-1 resize-none rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900 disabled:bg-gray-50 disabled:text-gray-400"
+          className="flex-1 resize-none rounded-xl border border-gray-300 px-10 py-2.5 text-sm focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900 disabled:bg-gray-50 disabled:text-gray-400"
           style={{ maxHeight: "120px" }}
         />
         <button

@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { getSupabase, isConfigured } from "@/lib/supabase";
 import ChatBubble from "@/components/chat/chat-bubble";
 import ChatInput from "@/components/chat/chat-input";
-import { ArrowLeft, Phone, User } from "lucide-react";
+import { ArrowLeft, Phone, User, ShoppingBag, X } from "lucide-react";
 import Link from "next/link";
 
 interface Message {
@@ -15,6 +15,12 @@ interface Message {
   content: string;
   read: boolean;
   created_at: string;
+  metadata?: {
+    product_id?: string;
+    product_name?: string;
+    product_image?: string;
+    product_price?: number;
+  };
 }
 
 interface Customer {
@@ -22,6 +28,14 @@ interface Customer {
   full_name: string;
   phone: string;
   username: string;
+}
+
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  images: string[];
+  stock: number;
 }
 
 export default function AdminConversation() {
@@ -32,6 +46,10 @@ export default function AdminConversation() {
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [showProductPicker, setShowProductPicker] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -42,7 +60,6 @@ export default function AdminConversation() {
       }
       const supabase = getSupabase();
 
-      // Fetch customer info
       const { data: customerData } = await supabase
         .from("customers")
         .select("*")
@@ -53,7 +70,6 @@ export default function AdminConversation() {
         setCustomer(customerData as Customer);
       }
 
-      // Fetch messages
       const { data: messageData } = await supabase
         .from("messages")
         .select("*")
@@ -63,7 +79,6 @@ export default function AdminConversation() {
       if (messageData) {
         setMessages(messageData as Message[]);
 
-        // Mark customer messages as read
         const unreadCustomer = messageData.filter(
           (m: Message) => m.sender === "customer" && !m.read
         );
@@ -81,7 +96,6 @@ export default function AdminConversation() {
 
     fetchData();
 
-    // Realtime subscription
     const channel = getSupabase()
       .channel(`admin-conversation-${customerId}`)
       .on(
@@ -95,7 +109,6 @@ export default function AdminConversation() {
         (payload) => {
           const newMessage = payload.new as Message;
           setMessages((prev) => {
-            // Prevent duplicates when we sent the message ourselves
             if (prev.some((m) => m.id === newMessage.id)) return prev;
             return [...prev, newMessage];
           });
@@ -127,6 +140,27 @@ export default function AdminConversation() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  const fetchProducts = async () => {
+    if (!isConfigured()) return;
+    const supabase = getSupabase();
+    const { data } = await supabase
+      .from("products")
+      .select("id, name, price, images, stock")
+      .gt("stock", 0)
+      .order("name");
+    if (data) setProducts(data as Product[]);
+  };
+
+  const handleOpenProductPicker = () => {
+    setShowProductPicker(true);
+    fetchProducts();
+  };
+
+  const handleSelectProduct = (product: Product) => {
+    setSelectedProduct(product);
+    setShowProductPicker(false);
+  };
+
   const handleSend = async (content: string) => {
     if (!customerId || !isConfigured()) return;
     setSending(true);
@@ -139,19 +173,31 @@ export default function AdminConversation() {
         sender: "admin",
         content,
         read: false,
+        metadata: selectedProduct
+          ? {
+              product_id: selectedProduct.id,
+              product_name: selectedProduct.name,
+              product_image: selectedProduct.images?.[0] || null,
+              product_price: selectedProduct.price,
+            }
+          : {},
       })
       .select()
       .single();
 
     if (data) {
       setMessages((prev) => {
-        // Avoid duplicates if subscription already delivered it
         if (prev.some((m) => m.id === data.id)) return prev;
         return [...prev, data as Message];
       });
     }
+    setSelectedProduct(null);
     setSending(false);
   };
+
+  const filteredProducts = products.filter((p) =>
+    p.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
@@ -197,26 +243,145 @@ export default function AdminConversation() {
         ) : (
           <div className="space-y-1">
             {messages.map((msg) => (
-              <ChatBubble
-                key={msg.id}
-                content={msg.content}
-                sender={msg.sender}
-                timestamp={msg.created_at}
-                read={msg.read}
-                isOwn={msg.sender === "admin"}
-              />
+              <div key={msg.id}>
+                {msg.metadata?.product_id && (
+                  <div className={`flex ${msg.sender === "admin" ? "justify-end" : "justify-start"} mb-1`}>
+                    <div className="max-w-[75%] rounded-lg border border-gray-200 bg-white p-2 flex items-center gap-2">
+                      {msg.metadata.product_image && (
+                        <img
+                          src={msg.metadata.product_image}
+                          alt={msg.metadata.product_name}
+                          className="w-10 h-10 rounded object-cover"
+                        />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-gray-900 truncate">
+                          {msg.metadata.product_name}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          ৳{msg.metadata.product_price?.toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <ChatBubble
+                  content={msg.content}
+                  sender={msg.sender}
+                  timestamp={msg.created_at}
+                  read={msg.read}
+                  isOwn={msg.sender === "admin"}
+                />
+              </div>
             ))}
             <div ref={messagesEndRef} />
           </div>
         )}
       </div>
 
+      {/* Selected Product Preview */}
+      {selectedProduct && (
+        <div className="bg-white border-t border-gray-200 px-4 py-2">
+          <div className="flex items-center gap-2">
+            {selectedProduct.images?.[0] && (
+              <img
+                src={selectedProduct.images[0]}
+                alt={selectedProduct.name}
+                className="w-8 h-8 rounded object-cover"
+              />
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium text-gray-900 truncate">
+                {selectedProduct.name}
+              </p>
+              <p className="text-xs text-gray-500">৳{selectedProduct.price.toLocaleString()}</p>
+            </div>
+            <button
+              onClick={() => setSelectedProduct(null)}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Input */}
-      <ChatInput
-        onSend={handleSend}
-        placeholder="Reply to customer..."
-        disabled={sending}
-      />
+      <div className="relative">
+        <ChatInput
+          onSend={handleSend}
+          placeholder="Reply to customer..."
+          disabled={sending}
+        />
+        <button
+          onClick={handleOpenProductPicker}
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+          title="Attach product"
+        >
+          <ShoppingBag className="h-5 w-5" />
+        </button>
+      </div>
+
+      {/* Product Picker Modal */}
+      {showProductPicker && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center">
+          <div className="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl max-h-[80vh] flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h3 className="font-semibold text-gray-900">Select Product</h3>
+              <button
+                onClick={() => setShowProductPicker(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="p-4 border-b">
+              <input
+                type="text"
+                placeholder="Search products..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-900"
+              />
+            </div>
+            <div className="flex-1 overflow-y-auto p-4">
+              {filteredProducts.length === 0 ? (
+                <p className="text-sm text-gray-500 text-center py-8">No products found</p>
+              ) : (
+                <div className="space-y-2">
+                  {filteredProducts.map((product) => (
+                    <button
+                      key={product.id}
+                      onClick={() => handleSelectProduct(product)}
+                      className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors text-left"
+                    >
+                      {product.images?.[0] ? (
+                        <img
+                          src={product.images[0]}
+                          alt={product.name}
+                          className="w-12 h-12 rounded-lg object-cover"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center">
+                          <ShoppingBag className="h-5 w-5 text-gray-400" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">
+                          {product.name}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          ৳{product.price.toLocaleString()}
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { getSupabase, isConfigured } from "@/lib/supabase";
 import ChatBubble from "@/components/chat/chat-bubble";
 import ChatInput from "@/components/chat/chat-input";
-import { MessageSquare, ArrowLeft } from "lucide-react";
+import { MessageSquare, ArrowLeft, X, ShoppingBag, Send } from "lucide-react";
 import Link from "next/link";
 
 interface Message {
@@ -14,6 +14,20 @@ interface Message {
   content: string;
   read: boolean;
   created_at: string;
+  metadata?: {
+    product_id?: string;
+    product_name?: string;
+    product_image?: string;
+    product_price?: number;
+  };
+}
+
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  images: string[];
+  stock: number;
 }
 
 export default function CustomerMessages() {
@@ -21,16 +35,17 @@ export default function CustomerMessages() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [customerId, setCustomerId] = useState<string | null>(null);
+  const [showProductPicker, setShowProductPicker] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // For demo/dev purposes, use a default customer ID if not authenticated
-    // In production, this would come from auth session
     const storedId = localStorage.getItem("rymos_customer_id");
     if (storedId) {
       setCustomerId(storedId);
     } else {
-      // Create a demo customer ID for development
       const demoId = crypto.randomUUID();
       localStorage.setItem("rymos_customer_id", demoId);
       setCustomerId(demoId);
@@ -54,7 +69,6 @@ export default function CustomerMessages() {
 
       if (data) {
         setMessages(data as Message[]);
-        // Mark admin messages as read
         const unreadAdmin = data.filter(
           (m: Message) => m.sender === "admin" && !m.read
         );
@@ -71,7 +85,6 @@ export default function CustomerMessages() {
 
     fetchMessages();
 
-    // Realtime subscription
     const channel = getSupabase()
       .channel(`customer-messages-${customerId}`)
       .on(
@@ -85,7 +98,6 @@ export default function CustomerMessages() {
         (payload) => {
           const newMessage = payload.new as Message;
           setMessages((prev) => {
-            // Prevent duplicates when we sent the message ourselves
             if (prev.some((m) => m.id === newMessage.id)) return prev;
             return [...prev, newMessage];
           });
@@ -117,6 +129,27 @@ export default function CustomerMessages() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  const fetchProducts = async () => {
+    if (!isConfigured()) return;
+    const supabase = getSupabase();
+    const { data } = await supabase
+      .from("products")
+      .select("id, name, price, images, stock")
+      .gt("stock", 0)
+      .order("name");
+    if (data) setProducts(data as Product[]);
+  };
+
+  const handleOpenProductPicker = () => {
+    setShowProductPicker(true);
+    fetchProducts();
+  };
+
+  const handleSelectProduct = (product: Product) => {
+    setSelectedProduct(product);
+    setShowProductPicker(false);
+  };
+
   const handleSend = async (content: string) => {
     if (!customerId || !isConfigured()) return;
     setSending(true);
@@ -129,81 +162,212 @@ export default function CustomerMessages() {
         sender: "customer",
         content,
         read: false,
+        metadata: selectedProduct
+          ? {
+              product_id: selectedProduct.id,
+              product_name: selectedProduct.name,
+              product_image: selectedProduct.images?.[0] || null,
+              product_price: selectedProduct.price,
+            }
+          : {},
       })
       .select()
       .single();
 
     if (data) {
       setMessages((prev) => {
-        // Avoid duplicates if subscription already delivered it
         if (prev.some((m) => m.id === data.id)) return prev;
         return [...prev, data as Message];
       });
     }
+    setSelectedProduct(null);
     setSending(false);
   };
 
+  const filteredProducts = products.filter((p) =>
+    p.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <main className="flex-1 pt-16 sm:pt-20">
-        <div className="min-h-screen bg-gray-50 flex flex-col">
-          {/* Header */}
-          <header className="bg-white border-b px-4 py-3 flex items-center gap-3 sticky top-0 z-10">
-            <Link href="/" className="text-gray-500 hover:text-gray-900">
-              <ArrowLeft className="h-5 w-5" />
-            </Link>
-            <div className="flex items-center gap-2">
-              <div className="h-9 w-9 rounded-full bg-gray-900 flex items-center justify-center">
-                <MessageSquare className="h-4 w-4 text-white" />
-              </div>
-              <div>
-                <h1 className="text-sm font-semibold text-gray-900">RYmos Support</h1>
-                <p className="text-xs text-green-600">Online</p>
-              </div>
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        {/* Header */}
+        <header className="bg-white border-b px-4 py-3 flex items-center gap-3 sticky top-0 z-10">
+          <Link href="/" className="text-gray-500 hover:text-gray-900">
+            <ArrowLeft className="h-5 w-5" />
+          </Link>
+          <div className="flex items-center gap-2">
+            <div className="h-9 w-9 rounded-full bg-gray-900 flex items-center justify-center">
+              <MessageSquare className="h-4 w-4 text-white" />
             </div>
-          </header>
+            <div>
+              <h1 className="text-sm font-semibold text-gray-900">RYmos Support</h1>
+              <p className="text-xs text-green-600">Online</p>
+            </div>
+          </div>
+        </header>
 
-          {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto p-4">
-            {loading ? (
-              <div className="flex items-center justify-center h-full">
-                <div className="animate-pulse text-gray-400">Loading messages...</div>
+        {/* Messages Area */}
+        <div className="flex-1 overflow-y-auto p-4">
+          {loading ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="animate-pulse text-gray-400">Loading messages...</div>
+            </div>
+          ) : messages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-center px-4">
+              <div className="h-16 w-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                <MessageSquare className="h-8 w-8 text-gray-400" />
               </div>
-            ) : messages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-center px-4">
-                <div className="h-16 w-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-                  <MessageSquare className="h-8 w-8 text-gray-400" />
-                </div>
-                <h2 className="text-lg font-semibold text-gray-900 mb-1">
-                  Start a conversation
-                </h2>
-                <p className="text-sm text-gray-500 max-w-xs">
-                  Have a question about your order or our products? Send us a message and we&apos;ll get back to you soon.
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-1">
-                {messages.map((msg) => (
+              <h2 className="text-lg font-semibold text-gray-900 mb-1">
+                Start a conversation
+              </h2>
+              <p className="text-sm text-gray-500 max-w-xs">
+                Have a question about your order or our products? Send us a message and we&apos;ll get back to you soon.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-1">
+              {messages.map((msg) => (
+                <div key={msg.id}>
+                  {msg.metadata?.product_id && (
+                    <div className={`flex ${msg.sender === "customer" ? "justify-end" : "justify-start"} mb-1`}>
+                      <div className="max-w-[75%] rounded-lg border border-gray-200 bg-white p-2 flex items-center gap-2">
+                        {msg.metadata.product_image && (
+                          <img
+                            src={msg.metadata.product_image}
+                            alt={msg.metadata.product_name}
+                            className="w-10 h-10 rounded object-cover"
+                          />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium text-gray-900 truncate">
+                            {msg.metadata.product_name}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            ৳{msg.metadata.product_price?.toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   <ChatBubble
-                    key={msg.id}
                     content={msg.content}
                     sender={msg.sender}
                     timestamp={msg.created_at}
                     read={msg.read}
                     isOwn={msg.sender === "customer"}
                   />
-                ))}
-                <div ref={messagesEndRef} />
-              </div>
-            )}
-          </div>
+                </div>
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+          )}
+        </div>
 
-          {/* Input */}
+        {/* Selected Product Preview */}
+        {selectedProduct && (
+          <div className="bg-white border-t border-gray-200 px-4 py-2">
+            <div className="flex items-center gap-2">
+              {selectedProduct.images?.[0] && (
+                <img
+                  src={selectedProduct.images[0]}
+                  alt={selectedProduct.name}
+                  className="w-8 h-8 rounded object-cover"
+                />
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-gray-900 truncate">
+                  {selectedProduct.name}
+                </p>
+                <p className="text-xs text-gray-500">৳{selectedProduct.price.toLocaleString()}</p>
+              </div>
+              <button
+                onClick={() => setSelectedProduct(null)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Input */}
+        <div className="relative">
           <ChatInput
             onSend={handleSend}
             placeholder="Type your message..."
             disabled={sending}
           />
+          <button
+            onClick={handleOpenProductPicker}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            title="Attach product"
+          >
+            <ShoppingBag className="h-5 w-5" />
+          </button>
         </div>
-      </main>
+
+        {/* Product Picker Modal */}
+        {showProductPicker && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center">
+            <div className="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl max-h-[80vh] flex flex-col">
+              <div className="flex items-center justify-between p-4 border-b">
+                <h3 className="font-semibold text-gray-900">Select Product</h3>
+                <button
+                  onClick={() => setShowProductPicker(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="p-4 border-b">
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-900"
+                />
+              </div>
+              <div className="flex-1 overflow-y-auto p-4">
+                {filteredProducts.length === 0 ? (
+                  <p className="text-sm text-gray-500 text-center py-8">No products found</p>
+                ) : (
+                  <div className="space-y-2">
+                    {filteredProducts.map((product) => (
+                      <button
+                        key={product.id}
+                        onClick={() => handleSelectProduct(product)}
+                        className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors text-left"
+                      >
+                        {product.images?.[0] ? (
+                          <img
+                            src={product.images[0]}
+                            alt={product.name}
+                            className="w-12 h-12 rounded-lg object-cover"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center">
+                            <ShoppingBag className="h-5 w-5 text-gray-400" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">
+                            {product.name}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            ৳{product.price.toLocaleString()}
+                          </p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </main>
   );
 }
