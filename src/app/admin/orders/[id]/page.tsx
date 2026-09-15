@@ -155,8 +155,13 @@ export default function OrderDetail() {
 
       if (updateError) throw updateError;
 
-      // Insert status history record
-      const { error: historyError } = await supabase
+      // Update local state immediately for instant UI feedback
+      setOrder((prev) =>
+        prev ? { ...prev, status: newStatus, updated_at: now } : null
+      );
+
+      // Insert status history (non-blocking — don't break UI if this fails)
+      await supabase
         .from("order_status_history")
         .insert({
           order_id: order.id,
@@ -166,12 +171,6 @@ export default function OrderDetail() {
           note: `Status changed from ${order.status} to ${newStatus}`,
         });
 
-      if (historyError) throw historyError;
-
-      // Update local state immediately
-      setOrder((prev) =>
-        prev ? { ...prev, status: newStatus, updated_at: now } : null
-      );
       fetchStatusHistory();
     } catch (err: any) {
       setError(err.message || "Failed to update status.");

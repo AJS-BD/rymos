@@ -140,8 +140,15 @@ export default function AdminOrders() {
 
       if (updateError) throw updateError;
 
-      // Insert status history record
-      const { error: historyError } = await supabase
+      // Update local state immediately for instant UI feedback
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.id === orderId ? { ...o, status: newStatus, updated_at: now } : o
+        )
+      );
+
+      // Insert status history record (non-blocking — don't break UI if this fails)
+      await supabase
         .from("order_status_history")
         .insert({
           order_id: orderId,
@@ -150,15 +157,6 @@ export default function AdminOrders() {
           changed_by: "admin",
           note: `Status changed from ${currentStatus} to ${newStatus}`,
         });
-
-      if (historyError) throw historyError;
-
-      // Update local state immediately for instant UI feedback
-      setOrders((prev) =>
-        prev.map((o) =>
-          o.id === orderId ? { ...o, status: newStatus, updated_at: now } : o
-        )
-      );
     } catch (err) {
       console.error("Failed to update order status:", err);
     } finally {
