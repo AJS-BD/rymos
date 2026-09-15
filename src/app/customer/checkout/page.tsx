@@ -250,6 +250,15 @@ export default function CheckoutPage() {
         }
       }
 
+      // Reduce stock for each item
+      for (const item of items) {
+        const { error: stockError } = await supabase
+          .from("products")
+          .update({ stock: item.product.stock - item.quantity })
+          .eq("id", item.product.id);
+        if (stockError) console.error("Stock update error:", stockError);
+      }
+
       clearCart();
       setPlacedOrder({ orderNumber });
     } catch (err: any) {
