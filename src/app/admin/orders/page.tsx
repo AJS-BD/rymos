@@ -127,6 +127,7 @@ export default function AdminOrders() {
   const handleStatusChange = async (orderId: string, currentStatus: OrderStatus, newStatus: OrderStatus) => {
     if (!isConfigured() || updatingOrderId === orderId) return;
 
+    console.log(`[OrderStatus] Updating ${orderId}: ${currentStatus} → ${newStatus}`);
     setUpdatingOrderId(orderId);
     try {
       const supabase = getSupabase();
@@ -138,14 +139,21 @@ export default function AdminOrders() {
         .update({ status: newStatus, updated_at: now })
         .eq("id", orderId);
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error("[OrderStatus] DB update error:", updateError);
+        throw updateError;
+      }
+
+      console.log("[OrderStatus] DB update success, updating UI");
 
       // Update local state immediately for instant UI feedback
-      setOrders((prev) =>
-        prev.map((o) =>
+      setOrders((prev) => {
+        const updated = prev.map((o) =>
           o.id === orderId ? { ...o, status: newStatus, updated_at: now } : o
-        )
-      );
+        );
+        console.log("[OrderStatus] UI state updated");
+        return updated;
+      });
 
       // Insert status history record (non-blocking — don't break UI if this fails)
       await supabase
@@ -158,7 +166,7 @@ export default function AdminOrders() {
           note: `Status changed from ${currentStatus} to ${newStatus}`,
         });
     } catch (err) {
-      console.error("Failed to update order status:", err);
+      console.error("[OrderStatus] Failed to update order status:", err);
     } finally {
       setUpdatingOrderId(null);
     }
