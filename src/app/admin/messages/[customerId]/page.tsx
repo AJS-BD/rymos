@@ -248,6 +248,8 @@ export default function AdminConversation() {
                   <div className={`flex ${msg.sender === "admin" ? "justify-end" : "justify-start"} mb-1`}>
                     <Link
                       href={`/products/${msg.metadata.product_id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="max-w-[75%] rounded-lg border border-gray-200 bg-white p-2 flex items-center gap-2 hover:bg-gray-50 transition-colors cursor-pointer"
                     >
                       {msg.metadata.product_image && (
