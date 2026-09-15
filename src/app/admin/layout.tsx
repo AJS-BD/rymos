@@ -18,6 +18,7 @@ import {
   Menu,
   X,
 } from "lucide-react";
+import AdminUnreadBadge from "../../components/layout/admin-unread-badge";
 
 const navItems = [
   { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -84,6 +85,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               >
                 <item.icon className={`h-[15px] w-[15px] ${active ? "text-blue-600" : "text-gray-500"}`} />
                 {item.label}
+                {item.href === "/admin/messages" && <AdminUnreadBadge />}
               </Link>
             );
           })}

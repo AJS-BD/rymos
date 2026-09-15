@@ -7,6 +7,7 @@ import { Menu, X, User, ShoppingBag } from "lucide-react";
 import { motion, useScroll, useMotionValueEvent, useTransform, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/auth-context";
 import { useCart } from "@/context/cart-context";
+import UnreadMessageBadge from "./unread-badge";
 
 const navLinks = [
   { label: "Products", href: "/products" },
@@ -161,10 +162,11 @@ export default function Header() {
                             setAccountDropdownOpen(false);
                             if (item.action) item.action();
                           }}
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150 relative"
                           style={{ fontFamily: "var(--font-sans)" }}
                         >
                           {item.label}
+                          {item.label === "Messages" && <UnreadMessageBadge />}
                         </Link>
                       ))}
                     </motion.div>
@@ -235,10 +237,11 @@ export default function Header() {
                       setMobileMenuOpen(false);
                       if (item.action) item.action();
                     }}
-                    className="block text-center text-lg font-light text-[var(--color-text)] hover:text-[var(--color-text-muted)] transition-colors duration-200 py-2"
+                    className="block text-center text-lg font-light text-[var(--color-text)] hover:text-[var(--color-text-muted)] transition-colors duration-200 py-2 relative"
                     style={{ fontFamily: "var(--font-sans)" }}
                   >
                     {item.label}
+                    {item.label === "Messages" && <UnreadMessageBadge />}
                   </Link>
                 </motion.div>
               ))}
