@@ -69,15 +69,23 @@ export default function CustomerMessages() {
 
       if (data) {
         setMessages(data as Message[]);
+        // Mark admin messages as read and track that we've seen them
         const unreadAdmin = data.filter(
           (m: Message) => m.sender === "admin" && !m.read
         );
         if (unreadAdmin.length > 0) {
           const ids = unreadAdmin.map((m: Message) => m.id);
-          await supabase
+          // Update read status in DB
+          supabase
             .from("messages")
             .update({ read: true })
-            .in("id", ids);
+            .in("id", ids)
+            .then(() => {
+              // Update local state to show ticks immediately
+              setMessages((prev) =>
+                prev.map((m) => (ids.includes(m.id) ? { ...m, read: true } : m))
+              );
+            });
         }
       }
       setLoading(false);
@@ -99,6 +107,18 @@ export default function CustomerMessages() {
           const newMessage = payload.new as Message;
           setMessages((prev) => {
             if (prev.some((m) => m.id === newMessage.id)) return prev;
+            // Mark admin messages as read immediately
+            if (newMessage.sender === "admin" && !newMessage.read) {
+              getSupabase()
+                .from("messages")
+                .update({ read: true })
+                .eq("id", newMessage.id)
+                .then(() => {
+                  setMessages((p) =>
+                    p.map((m) => (m.id === newMessage.id ? { ...m, read: true } : m))
+                  );
+                });
+            }
             return [...prev, newMessage];
           });
         }
