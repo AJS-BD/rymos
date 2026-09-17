@@ -212,7 +212,7 @@ export default function CustomerMessages() {
     <main className="flex-1 pt-12 sm:pt-14 flex flex-col min-h-0 h-dvh">
       <div className="flex-1 bg-gray-50 flex flex-col min-h-0">
         {/* Header */}
-        <header className="bg-white border-b px-4 py-3 flex items-center gap-3">
+        <header className="bg-white border-b px-4 py-3 flex items-center gap-3 sticky top-12 sm:top-14 z-10">
           <Link href="/" className="text-gray-500 hover:text-gray-900">
             <ArrowLeft className="h-5 w-5" />
           </Link>
