@@ -202,7 +202,7 @@ export default function AdminConversation() {
   return (
     <div className="flex-1 bg-gray-100 flex flex-col min-h-0">
       {/* Header */}
-      <header className="bg-white border-b px-4 py-3 flex items-center gap-3 sticky top-12 sm:top-14 lg:top-0 z-10">
+      <header className="bg-white border-b px-4 py-3 flex items-center gap-3 sticky top-12 sm:top-14 lg:top-0 z-50">
         <Link
           href="/admin/messages"
           className="text-gray-500 hover:text-gray-900"
