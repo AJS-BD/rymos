@@ -37,6 +37,7 @@ const navItems = [
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
+  const isMessagesPage = pathname.startsWith("/admin/messages/");
 
   const isActive = (href: string) => {
     if (href === "/admin/dashboard") return pathname === href;
@@ -101,7 +102,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-4 pt-16 lg:p-8 overflow-auto">{children}</main>
+      <main className={`flex-1 ${isMessagesPage ? "p-0" : "p-4 pt-16 lg:p-8"} overflow-auto`}>{children}</main>
     </div>
   );
 }
