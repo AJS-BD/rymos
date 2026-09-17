@@ -9,6 +9,7 @@ import { ScrollToTop } from "../ui/scroll-to-top";
 export default function ShopChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAdmin = pathname.startsWith("/admin");
+  const isMessagesPage = pathname === "/customer/messages";
 
   if (isAdmin) {
     return <>{children}</>;
@@ -20,7 +21,7 @@ export default function ShopChrome({ children }: { children: React.ReactNode }) 
       <ScrollToTop />
       <Header />
       {children}
-      <Footer />
+      {!isMessagesPage && <Footer />}
     </>
   );
 }

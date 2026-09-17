@@ -209,7 +209,7 @@ export default function CustomerMessages() {
   );
 
   return (
-    <main className="flex-1 pt-12 sm:pt-14 flex flex-col min-h-0">
+    <main className="flex-1 pt-12 sm:pt-14 flex flex-col min-h-0 h-dvh">
       <div className="flex-1 bg-gray-50 flex flex-col min-h-0">
         {/* Header */}
         <header className="bg-white border-b px-4 py-3 flex items-center gap-3 sticky top-12 sm:top-14 z-10">
@@ -317,7 +317,7 @@ export default function CustomerMessages() {
         )}
 
         {/* Input */}
-        <div className="relative">
+        <div className="relative mt-auto">
           <ChatInput
             onSend={handleSend}
             placeholder="Type your message..."
