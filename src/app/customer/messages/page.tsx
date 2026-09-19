@@ -228,7 +228,7 @@ export default function CustomerMessages() {
         </header>
 
         {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex-1 overflow-y-auto p-4 pb-8">
           {loading ? (
             <div className="flex items-center justify-center h-full">
               <div className="animate-pulse text-gray-400">Loading messages...</div>

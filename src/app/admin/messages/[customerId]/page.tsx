@@ -200,9 +200,9 @@ export default function AdminConversation() {
   );
 
   return (
-    <div className="flex-1 bg-gray-100 flex flex-col min-h-0">
+    <div className="flex-1 flex flex-col min-h-0">
       {/* Header */}
-      <header className="bg-white border-b px-4 py-3 flex items-center gap-3 sticky top-12 sm:top-14 lg:top-0 z-50">
+      <header className="bg-white border-b px-4 py-3 flex items-center gap-3 z-50 flex-shrink-0">
         <Link
           href="/admin/messages"
           className="text-gray-500 hover:text-gray-900"
@@ -228,7 +228,7 @@ export default function AdminConversation() {
       </header>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 min-h-0 overflow-y-auto p-4 pb-8">
         {loading ? (
           <div className="flex items-center justify-center h-full">
             <div className="animate-pulse text-gray-400">Loading conversation...</div>
@@ -312,7 +312,7 @@ export default function AdminConversation() {
       )}
 
       {/* Input */}
-      <div className="relative mt-auto sticky bottom-0">
+      <div className="relative flex-shrink-0">
         <ChatInput
           onSend={handleSend}
           placeholder="Reply to customer..."

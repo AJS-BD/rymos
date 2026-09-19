@@ -45,9 +45,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   };
 
   return (
-    <div className="min-h-screen flex bg-[var(--color-bg-alt)]">
+    <div className="h-screen flex flex-col lg:flex-row bg-[var(--color-bg-alt)]">
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 px-4 py-3 flex items-center justify-between backdrop-blur-xl border-b border-gray-200">
+      <div className="lg:hidden flex-shrink-0 px-4 py-3 flex items-center justify-between backdrop-blur-xl border-b border-gray-200">
         <button onClick={() => setSidebarOpen(true)} className="p-2 rounded-lg" aria-label="Open menu">
           <Menu className="h-5 w-5" />
         </button>
@@ -61,7 +61,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       )}
 
       {/* Sidebar */}
-      <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-[260px] flex flex-col transform transition-transform duration-300 ease-out lg:transform-none ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"} bg-[var(--color-bg)] border-r border-gray-200`}>
+      <aside className={`fixed lg:static lg:flex-0 inset-y-0 left-0 z-50 w-[260px] flex flex-col transform transition-transform duration-300 ease-out lg:transform-none ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"} bg-[var(--color-bg)] border-r border-gray-200 flex-shrink-0`}>
         {/* Sidebar Header */}
         <div className="p-5 pb-4 flex items-center justify-between">
           <div>
@@ -102,7 +102,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       {/* Main Content */}
-      <main className={`flex-1 ${isMessagesPage ? "p-0" : "p-4 pt-16 lg:p-8"} overflow-auto`}>{children}</main>
+      <main className={`flex-1 min-h-0 ${isMessagesPage ? "overflow-hidden flex flex-col pt-16 lg:pt-0" : "overflow-auto p-4 pt-16 lg:p-8"}`}>{children}</main>
     </div>
   );
 }
