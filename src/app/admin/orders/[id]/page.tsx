@@ -483,7 +483,7 @@ export default function OrderDetail() {
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="w-3.5 h-3.5 text-gray-400" />
-                <span>{order.customers?.phone}</span>
+                <span>{order.customers?.phone || "N/A"}</span>
               </div>
               {order.customers?.username && (
                 <div className="flex items-center gap-2">
@@ -509,37 +509,37 @@ export default function OrderDetail() {
             {order.shipping_address ? (
               <div className="text-sm space-y-1">
                 {order.shipping_address.full_name && (
-                  <p className="font-medium">
-                    {order.shipping_address.full_name}
+                  <p className="font-medium">{order.shipping_address.full_name}</p>
+                )}
+                {order.shipping_address.phone && (
+                  <p className="text-gray-600 flex items-center gap-1.5">
+                    <Phone className="w-3.5 h-3.5" />
+                    {order.shipping_address.phone}
                   </p>
                 )}
                 {order.shipping_address.address_line1 && (
-                  <p className="text-gray-600">
-                    {order.shipping_address.address_line1}
-                  </p>
+                  <p className="text-gray-600">{order.shipping_address.address_line1}</p>
                 )}
                 {order.shipping_address.address_line2 && (
-                  <p className="text-gray-600">
-                    {order.shipping_address.address_line2}
-                  </p>
+                  <p className="text-gray-600">{order.shipping_address.address_line2}</p>
                 )}
-                {(order.shipping_address.city ||
-                  order.shipping_address.area) && (
+                {(order.shipping_address.city || order.shipping_address.area) && (
                   <p className="text-gray-600">
-                    {[order.shipping_address.area, order.shipping_address.city]
-                      .filter(Boolean)
-                      .join(", ")}
+                    {[order.shipping_address.area, order.shipping_address.city].filter(Boolean).join(", ")}
                   </p>
                 )}
                 {order.shipping_address.postal_code && (
-                  <p className="text-gray-600">
-                    {order.shipping_address.postal_code}
-                  </p>
+                  <p className="text-gray-600">{order.shipping_address.postal_code}</p>
                 )}
-                {order.shipping_address.phone && (
-                  <p className="text-gray-600 flex items-center gap-1.5 mt-2">
+              </div>
+            ) : order.customers?.address ? (
+              <div className="text-sm space-y-1">
+                <p className="font-medium">{order.customers.full_name}</p>
+                <p className="text-gray-600">{order.customers.address}</p>
+                {order.customers.phone && (
+                  <p className="text-gray-600 flex items-center gap-1.5">
                     <Phone className="w-3.5 h-3.5" />
-                    {order.shipping_address.phone}
+                    {order.customers.phone}
                   </p>
                 )}
               </div>
