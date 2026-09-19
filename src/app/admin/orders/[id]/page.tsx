@@ -64,6 +64,8 @@ interface Order {
     city?: string;
     area?: string;
     postal_code?: string;
+    address?: string;
+    type?: string;
   } | null;
   tracking_info: string | null;
   notes: string | null;
@@ -531,17 +533,20 @@ export default function OrderDetail() {
                 {order.shipping_address.postal_code && (
                   <p className="text-gray-600">{order.shipping_address.postal_code}</p>
                 )}
+                {order.shipping_address.address && (
+                  <p className="text-gray-600">{order.shipping_address.address}</p>
+                )}
+                {order.shipping_address.type && (
+                  <p className="text-xs text-gray-400 mt-1 capitalize">Type: {order.shipping_address.type}</p>
+                )}
               </div>
-            ) : order.customers?.address ? (
+            ) : order.customers?.phone ? (
               <div className="text-sm space-y-1">
                 <p className="font-medium">{order.customers.full_name}</p>
-                <p className="text-gray-600">{order.customers.address}</p>
-                {order.customers.phone && (
-                  <p className="text-gray-600 flex items-center gap-1.5">
-                    <Phone className="w-3.5 h-3.5" />
-                    {order.customers.phone}
-                  </p>
-                )}
+                <p className="text-gray-600 flex items-center gap-1.5">
+                  <Phone className="w-3.5 h-3.5" />
+                  {order.customers.phone}
+                </p>
               </div>
             ) : (
               <p className="text-gray-500 text-sm">No shipping address.</p>
