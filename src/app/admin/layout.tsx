@@ -45,7 +45,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   };
 
   return (
-    <div className="h-screen flex flex-col lg:flex-row bg-[var(--color-bg-alt)]">
+    <div className="h-dvh flex flex-col lg:flex-row bg-[var(--color-bg-alt)]">
       {/* Mobile Header */}
       <div className="lg:hidden flex-shrink-0 px-4 py-3 flex items-center justify-between backdrop-blur-xl border-b border-gray-200">
         <button onClick={() => setSidebarOpen(true)} className="p-2 rounded-lg" aria-label="Open menu">
