@@ -32,6 +32,7 @@ export default function FeaturedShowcase() {
     { damping: 25, stiffness: 80 }
   );
   const rotateX = useTransform(scrollYProgress, [0, 0.5], [-6, 0]);
+  const imageRotateX = useTransform(scrollYProgress, [0, 0.5], [-4, 0]);
 
   // Background parallax
   const bgY = useSpring(
@@ -119,7 +120,7 @@ export default function FeaturedShowcase() {
             style={{
               y: prefersReducedMotion ? 0 : imageY,
               scale,
-              rotateX: prefersReducedMotion ? 0 : useTransform(scrollYProgress, [0, 0.5], [-4, 0]),
+              rotateX: prefersReducedMotion ? 0 : imageRotateX,
               transformPerspective: 1200,
               transformStyle: "preserve-3d",
             }}

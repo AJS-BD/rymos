@@ -19,11 +19,6 @@ export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
 
-  // Don't render header on admin pages
-  if (pathname.startsWith("/admin")) {
-    return null;
-  }
-
   const isHomePage = pathname === "/";
   const { isLoggedIn, logout } = useAuth();
   const { itemCount } = useCart();
@@ -49,6 +44,12 @@ export default function Header() {
       : ["rgba(255, 255, 255, 0.95)", "rgba(255, 255, 255, 0.95)"]
   );
   const headerBlur = useTransform(scrollY, [0, 100], [0, 20]);
+  const backdropBlur = useTransform(headerBlur, (v) => `blur(${v}px)`);
+
+  // Don't render header on admin pages (after all hooks)
+  if (pathname.startsWith("/admin")) {
+    return null;
+  }
 
   const textColor = isHomePage && !scrolled ? "#ffffff" : "#111827";
   const textShadow = isHomePage && !scrolled ? "0 1px 2px rgba(0, 0, 0, 0.3)" : "none";
@@ -71,8 +72,8 @@ export default function Header() {
         className="fixed top-0 left-0 right-0 z-50"
         style={{
           backgroundColor: headerBg,
-          backdropFilter: useTransform(headerBlur, (v) => `blur(${v}px)`),
-          WebkitBackdropFilter: useTransform(headerBlur, (v) => `blur(${v}px)`),
+          backdropFilter: backdropBlur,
+          WebkitBackdropFilter: backdropBlur,
         }}
       >
         <div className="max-w-[1024px] mx-auto px-5 sm:px-6">

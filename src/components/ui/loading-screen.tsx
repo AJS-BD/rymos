@@ -9,10 +9,10 @@ export default function LoadingScreen() {
   const hideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isAdmin = pathname.startsWith("/admin");
-  if (isAdmin) return null;
 
   // Show loader IMMEDIATELY (synchronously) before browser paints new page
   useLayoutEffect(() => {
+    if (isAdmin) return;
     if (hideTimeoutRef.current) {
       clearTimeout(hideTimeoutRef.current);
       hideTimeoutRef.current = null;
@@ -31,16 +31,19 @@ export default function LoadingScreen() {
         hideTimeoutRef.current = null;
       }
     };
-  }, [pathname]);
+  }, [pathname, isAdmin]);
 
   // Initial page load
   useLayoutEffect(() => {
+    if (isAdmin) return;
     setOpacity(1);
     const timer = setTimeout(() => {
       setOpacity(0);
     }, 600);
     return () => clearTimeout(timer);
-  }, []);
+  }, [isAdmin]);
+
+  if (isAdmin) return null;
 
   return (
     <div

@@ -1,4 +1,5 @@
 import { getSupabase, isConfigured } from "@/lib/supabase";
+import { seededCount } from "@/lib/seeded";
 import ProductCard from "@/components/products/product-card";
 
 async function getNewArrivals() {
@@ -56,7 +57,7 @@ export default async function NewArrivals() {
                     )
                   : 0,
                 rating: 4.5,
-                reviewCount: Math.floor(Math.random() * 200) + 50,
+                reviewCount: seededCount(product.id, 50, 250),
                 image: "/images/products/placeholder.png",
               }}
             />
