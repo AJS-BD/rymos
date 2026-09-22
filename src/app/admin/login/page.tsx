@@ -25,7 +25,7 @@ export default function AdminLoginPage() {
       return;
     }
     if (setupMode && !setupCode.trim()) {
-      setError("Please enter the setup code from the workflow run summary.");
+      setError("Please enter the setup code (from /setup or the workflow run summary).");
       return;
     }
 
@@ -170,7 +170,7 @@ export default function AdminLoginPage() {
                   maxLength={9}
                 />
                 <p className="text-xs text-gray-400 mt-1">
-                  From the &quot;Apply Supabase Sync SQL&quot; workflow run summary (Actions tab).
+                  From{" "}<Link href="/setup" className="text-blue-600 underline underline-offset-2">/setup</Link>{" "}or the &quot;Apply Supabase Sync SQL&quot; workflow run summary (Actions tab).
                 </p>
               </div>
             )}

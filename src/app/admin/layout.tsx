@@ -74,9 +74,9 @@ function AdminShell({ children }: { children: React.ReactNode }) {
       {admin?.fallback && (
         <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 text-[12px] text-amber-800 flex items-center justify-between gap-3">
           <span>
-            Admin protection is not active yet — run{" "}
-            <code className="px-1 py-0.5 bg-amber-100 rounded font-mono text-[11px]">supabase/sync_20260922_prod_sync.sql</code>{" "}
-            in the Supabase SQL Editor to enable login.
+            Admin protection is not active yet — open{" "}
+            <Link href="/setup" className="underline underline-offset-2 font-medium">/setup</Link>{" "}
+            to finish the one-time database setup and enable login.
           </span>
         </div>
       )}
