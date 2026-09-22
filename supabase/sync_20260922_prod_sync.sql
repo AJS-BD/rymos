@@ -85,6 +85,7 @@ INSERT INTO settings (key, value, description, category) VALUES
   ('store_currency', 'BDT', 'Default currency for the store', 'store'),
   ('store_address', 'Level 4, Block D, Bashundhara City Shopping Complex, Dhaka 1229', 'Store physical address', 'store'),
   ('store_phone', '', 'Store contact phone number', 'store'),
+  ('store_email', '', 'Store contact email shown on the contact page', 'store'),
   ('whatsapp_sender_phone', '', 'WhatsApp number for support links (digits only, e.g. 8801XXXXXXXXX)', 'store')
 ON CONFLICT (key) DO NOTHING;
 
@@ -338,6 +339,39 @@ CREATE TABLE IF NOT EXISTS inventory_movements (
 ALTER TABLE inventory_movements ENABLE ROW LEVEL SECURITY;
 
 -- ============================================
+-- PART 4.5: CONTACT FORM (public /contact submissions)
+-- ============================================
+-- Anonymous visitors submit the contact form; admin reads them in
+-- /admin/messages (Contact Form tab). No customer_id FK — the form
+-- is for non-account holders too.
+
+CREATE TABLE IF NOT EXISTS contact_messages (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  subject TEXT NOT NULL,
+  message TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'read', 'replied')),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_contact_messages_status ON contact_messages(status);
+CREATE INDEX IF NOT EXISTS idx_contact_messages_created_at ON contact_messages(created_at DESC);
+ALTER TABLE contact_messages ENABLE ROW LEVEL SECURITY;
+
+-- anon may INSERT (submit the form) and SELECT (admin panel reads with the
+-- anon client today — same posture as the messages table; tighten when
+-- admin auth lands)
+DROP POLICY IF EXISTS "Allow anon insert contact_messages" ON contact_messages;
+CREATE POLICY "Allow anon insert contact_messages"
+  ON contact_messages FOR INSERT TO anon WITH CHECK (true);
+DROP POLICY IF EXISTS "Allow anon select contact_messages" ON contact_messages;
+CREATE POLICY "Allow anon select contact_messages"
+  ON contact_messages FOR SELECT TO anon USING (true);
+DROP POLICY IF EXISTS "Allow authenticated all contact_messages" ON contact_messages;
+CREATE POLICY "Allow authenticated all contact_messages"
+  ON contact_messages FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+-- ============================================
 -- PART 5: GRANTS (RLS policies filter rows; GRANTs allow access at all)
 -- Supabase usually grants these via default privileges, but explicit
 -- GRANTs guarantee the anon key can reach the new tables.
@@ -345,6 +379,8 @@ ALTER TABLE inventory_movements ENABLE ROW LEVEL SECURITY;
 GRANT SELECT, INSERT, UPDATE, DELETE ON settings, order_status_history,
   credit_applications, credit_plans, installments, coupons, wishlists,
   product_reviews TO anon, authenticated;
+GRANT SELECT, INSERT ON contact_messages TO anon;
+GRANT SELECT, UPDATE, DELETE ON contact_messages TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON returns, refunds, cart_items,
   notifications, admin_audit_log, daily_sales, inventory_movements
   TO authenticated;

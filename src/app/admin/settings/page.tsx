@@ -53,6 +53,7 @@ const storeFields: SettingField[] = [
   },
   { key: "store_address", label: "Address", type: "textarea", placeholder: "123 Main St, Dhaka, Bangladesh" },
   { key: "store_phone", label: "Phone", type: "text", placeholder: "+880 1XXX-XXXXXX" },
+  { key: "store_email", label: "Contact Email", type: "text", placeholder: "support@rymos.com" },
 ];
 
 const whatsappFields: SettingField[] = [

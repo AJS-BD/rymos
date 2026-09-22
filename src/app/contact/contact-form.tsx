@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Send, CheckCircle } from "lucide-react";
+import { getSupabase, isConfigured } from "@/lib/supabase";
+import { Send, CheckCircle, AlertCircle } from "lucide-react";
 
 export default function ContactForm() {
   const [formData, setFormData] = useState({
@@ -12,6 +13,7 @@ export default function ContactForm() {
   });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -21,13 +23,39 @@ export default function ContactForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+
+    if (!isConfigured()) {
+      setError("Contact form is not configured. Please reach us by phone or WhatsApp.");
+      return;
+    }
+
     setLoading(true);
 
-    // Simulate form submission
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      const supabase = getSupabase();
+      const { error: insertError } = await supabase.from("contact_messages").insert({
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        subject: formData.subject,
+        message: formData.message.trim(),
+      });
 
-    setLoading(false);
-    setSubmitted(true);
+      if (insertError) {
+        setError(
+          insertError.code === "42P01" || insertError.message.includes("does not exist")
+            ? "We could not save your message right now. Please reach us by phone or WhatsApp instead."
+            : "Something went wrong while sending. Please try again."
+        );
+        return;
+      }
+
+      setSubmitted(true);
+    } catch {
+      setError("Something went wrong while sending. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (submitted) {
@@ -126,6 +154,13 @@ export default function ContactForm() {
           className="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent resize-none"
         />
       </div>
+      {error && (
+        <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-lg p-3">
+          <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
+          <p className="text-sm text-red-600">{error}</p>
+        </div>
+      )}
+
       <button
         type="submit"
         disabled={loading}
