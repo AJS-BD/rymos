@@ -1,4 +1,6 @@
 // Test harness for /api/setup/apply route logic (userland module via routeModule.userland).
+// Loaded dynamically at runtime — a static import can't reach inside .next/server.
+/* eslint-disable @typescript-eslint/no-require-imports */
 const PORT = process.env.MOCK_PORT || "8991";
 const realFetch = globalThis.fetch;
 globalThis.fetch = async (url, init) => {

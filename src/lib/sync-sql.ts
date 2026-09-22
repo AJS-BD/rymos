@@ -504,7 +504,7 @@ BEGIN
 
   UPDATE public.admin_bootstrap
     SET used = TRUE
-    WHERE lower(code) = lower(trim(p_code));
+    WHERE replace(lower(code), '-', '') = replace(lower(trim(p_code)), '-', '');
 END $$;
 
 REVOKE EXECUTE ON FUNCTION public.promote_first_admin(TEXT) FROM PUBLIC, anon;

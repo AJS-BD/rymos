@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SYNC_SQL } from "@/lib/sync-sql";
 
+// 5 sequential Management API round-trips + a 24KB DDL apply can exceed the
+// 10s Hobby default — allow the full 60s so the one-shot setup isn't killed
+// mid-apply (the SQL is idempotent, but a timeout would confuse the user).
+export const maxDuration = 60;
+
 /**
  * Self-service one-time database setup.
  *
