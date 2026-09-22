@@ -109,3 +109,55 @@ jobs:
           else
             echo "All expected tables present. Sync verified."
           fi
+
+      - name: Generate first-admin setup code (only if no admin exists yet)
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: imcsesyqurkpvguwpmem
+        run: |
+          set -euo pipefail
+
+          # If an active admin already exists, the bootstrap is closed — skip.
+          ADMIN_CHECK='SELECT count(*) AS n FROM admin_users WHERE is_active;'
+          jq -n --arg q "$ADMIN_CHECK" '{query: $q}' > admin-check.json
+          STATUS=$(curl -sS -o admin-check-resp.json -w "%{http_code}" -X POST \
+            "https://api.supabase.com/v1/projects/${SUPABASE_PROJECT_REF}/database/query" \
+            -H "Authorization: Bearer ${SUPABASE_ACCESS_TOKEN}" \
+            -H "Content-Type: application/json" \
+            --data-binary @admin-check.json)
+
+          if [ "$STATUS" != "201" ] && [ "$STATUS" != "200" ]; then
+            echo "::warning::Admin check failed (HTTP $STATUS) — skipping setup code generation."
+            exit 0
+          fi
+
+          ADMIN_COUNT=$(jq -r '.[0].n' admin-check-resp.json)
+          echo "Active admins: $ADMIN_COUNT"
+          if [ "$ADMIN_COUNT" != "0" ]; then
+            echo "Admin already exists — first-admin bootstrap is closed. No code generated."
+            exit 0
+          fi
+
+          CODE=$(LC_ALL=C tr -dc 'A-HJKMNPQRSTUVWXYZ2-9' < /dev/urandom | head -c 8 | fold -w4 | paste -sd- -)
+
+          INSERT="INSERT INTO admin_bootstrap (code) VALUES ('${CODE}');"
+          jq -n --arg q "$INSERT" '{query: $q}' > insert-code.json
+          STATUS=$(curl -sS -o insert-code-resp.json -w "%{http_code}" -X POST \
+            "https://api.supabase.com/v1/projects/${SUPABASE_PROJECT_REF}/database/query" \
+            -H "Authorization: Bearer ${SUPABASE_ACCESS_TOKEN}" \
+            -H "Content-Type: application/json" \
+            --data-binary @insert-code.json)
+
+          if [ "$STATUS" != "201" ] && [ "$STATUS" != "200" ]; then
+            echo "::warning::Could not store setup code (HTTP $STATUS)."
+            cat insert-code-resp.json || true
+            exit 0
+          fi
+
+          echo "=============================================="
+          echo "FIRST-ADMIN SETUP CODE: ${CODE}"
+          echo "=============================================="
+          echo "Open https://rymos-xafors-projects.vercel.app/admin/login"
+          echo "→ 'First-time setup' → enter your email, a password, and this code."
+          echo "This code is single-use and only works while no admin exists."
+          echo "=============================================="

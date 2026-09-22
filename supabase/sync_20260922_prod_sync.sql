@@ -431,6 +431,80 @@ CREATE POLICY "Allow authenticated select admin_users"
   ON admin_users FOR SELECT TO authenticated USING (true);
 
 -- ============================================
+-- PART 4.8: FIRST-ADMIN BOOTSTRAP (self-service, no SQL Editor)
+-- ============================================
+-- After this sync is applied, the shop owner creates the first admin entirely
+-- from the login page:
+--   1. Run the "Apply Supabase Sync SQL" GitHub workflow — its run summary
+--      prints a one-time setup code (stored in admin_bootstrap below).
+--   2. On /admin/login open "First-time setup", enter email + password +
+--      the code. The page signs them up (Supabase Auth) and calls
+--      promote_first_admin(code), which inserts them into admin_users.
+--
+-- Safety:
+--   - promote_first_admin only works while admin_users has NO active rows —
+--     one-shot, closes forever once the first admin exists.
+--   - The code is single-use. admin_bootstrap has RLS enabled with NO
+--     policies and NO anon/authenticated grants, so API keys cannot read it;
+--     only the RPC (SECURITY DEFINER, owner postgres) ever compares it.
+--   - If you applied this file by pasting it into the SQL Editor instead of
+--     the workflow, no code was generated — create the admin manually:
+--     INSERT INTO admin_users (auth_user_id, email, full_name, role)
+--     VALUES ('<auth-user-uuid>', '...', '...', 'admin');
+
+CREATE TABLE IF NOT EXISTS admin_bootstrap (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  code TEXT NOT NULL UNIQUE,
+  used BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+ALTER TABLE admin_bootstrap ENABLE ROW LEVEL SECURITY;
+-- Deliberately no policies and no grants on admin_bootstrap.
+
+CREATE OR REPLACE FUNCTION public.promote_first_admin(p_code TEXT)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  v_uid UUID := auth.uid();
+  v_email TEXT;
+BEGIN
+  IF v_uid IS NULL THEN
+    RAISE EXCEPTION 'Not signed in';
+  END IF;
+
+  IF EXISTS (SELECT 1 FROM public.admin_users WHERE is_active) THEN
+    RAISE EXCEPTION 'An admin already exists — first-admin bootstrap is closed';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM public.admin_bootstrap
+    WHERE lower(code) = lower(trim(p_code)) AND used = FALSE
+  ) THEN
+    RAISE EXCEPTION 'Invalid or already-used setup code';
+  END IF;
+
+  SELECT u.email INTO v_email FROM auth.users u WHERE u.id = v_uid;
+  IF v_email IS NULL THEN
+    RAISE EXCEPTION 'Auth user not found';
+  END IF;
+
+  INSERT INTO public.admin_users (auth_user_id, email, full_name, role)
+  VALUES (v_uid, v_email, '', 'admin')
+  ON CONFLICT (auth_user_id) DO UPDATE
+    SET is_active = TRUE, role = 'admin';
+
+  UPDATE public.admin_bootstrap
+    SET used = TRUE
+    WHERE lower(code) = lower(trim(p_code));
+END $$;
+
+REVOKE EXECUTE ON FUNCTION public.promote_first_admin(TEXT) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.promote_first_admin(TEXT) TO authenticated;
+
+-- ============================================
 -- PART 5: GRANTS (RLS policies filter rows; GRANTs allow access at all)
 -- Supabase usually grants these via default privileges, but explicit
 -- GRANTs guarantee the anon key can reach the new tables.
