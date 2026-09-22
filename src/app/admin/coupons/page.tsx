@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Tag, Trash2, Plus, AlertTriangle, CheckCircle, XCircle, Clock } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
 
@@ -26,7 +25,6 @@ interface Coupon {
 type FilterType = "all" | "active" | "expired";
 
 export default function AdminCoupons() {
-  const router = useRouter();
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterType>("all");

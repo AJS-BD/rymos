@@ -185,7 +185,7 @@ export default function AdminSettings() {
         const error = await res.json();
         setSaveMessage({ success: false, message: error.error || "Failed to save settings" });
       }
-    } catch (err) {
+    } catch {
       setSaveMessage({ success: false, message: "Failed to save settings" });
     } finally {
       setSaving(false);

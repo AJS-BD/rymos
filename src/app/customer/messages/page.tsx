@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { getSupabase, isConfigured } from "@/lib/supabase";
 import ChatBubble from "@/components/chat/chat-bubble";
 import ChatInput from "@/components/chat/chat-input";
-import { MessageSquare, ArrowLeft, X, ShoppingBag, Send } from "lucide-react";
+import { MessageSquare, ArrowLeft, X, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 
 interface Message {

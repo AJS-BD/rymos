@@ -394,7 +394,6 @@ export default function AdminOrders() {
                           <Eye className="w-4 h-4" />
                         </Link>
                         <OrderActions
-                          orderId={order.id}
                           currentStatus={order.status}
                           onStatusChange={(currentStatus, newStatus) =>
                             handleStatusChange(order.id, currentStatus, newStatus)

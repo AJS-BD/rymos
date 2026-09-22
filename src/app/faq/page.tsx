@@ -1,5 +1,4 @@
 import { Metadata } from "next";
-import { getSupabase, isConfigured } from "@/lib/supabase";
 import FaqAccordion from "./faq-accordion";
 import { HelpCircle, MessageCircle } from "lucide-react";
 import Link from "next/link";
@@ -130,8 +129,6 @@ const faqCategories = [
 ];
 
 export default function FaqPage() {
-  const supabase = getSupabase();
-  const configured = isConfigured();
 
   return (
     <main className="flex-1 pt-16 sm:pt-20">

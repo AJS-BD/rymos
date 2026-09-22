@@ -271,7 +271,7 @@ export function trackWebVitals(metric: {
   console.log(`[Web Vitals] ${metric.name}: ${metric.value}`, metric);
 }
 
-export default {
+const analytics = {
   trackEvent,
   trackPageView,
   trackProductView,
@@ -290,3 +290,5 @@ export default {
   initAnalytics,
   identifyUser,
 };
+
+export default analytics;

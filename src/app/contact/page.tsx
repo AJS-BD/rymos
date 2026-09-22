@@ -1,5 +1,4 @@
 import { Metadata } from "next";
-import { getSupabase, isConfigured } from "@/lib/supabase";
 import ContactForm from "./contact-form";
 import { MapPin, Phone, Mail, Clock, MessageCircle } from "lucide-react";
 
@@ -46,8 +45,6 @@ const faqLinks = [
 ];
 
 export default function ContactPage() {
-  const supabase = getSupabase();
-  const configured = isConfigured();
 
   return (
     <main className="flex-1 pt-16 sm:pt-20">

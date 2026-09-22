@@ -489,10 +489,7 @@ interface InteractiveCardProps {
 export function InteractiveCard({
   children,
   className = "",
-  href,
-  onClick,
 }: InteractiveCardProps) {
-  const Component = href ? "a" : "div";
 
   return (
     <motion.div

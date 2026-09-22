@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useScroll, useTransform, useReducedMotion, useSpring, useInView } from "framer-motion";
-import { useRef, createContext, useContext, ReactNode, useState, useEffect } from "react";
+import { useRef, createContext, ReactNode, useState, useEffect } from "react";
 
 interface AnimatedSectionProps {
   children: ReactNode;

@@ -1,5 +1,4 @@
 import { Metadata } from "next";
-import { getSupabase, isConfigured } from "@/lib/supabase";
 import {
   RotateCcw,
   Package,
@@ -93,8 +92,6 @@ const nonReturnable = [
 ];
 
 export default function ReturnsPage() {
-  const supabase = getSupabase();
-  const configured = isConfigured();
 
   return (
     <main className="flex-1 pt-16 sm:pt-20">

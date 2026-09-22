@@ -50,7 +50,6 @@ export default function ReviewApplication({ params }: { params: Promise<{ id: st
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<"info" | "documents" | "guarantor">("info");
   const [reviewNotes, setReviewNotes] = useState("");
-  const [decision, setDecision] = useState<string>("");
   const [rejectionReason, setRejectionReason] = useState("");
   const [showRejectForm, setShowRejectForm] = useState(false);
   const [showApproveForm, setShowApproveForm] = useState(false);
@@ -216,27 +215,6 @@ export default function ReviewApplication({ params }: { params: Promise<{ id: st
       if (error) throw error;
 
       setApplication((prev) => (prev ? { ...prev, status: "under_review", updated_at: now } : null));
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const saveNotes = async () => {
-    if (!application) return;
-    setSaving(true);
-
-    try {
-      const supabase = getSupabase();
-      const now = new Date().toISOString();
-
-      const { error } = await supabase
-        .from("credit_applications")
-        .update({ review_notes: reviewNotes, updated_at: now })
-        .eq("id", application.id);
-
-      if (error) throw error;
     } catch (err: any) {
       setError(err.message);
     } finally {

@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { getSupabase, isConfigured } from "@/lib/supabase";
 import { formatBDT } from "@/lib/utils";
-import { Search, ShoppingCart, X, Plus, Minus, Trash2, CreditCard, Banknote, Smartphone, User, Phone, QrCode, MessageCircle, Mail, Link2 } from "lucide-react";
+import { Search, ShoppingCart, X, Plus, Minus, Trash2, CreditCard, Banknote, Smartphone, User, Phone, MessageCircle, Mail, Link2 } from "lucide-react";
 import QRCode from 'qrcode';
 
 interface Product {
@@ -148,7 +148,7 @@ export default function POSPage() {
       addToCart(product);
       setShowLinkModal(false);
       setProductLink("");
-    } catch (err: any) {
+    } catch {
       setLinkError("Invalid link format");
     }
     setLinkLoading(false);
@@ -173,7 +173,6 @@ export default function POSPage() {
 
     // Create customer if name and phone provided
     let customerData: CustomerResult | null = null;
-    let token: string | null = null;
 
     if (customerName && customerPhone) {
       try {
@@ -187,7 +186,6 @@ export default function POSPage() {
           customerData = data.customer;
           setCreatedCustomer(data.customer);
           if (data.created && data.profileToken) {
-            token = data.profileToken;
             setProfileToken(data.profileToken);
             const url = `${window.location.origin}/complete-profile/${data.profileToken}`;
             setProfileUrl(url);

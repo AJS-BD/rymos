@@ -7,7 +7,6 @@ import {
   useTransform,
   useSpring,
   useInView,
-  AnimatePresence,
   type SpringOptions,
 } from "framer-motion";
 import Lenis from "@studio-freight/lenis";

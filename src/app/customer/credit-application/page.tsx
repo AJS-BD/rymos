@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Upload, FileText, CreditCard, User, Phone, MapPin, Briefcase, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import { Upload, FileText, CreditCard, User, MapPin, Briefcase, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import { getSupabase, isConfigured } from "@/lib/supabase";
 import { formatBDT } from "@/lib/utils";
 interface FormState {

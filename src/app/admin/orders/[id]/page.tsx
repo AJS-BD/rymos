@@ -15,8 +15,6 @@ import {
   XCircle,
   Loader2,
   AlertCircle,
-  FileText,
-  Hash,
 } from "lucide-react";
 import { getSupabase, isConfigured } from "@/lib/supabase";
 import { formatBDT } from "@/lib/utils";
@@ -25,7 +23,6 @@ import { useParams } from "next/navigation";
 import {
   StatusBadge,
   OrderStatus,
-  STATUS_LABELS,
 } from "@/components/admin/order-actions";
 
 interface OrderItem {
@@ -78,8 +75,6 @@ interface Order {
     address?: string;
   };
 }
-
-const STATUS_STEPS: OrderStatus[] = ["pending", "confirmed", "packing", "shipping", "delivered"];
 
 export default function OrderDetail() {
   const params = useParams();

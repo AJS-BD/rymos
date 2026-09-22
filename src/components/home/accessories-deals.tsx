@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Headphones, Clock } from "lucide-react";
+import { Clock } from "lucide-react";
 
 export default function AccessoriesDeals() {
   return (

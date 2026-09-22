@@ -63,7 +63,6 @@ export default function AnimatedSidebar({
   className = "",
 }: AnimatedSidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const controls = useAnimation();
 
@@ -91,7 +90,6 @@ export default function AnimatedSidebar({
   // Handle swipe-to-close gesture
   const handleDragEnd = useCallback(
     (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-      setIsDragging(false);
       const threshold = 100;
       const velocity = info.velocity.x;
       const offset = info.offset.x;
@@ -106,10 +104,6 @@ export default function AnimatedSidebar({
     },
     [closeSidebar, controls]
   );
-
-  const handleDragStart = useCallback(() => {
-    setIsDragging(true);
-  }, []);
 
   // Handle link click with haptic feedback
   const handleLinkClick = useCallback(() => {
@@ -203,7 +197,6 @@ export default function AnimatedSidebar({
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
             dragElastic={0.1}
-            onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
             className="fixed top-0 right-0 bottom-0 z-50 w-[85%] max-w-sm bg-white/95 backdrop-blur-xl shadow-2xl md:hidden overflow-y-auto"
             style={{ touchAction: "pan-y" }}
@@ -239,7 +232,7 @@ export default function AnimatedSidebar({
                 }}
                 className="space-y-1"
               >
-                {links.map((link, index) => (
+                {links.map((link) => (
                   <motion.li
                     key={link.href}
                     variants={{

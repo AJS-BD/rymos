@@ -106,13 +106,11 @@ const ACTION_BUTTONS: {
 ];
 
 interface OrderActionsProps {
-  orderId: string;
   currentStatus: OrderStatus;
   onStatusChange: (currentStatus: OrderStatus, newStatus: OrderStatus) => void;
 }
 
 export default function OrderActions({
-  orderId,
   currentStatus,
   onStatusChange,
 }: OrderActionsProps) {

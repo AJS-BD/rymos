@@ -1,7 +1,6 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { getSupabase, isConfigured } from "@/lib/supabase";
 
 interface Product {
   id: string;

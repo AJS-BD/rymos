@@ -3,15 +3,6 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useParams } from 'next/navigation';
 import { CheckCircle, AlertCircle, Loader2, User, Phone, MapPin, Store } from 'lucide-react';
-interface Customer {
-  id: string;
-  full_name: string;
-  phone: string;
-  shop_name: string;
-  address: string;
-  customer_type: string;
-}
-
 function CompleteProfileContent() {
   const params = useParams();
   const token = params.token as string;
@@ -21,7 +12,6 @@ function CompleteProfileContent() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [alreadyCompleted, setAlreadyCompleted] = useState(false);
-  const [customer, setCustomer] = useState<Customer | null>(null);
 
   const [formData, setFormData] = useState({
     full_name: '',
@@ -47,7 +37,6 @@ function CompleteProfileContent() {
           return;
         }
 
-        setCustomer(data.customer);
         setFormData({
           full_name: data.customer.full_name || '',
           phone: data.customer.phone || '',
@@ -55,7 +44,7 @@ function CompleteProfileContent() {
           address: data.customer.address || '',
           customer_type: data.customer.customer_type || 'walk_in',
         });
-      } catch (err) {
+      } catch {
         setError('Failed to load profile. Please try again.');
       } finally {
         setLoading(false);

@@ -103,7 +103,7 @@ export async function POST(req: NextRequest) {
         error: err instanceof Error ? err.message : "Connection failed",
       });
     }
-  } catch (err) {
+  } catch {
     return NextResponse.json(
       { success: false, error: "Internal server error" },
       { status: 500 }

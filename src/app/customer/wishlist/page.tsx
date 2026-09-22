@@ -9,7 +9,6 @@ import {
   ShoppingCart,
   Loader2,
   AlertCircle,
-  ExternalLink,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -106,7 +105,7 @@ export default function WishlistPage() {
           .eq("id", item.id);
 
         if (deleteError) throw deleteError;
-      } catch (err) {
+      } catch {
         // Revert on error
         fetchWishlist();
       }

@@ -1,5 +1,4 @@
 import { Metadata } from "next";
-import { getSupabase, isConfigured } from "@/lib/supabase";
 import { FileText } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -88,8 +87,6 @@ const sections = [
 ];
 
 export default function TermsPage() {
-  const supabase = getSupabase();
-  const configured = isConfigured();
 
   return (
     <main className="flex-1 pt-16 sm:pt-20">

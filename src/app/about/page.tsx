@@ -1,6 +1,5 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { getSupabase, isConfigured } from "@/lib/supabase";
 import { Target, Users, Award, Heart, ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -48,8 +47,6 @@ const milestones = [
 ];
 
 export default function AboutPage() {
-  const supabase = getSupabase();
-  const configured = isConfigured();
 
   return (
     <main className="flex-1 pt-16 sm:pt-20">

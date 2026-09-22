@@ -13,13 +13,10 @@ interface ChatBubbleProps {
 
 export default function ChatBubble({
   content,
-  sender,
   timestamp,
   read = false,
   isOwn = false,
 }: ChatBubbleProps) {
-  const isCustomer = sender === "customer";
-
   return (
     <div
       className={cn(

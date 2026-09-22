@@ -9,7 +9,6 @@ import {
   Plus,
   CheckCircle,
   Clock,
-  XCircle,
   Loader2,
   Send,
 } from "lucide-react";

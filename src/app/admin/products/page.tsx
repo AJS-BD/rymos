@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Package, Trash2, Edit, Plus, AlertTriangle } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
 
@@ -19,7 +18,6 @@ interface Product {
 }
 
 export default function AdminProducts() {
-  const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<number | null>(null);

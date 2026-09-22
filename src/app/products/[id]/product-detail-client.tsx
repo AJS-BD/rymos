@@ -58,7 +58,7 @@ const specCategoryLabels: Record<string, string> = {
 export default function ProductDetailClient({ product }: ProductDetailClientProps) {
   const heroRef = useRef<HTMLDivElement>(null);
   const [showStickyBar, setShowStickyBar] = useState(false);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [currentImageIndex] = useState(0);
 
   const { addItem } = useCart();
   const { isLoggedIn } = useAuth();

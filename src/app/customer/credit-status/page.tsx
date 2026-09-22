@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { CreditCard, Clock, CheckCircle, XCircle, AlertCircle, Calendar, DollarSign, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { CreditCard, Clock, CheckCircle, XCircle, AlertCircle, Loader2 } from "lucide-react";
 import { getSupabase, isConfigured } from "@/lib/supabase";
 import { formatBDT } from "@/lib/utils";
 interface Application {
