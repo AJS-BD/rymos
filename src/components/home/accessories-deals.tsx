@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Clock } from "lucide-react";
+import Image from "next/image";
 
 export default function AccessoriesDeals() {
   return (
@@ -8,10 +9,12 @@ export default function AccessoriesDeals() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           {/* Accessories Collection */}
           <div className="relative overflow-hidden rounded-xl sm:rounded-2xl min-h-[200px] sm:min-h-[250px]">
-            <img
+            <Image
               src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&q=80"
               alt="Accessories"
-              className="absolute inset-0 w-full h-full object-cover"
+              fill
+              sizes="(max-width: 768px) 100vw, 50vw"
+              className="object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/30" />
             <div className="relative z-10 p-5 sm:p-8 h-full flex flex-col justify-center">
@@ -32,10 +35,12 @@ export default function AccessoriesDeals() {
 
           {/* RYMOS Deals */}
           <div className="relative overflow-hidden rounded-xl sm:rounded-2xl min-h-[200px] sm:min-h-[250px]">
-            <img
+            <Image
               src="https://images.unsplash.com/photo-1556656793-08538906a9f8?w=600&q=80"
               alt="Phone deals"
-              className="absolute inset-0 w-full h-full object-cover"
+              fill
+              sizes="(max-width: 768px) 100vw, 50vw"
+              className="object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-red-900/70 to-red-700/30" />
             <div className="relative z-10 p-5 sm:p-8 h-full flex flex-col justify-center">

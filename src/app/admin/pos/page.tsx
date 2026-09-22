@@ -5,6 +5,7 @@ import { getSupabase, isConfigured } from "@/lib/supabase";
 import { formatBDT } from "@/lib/utils";
 import { Search, ShoppingCart, X, Plus, Minus, Trash2, CreditCard, Banknote, Smartphone, User, Phone, MessageCircle, Mail, Link2 } from "lucide-react";
 import QRCode from 'qrcode';
+import Image from "next/image";
 
 interface Product {
   id: string;
@@ -308,10 +309,13 @@ export default function POSPage() {
               {/* Product Image */}
               {product.images && product.images.length > 0 ? (
                 <div className="aspect-square rounded-lg mb-2 sm:mb-3 overflow-hidden relative">
-                  <img
+                  <Image
                     src={product.images[0]}
                     alt={product.name}
-                    className="absolute inset-0 w-full h-full object-cover"
+                    fill
+                    sizes="(max-width: 768px) 50vw, 25vw"
+                    unoptimized
+                    className="object-cover"
                   />
                 </div>
               ) : (
@@ -372,11 +376,14 @@ export default function POSPage() {
               <div key={item.product.id} className="flex gap-2 sm:gap-3 p-2 sm:p-3 bg-gray-50 rounded-lg">
                 {/* Cart Item Image */}
                 {item.product.images && item.product.images.length > 0 ? (
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded overflow-hidden flex-shrink-0">
-                    <img
+                  <div className="relative w-10 h-10 sm:w-12 sm:h-12 rounded overflow-hidden flex-shrink-0">
+                    <Image
                       src={item.product.images[0]}
                       alt={item.product.name}
-                      className="w-full h-full object-cover"
+                      fill
+                      sizes="48px"
+                      unoptimized
+                      className="object-cover"
                     />
                   </div>
                 ) : (
@@ -547,7 +554,14 @@ export default function POSPage() {
                 {qrCodeDataUrl && (
                   <div className="flex flex-col items-center space-y-3">
                     <div className="bg-white p-3 border rounded-lg">
-                      <img src={qrCodeDataUrl} alt="Profile QR Code" className="w-40 h-40" />
+                      <Image
+                        src={qrCodeDataUrl}
+                        alt="Profile QR Code"
+                        width={160}
+                        height={160}
+                        unoptimized
+                        className="w-40 h-40"
+                      />
                     </div>
                     <p className="text-xs text-gray-500 text-center">
                       Scan to complete your profile

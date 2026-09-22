@@ -4,6 +4,7 @@ import { useState, useRef, useCallback } from "react";
 import { getSupabase } from "@/lib/supabase";
 import { Upload, X, Image as ImageIcon, Loader2, Link2 } from "lucide-react";
 import { getErrorMessage } from "@/lib/utils";
+import Image from "next/image";
 
 const BUCKET_NAME = "product-images";
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -241,14 +242,17 @@ export default function ProductImageUpload({
               key={`${url}-${index}`}
               className="relative group aspect-square rounded-lg overflow-hidden border border-gray-200 bg-gray-100"
             >
-              <img
+              <Image
                 src={url}
                 alt={`Product image ${index + 1}`}
-                className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                fill
+                sizes="(max-width: 640px) 50vw, 25vw"
+                unoptimized
+                className="object-cover"
                 onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = "none";
-                  (e.target as HTMLImageElement).nextElementSibling?.classList.remove("hidden");
-                }}
+  (e.target as HTMLImageElement).style.display = "none";
+  (e.target as HTMLImageElement).nextElementSibling?.classList.remove("hidden");
+}}
               />
               <div className="hidden absolute inset-0 flex items-center justify-center">
                 <ImageIcon className="h-8 w-8 text-gray-400" />

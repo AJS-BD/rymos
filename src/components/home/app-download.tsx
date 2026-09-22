@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export default function AppDownload() {
   return (
@@ -46,10 +47,12 @@ export default function AppDownload() {
           {/* Phone Mockup with Image */}
           <div className="hidden lg:flex justify-center">
             <div className="w-64 h-[500px] rounded-[3rem] border-4 border-gray-600 overflow-hidden relative">
-              <img
+              <Image
                 src="https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=400&q=80"
                 alt="RYmos mobile app"
-                className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                fill
+                sizes="256px"
+                className="object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
             </div>

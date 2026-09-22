@@ -7,6 +7,7 @@ import { ChevronRight, ShoppingBag, Shield, Truck, RotateCcw, Award } from "luci
 import { useCart } from "@/context/cart-context";
 import { useAuth } from "@/context/auth-context";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 interface Product {
   id: string;
@@ -283,9 +284,15 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
               {images.map((img, idx) => (
                 <motion.div key={idx} initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }} transition={{ delay: idx * 0.05 }}>
-                  <div className="aspect-square rounded-xl sm:rounded-2xl overflow-hidden bg-gray-100">
-                    <img src={img} alt={`${product.name} - Image ${idx + 1}`}
-                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
+                  <div className="relative aspect-square rounded-xl sm:rounded-2xl overflow-hidden bg-gray-100">
+                    <Image
+                      src={img}
+                      alt={`${product.name} - Image ${idx + 1}`}
+                      fill
+                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                      unoptimized
+                      className="object-cover hover:scale-105 transition-transform duration-500"
+                    />
                   </div>
                 </motion.div>
               ))}

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Play, X, Video } from "lucide-react";
+import Image from "next/image";
 
 interface YouTubeReview {
   id: string;
@@ -128,10 +129,13 @@ export default function YouTubeReviewsSection({ youtubeReviews }: YouTubeReviews
                         exit={{ opacity: 0 }}
                         className="relative aspect-video rounded-2xl overflow-hidden bg-gray-100"
                       >
-                        <img
+                        <Image
                           src={getThumbnailUrl(videoId, review.thumbnail_url)}
                           alt={review.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          fill
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                          unoptimized
+                          className="object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                         <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors" />
                         {/* Play button */}

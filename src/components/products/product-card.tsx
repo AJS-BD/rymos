@@ -9,6 +9,7 @@ import { useRef, useCallback, useState } from "react";
 import { useCart } from "@/context/cart-context";
 import { useAuth } from "@/context/auth-context";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 interface Product {
   id: string;
@@ -133,11 +134,14 @@ export default function ProductCard({ product }: { product: Product }) {
           transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
         >
           {/* Accessible img tag with fallback */}
-          <img
+          <Image
             src={imgError ? FALLBACK_IMAGE : imageUrl}
             alt={product.name}
             onError={() => setImgError(true)}
-            className="absolute inset-0 w-full h-full object-cover opacity-0 pointer-events-none"
+            fill
+            sizes="(max-width: 640px) 50vw, 25vw"
+            unoptimized
+            className="object-cover opacity-0 pointer-events-none"
             aria-hidden="true"
           />
 

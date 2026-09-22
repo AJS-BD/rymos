@@ -7,6 +7,7 @@ import ChatBubble from "@/components/chat/chat-bubble";
 import ChatInput from "@/components/chat/chat-input";
 import { ArrowLeft, Phone, User, ShoppingBag, X } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 interface Message {
   id: string;
@@ -253,9 +254,12 @@ export default function AdminConversation() {
                       className="max-w-[75%] rounded-lg border border-gray-200 bg-white p-2 flex items-center gap-2 hover:bg-gray-50 transition-colors cursor-pointer"
                     >
                       {msg.metadata.product_image && (
-                        <img
+                        <Image
                           src={msg.metadata.product_image}
-                          alt={msg.metadata.product_name}
+                          alt={msg.metadata.product_name ?? "Product"}
+                          width={40}
+                          height={40}
+                          unoptimized
                           className="w-10 h-10 rounded object-cover"
                         />
                       )}
@@ -289,9 +293,12 @@ export default function AdminConversation() {
         <div className="bg-white border-t border-gray-200 px-4 py-2">
           <div className="flex items-center gap-2">
             {selectedProduct.images?.[0] && (
-              <img
+              <Image
                 src={selectedProduct.images[0]}
                 alt={selectedProduct.name}
+                width={32}
+                height={32}
+                unoptimized
                 className="w-8 h-8 rounded object-cover"
               />
             )}
@@ -361,9 +368,12 @@ export default function AdminConversation() {
                       className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors text-left"
                     >
                       {product.images?.[0] ? (
-                        <img
+                        <Image
                           src={product.images[0]}
                           alt={product.name}
+                          width={48}
+                          height={48}
+                          unoptimized
                           className="w-12 h-12 rounded-lg object-cover"
                         />
                       ) : (

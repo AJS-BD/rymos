@@ -8,6 +8,7 @@ import { getSupabase } from "@/lib/supabase";
 import ProductImageUpload from "@/components/ProductImageUpload";
 import StarRating from "@/components/shared/star-rating";
 import { getErrorMessage } from "@/lib/utils";
+import Image from "next/image";
 
 interface Category {
   id: number;
@@ -564,13 +565,16 @@ export default function EditProduct() {
                   className="flex items-center gap-4 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   {video.thumbnail_url ? (
-                    <img
+                    <Image
                       src={video.thumbnail_url}
                       alt={video.title}
+                      width={80}
+                      height={56}
+                      unoptimized
                       className="w-20 h-14 object-cover rounded flex-shrink-0"
                       onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = "none";
-                      }}
+  (e.target as HTMLImageElement).style.display = "none";
+}}
                     />
                   ) : (
                     <div className="w-20 h-14 bg-gray-200 rounded flex items-center justify-center flex-shrink-0">
