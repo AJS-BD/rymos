@@ -479,9 +479,11 @@ BEGIN
     RAISE EXCEPTION 'An admin already exists — first-admin bootstrap is closed';
   END IF;
 
+  -- Dash-tolerant: XXXX-XXXX, XXXXXXXX, and lower-case all match.
   IF NOT EXISTS (
     SELECT 1 FROM public.admin_bootstrap
-    WHERE lower(code) = lower(trim(p_code)) AND used = FALSE
+    WHERE replace(lower(code), '-', '') = replace(lower(trim(p_code)), '-', '')
+      AND used = FALSE
   ) THEN
     RAISE EXCEPTION 'Invalid or already-used setup code';
   END IF;
