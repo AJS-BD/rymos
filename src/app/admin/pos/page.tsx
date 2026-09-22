@@ -31,8 +31,15 @@ interface CustomerResult {
   created_via?: string;
 }
 
-function generateOrderNumber(): string {
-  return `RY-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9999)).padStart(4, '0')}`;
+// Order numbers must be unique — count-based, same as checkout.
+// (orders.order_number is UNIQUE; random numbers collide with existing orders.)
+async function nextOrderNumber(supabase: ReturnType<typeof getSupabase>): Promise<string> {
+  const year = new Date().getFullYear();
+  const { count } = await supabase
+    .from("orders")
+    .select("*", { count: "exact", head: true })
+    .like("order_number", `RY-${year}-%`);
+  return `RY-${year}-${String((count || 0) + 1).padStart(4, "0")}`;
 }
 
 export default function POSPage() {
@@ -167,7 +174,7 @@ export default function POSPage() {
     const supabase = getSupabase();
 
     // Generate order number
-    const newOrderNumber = generateOrderNumber();
+    const newOrderNumber = await nextOrderNumber(supabase);
     setOrderNumber(newOrderNumber);
 
     // Create customer if name and phone provided

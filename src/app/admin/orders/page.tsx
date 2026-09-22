@@ -60,9 +60,11 @@ const STATUS_FILTERS = [
 
 const TYPE_FILTERS = [
   { value: "all", label: "All Types" },
-  { value: "standard", label: "Standard" },
-  { value: "express", label: "Express" },
-  { value: "pickup", label: "Pickup" },
+  { value: "cod", label: "COD" },
+  { value: "shop_pickup", label: "Pickup" },
+  { value: "credit", label: "Credit" },
+  { value: "pos", label: "POS" },
+  { value: "bulk", label: "Bulk" },
 ];
 
 export default function AdminOrders() {
@@ -351,20 +353,24 @@ export default function AdminOrders() {
                         className="px-2 py-0.5 rounded-full text-[11px] font-medium"
                         style={{
                           background:
-                            order.order_type === "express"
+                            order.order_type === "pos"
                               ? "#fff3e0"
-                              : order.order_type === "pickup"
+                              : order.order_type === "shop_pickup"
                               ? "#e0f2f1"
+                              : order.order_type === "credit"
+                              ? "#ede7f6"
                               : "#f5f5f7",
                           color:
-                            order.order_type === "express"
+                            order.order_type === "pos"
                               ? "#e65100"
-                              : order.order_type === "pickup"
+                              : order.order_type === "shop_pickup"
                               ? "#00695c"
+                              : order.order_type === "credit"
+                              ? "#4527a0"
                               : "var(--color-text-muted)",
                         }}
                       >
-                        {order.order_type}
+                        {order.order_type === "shop_pickup" ? "pickup" : order.order_type}
                       </span>
                     </td>
                     <td className="px-5 py-3.5 text-[13px] font-medium" style={{ color: "var(--color-text)" }}>

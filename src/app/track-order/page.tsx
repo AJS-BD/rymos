@@ -35,6 +35,8 @@ interface OrderStatus {
   }>;
 }
 
+// Order statuses the admin panel actually writes (order-actions.tsx):
+// pending → confirmed → packing → shipping → delivered | cancelled
 const statusConfig: Record<
   string,
   { icon: typeof Package; color: string; bgColor: string; label: string }
@@ -51,17 +53,17 @@ const statusConfig: Record<
     bgColor: "bg-blue-100",
     label: "Confirmed",
   },
-  processing: {
+  packing: {
     icon: Package,
     color: "text-indigo-600",
     bgColor: "bg-indigo-100",
-    label: "Processing",
+    label: "Packing",
   },
-  shipped: {
+  shipping: {
     icon: Truck,
     color: "text-purple-600",
     bgColor: "bg-purple-100",
-    label: "Shipped",
+    label: "Shipping",
   },
   delivered: {
     icon: CheckCircle,
@@ -104,9 +106,11 @@ export default function TrackOrderPage() {
 
     try {
       const supabase = getSupabase();
+      // Join customers for name/phone — the orders table itself has no
+      // customer_name/customer_phone columns (verified against live schema).
       const { data, error: fetchError } = await supabase
         .from("orders")
-        .select("*")
+        .select("*, customers(full_name, phone)")
         .eq("order_number", orderNumber.trim().toUpperCase())
         .single();
 
@@ -117,11 +121,15 @@ export default function TrackOrderPage() {
         return;
       }
 
-      // Fetch order items
-      const { data: items } = await supabase
-        .from("order_items")
-        .select("name, quantity, price")
-        .eq("order_id", data.id);
+      // items is a JSONB column on orders (shape: {product_id, name, qty, price}),
+      // not a separate order_items table.
+      const items = Array.isArray(data.items)
+        ? data.items.map((item: { name: string; qty: number; price: number }) => ({
+            name: item.name,
+            quantity: item.qty,
+            price: item.price,
+          }))
+        : [];
 
       // Build timeline based on status
       const timeline = buildTimeline(data);
@@ -130,13 +138,13 @@ export default function TrackOrderPage() {
         id: data.id,
         order_number: data.order_number,
         status: data.status,
-        customer_name: data.customer_name,
-        customer_phone: data.customer_phone,
-        total_amount: data.total_amount,
+        customer_name: data.customers?.full_name || "",
+        customer_phone: data.customers?.phone || "",
+        total_amount: data.total,
         created_at: data.created_at,
         estimated_delivery: data.estimated_delivery,
         tracking_number: data.tracking_number,
-        items: items || [],
+        items,
         timeline,
       });
     } catch {
@@ -148,11 +156,13 @@ export default function TrackOrderPage() {
 
   function buildTimeline(data: { created_at: string; updated_at?: string | null; status: string; }) {
     const timeline = [];
+    // Must match the statuses the admin panel writes (order-actions.tsx):
+    // pending → confirmed → packing → shipping → delivered
     const statusOrder = [
       "pending",
       "confirmed",
-      "processing",
-      "shipped",
+      "packing",
+      "shipping",
       "delivered",
     ];
 
@@ -174,8 +184,8 @@ export default function TrackOrderPage() {
       const descriptions: Record<string, string> = {
         pending: "Order placed successfully",
         confirmed: "Order confirmed by seller",
-        processing: "Order is being prepared",
-        shipped: "Order has been shipped",
+        packing: "Order is being packed",
+        shipping: "Order is on the way",
         delivered: "Order delivered successfully",
       };
       timeline.push({
