@@ -372,6 +372,65 @@ CREATE POLICY "Allow authenticated all contact_messages"
   ON contact_messages FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
 -- ============================================
+-- PART 4.7: ADMIN USERS (admin panel authentication)
+-- ============================================
+-- Admins authenticate via Supabase Auth (email/password), then we check
+-- membership in admin_users. The anon/authenticated client cannot INSERT or
+-- DELETE here — rows are managed manually in the SQL Editor. Keep this list
+-- to actual shop staff.
+--
+-- LEGACY UPGRADE: the original migration created an admin_users stub
+-- (id + nullable email only). If that stub is present and EMPTY we replace
+-- it with the real schema; if it has rows we ALTER-upgrade instead.
+
+DO $$
+DECLARE n integer;
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'admin_users') THEN
+    SELECT count(*) INTO n FROM public.admin_users;
+    IF n = 0 THEN
+      DROP TABLE public.admin_users;
+      RAISE NOTICE 'Dropped empty legacy admin_users stub';
+    END IF;
+  END IF;
+END $$;
+
+CREATE TABLE IF NOT EXISTS admin_users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  auth_user_id UUID NOT NULL UNIQUE REFERENCES auth.users(id) ON DELETE CASCADE,
+  email TEXT NOT NULL,
+  full_name TEXT NOT NULL DEFAULT '',
+  role TEXT NOT NULL DEFAULT 'admin' CHECK (role IN ('admin', 'manager', 'staff')),
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Upgrade path for a NON-empty legacy stub: add whatever is missing.
+-- (Skipped silently when the columns already exist.)
+ALTER TABLE admin_users ADD COLUMN IF NOT EXISTS auth_user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
+ALTER TABLE admin_users ADD COLUMN IF NOT EXISTS full_name TEXT NOT NULL DEFAULT '';
+ALTER TABLE admin_users ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'admin';
+ALTER TABLE admin_users ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT TRUE;
+ALTER TABLE admin_users ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW();
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'admin_users_auth_user_id_key') THEN
+    ALTER TABLE admin_users ADD CONSTRAINT admin_users_auth_user_id_key UNIQUE (auth_user_id);
+  END IF;
+EXCEPTION WHEN not_null_violation THEN
+  RAISE NOTICE 'admin_users has legacy rows without auth_user_id; UNIQUE constraint skipped';
+END $$;
+
+CREATE INDEX IF NOT EXISTS idx_admin_users_auth_user_id ON admin_users(auth_user_id);
+ALTER TABLE admin_users ENABLE ROW LEVEL SECURITY;
+
+-- Read-only for authenticated users (the admin panel client checks membership
+-- after login). anon gets NOTHING here — no enumeration of admin emails.
+DROP POLICY IF EXISTS "Allow authenticated select admin_users" ON admin_users;
+CREATE POLICY "Allow authenticated select admin_users"
+  ON admin_users FOR SELECT TO authenticated USING (true);
+
+-- ============================================
 -- PART 5: GRANTS (RLS policies filter rows; GRANTs allow access at all)
 -- Supabase usually grants these via default privileges, but explicit
 -- GRANTs guarantee the anon key can reach the new tables.
@@ -384,6 +443,7 @@ GRANT SELECT, UPDATE, DELETE ON contact_messages TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON returns, refunds, cart_items,
   notifications, admin_audit_log, daily_sales, inventory_movements
   TO authenticated;
+GRANT SELECT ON admin_users TO authenticated;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
 
 -- ============================================

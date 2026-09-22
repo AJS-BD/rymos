@@ -57,6 +57,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const meta = session.user.user_metadata || {};
     const fullName = meta.full_name || meta.name || "User";
 
+    // Skip customer-row creation for admin accounts (admin panel logins).
+    // admin_users is SELECT-able only to authenticated (RLS); a missing table
+    // or empty result simply means "not an admin" — proceed as customer.
+    const { data: adminRow } = await supabase
+      .from("admin_users")
+      .select("id")
+      .eq("auth_user_id", session.user.id)
+      .maybeSingle();
+
+    if (adminRow) {
+      const adminUser: AuthUser = {
+        id: session.user.id,
+        email,
+        phone,
+        fullName,
+        customerId: null,
+      };
+      setUser(adminUser);
+      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(adminUser));
+      setLoading(false);
+      return;
+    }
+
     let customerId = localStorage.getItem("rymos_customer_id");
 
     if (customerId) {
