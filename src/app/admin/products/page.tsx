@@ -25,19 +25,17 @@ export default function AdminProducts() {
   const [deleting, setDeleting] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  async function fetchProducts() {
-    setLoading(true);
-    const supabase = getSupabase();
-    const { data } = await supabase
-      .from("products")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (data) setProducts(data);
-    setLoading(false);
-  }
-
   useEffect(() => {
-    fetchProducts();
+    async function loadProducts() {
+      const supabase = getSupabase();
+      const { data } = await supabase
+        .from("products")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (data) setProducts(data);
+      setLoading(false);
+    }
+    loadProducts();
   }, []);
 
   const handleDelete = async () => {

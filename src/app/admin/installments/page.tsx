@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Search,
   CheckCircle,
@@ -55,7 +55,6 @@ const PAYMENT_METHODS = [
 
 export default function AdminInstallments() {
   const [plans, setPlans] = useState<CreditPlan[]>([]);
-  const [filteredPlans, setFilteredPlans] = useState<CreditPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -89,10 +88,11 @@ export default function AdminInstallments() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- load-once fetch; guard-only sync prefix, also refreshed from recordPayment handlers
     fetchPlans();
   }, []);
 
-  useEffect(() => {
+  const filteredPlans = useMemo(() => {
     let filtered = plans;
 
     if (statusFilter !== "all") {
@@ -117,7 +117,7 @@ export default function AdminInstallments() {
       );
     }
 
-    setFilteredPlans(filtered);
+    return filtered;
   }, [plans, statusFilter, searchQuery]);
 
   const recordPayment = async () => {

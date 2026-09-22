@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { getSupabase, isConfigured } from "@/lib/supabase";
@@ -41,7 +41,6 @@ export default function CategoryPage() {
   const slug = params.slug as string;
 
   const [products, setProducts] = useState<Product[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("name");
@@ -61,14 +60,13 @@ export default function CategoryPage() {
 
       if (data) {
         setProducts(data);
-        setFilteredProducts(data);
       }
       setLoading(false);
     }
     loadProducts();
   }, [slug]);
 
-  useEffect(() => {
+  const filteredProducts = useMemo(() => {
     let filtered = products;
 
     if (searchQuery) {
@@ -79,7 +77,7 @@ export default function CategoryPage() {
       );
     }
 
-    filtered.sort((a, b) => {
+    return [...filtered].sort((a, b) => {
       switch (sortBy) {
         case "price-low":
           return a.price - b.price;
@@ -91,8 +89,6 @@ export default function CategoryPage() {
           return 0;
       }
     });
-
-    setFilteredProducts(filtered);
   }, [products, searchQuery, sortBy]);
 
   const categoryName = formatCategorySlug(slug);

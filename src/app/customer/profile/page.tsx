@@ -17,35 +17,31 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
-  const fetchOrders = async () => {
-    if (!isConfigured() || !user?.id) {
-      setDataLoading(false);
-      return;
-    }
-    try {
-      const supabase = getSupabase();
-      const { data } = await supabase
-        .from("orders")
-        .select("*")
-        .eq("customer_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(5);
-      if (data) setOrders(data);
-    } catch (err) {
-      console.error("Failed to fetch orders:", err);
-    }
-    setDataLoading(false);
-  };
-
   useEffect(() => {
     // Wait for auth to initialize before doing anything
     if (loading) return;
-    
-    if (isLoggedIn && user?.id) {
-      fetchOrders();
-    } else {
+
+    async function loadOrders() {
+      if (!isLoggedIn || !user?.id || !isConfigured()) {
+        setDataLoading(false);
+        return;
+      }
+      try {
+        const supabase = getSupabase();
+        const { data } = await supabase
+          .from("orders")
+          .select("*")
+          .eq("customer_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(5);
+        if (data) setOrders(data);
+      } catch (err) {
+        console.error("Failed to fetch orders:", err);
+      }
       setDataLoading(false);
     }
+
+    loadOrders();
   }, [loading, isLoggedIn, user?.id]);
 
   const handleLogout = async () => {

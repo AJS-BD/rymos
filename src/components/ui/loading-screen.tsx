@@ -17,8 +17,10 @@ export default function LoadingScreen() {
       clearTimeout(hideTimeoutRef.current);
       hideTimeoutRef.current = null;
     }
+    /* eslint-disable react-hooks/set-state-in-effect -- intentional: loader must show synchronously before browser paints the new page (user-requested behavior) */
     // Instantly show loader (opacity 1, no transition)
     setOpacity(1);
+    /* eslint-enable react-hooks/set-state-in-effect */
 
     // After short delay, start fading out
     hideTimeoutRef.current = setTimeout(() => {
@@ -36,6 +38,7 @@ export default function LoadingScreen() {
   // Initial page load
   useLayoutEffect(() => {
     if (isAdmin) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: initial-load loader shows synchronously before first paint
     setOpacity(1);
     const timer = setTimeout(() => {
       setOpacity(0);

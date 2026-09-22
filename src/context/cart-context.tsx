@@ -37,6 +37,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   // Load from localStorage on mount
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- SSR-safe localStorage hydration: cart must be read client-side only */
     const stored = localStorage.getItem(CART_STORAGE_KEY);
     if (stored) {
       try {
@@ -46,6 +47,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       }
     }
     setIsLoaded(true);
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
   // Save to localStorage on change

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { getSupabase, isConfigured } from "@/lib/supabase";
 import { getErrorMessage } from "@/lib/utils";
 import {
@@ -41,7 +41,6 @@ interface Product {
 
 export default function AdminReviews() {
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [filteredReviews, setFilteredReviews] = useState<Review[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<number | null>(null);
@@ -69,11 +68,7 @@ export default function AdminReviews() {
     fetchProducts();
   }, []);
 
-  useEffect(() => {
-    applyFilters();
-  }, [reviews, filterProduct, filterRating, filterVerified]);
-
-  function applyFilters() {
+  const filteredReviews = useMemo(() => {
     let filtered = [...reviews];
 
     if (filterProduct !== "all") {
@@ -88,8 +83,8 @@ export default function AdminReviews() {
       filtered = filtered.filter((r) => !r.is_verified_purchase);
     }
 
-    setFilteredReviews(filtered);
-  }
+    return filtered;
+  }, [reviews, filterProduct, filterRating, filterVerified]);
 
   async function fetchReviews() {
     if (!isConfigured()) {

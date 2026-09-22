@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Search, Eye, CheckCircle, XCircle, Clock, AlertCircle, Loader2, CreditCard } from "lucide-react";
 import { getSupabase, isConfigured } from "@/lib/supabase";
 import { formatBDT } from "@/lib/utils";
@@ -35,38 +35,36 @@ const STATUS_FILTERS = [
 
 export default function AdminCreditApplications() {
   const [applications, setApplications] = useState<CreditApplication[]>([]);
-  const [filteredApps, setFilteredApps] = useState<CreditApplication[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [updating, setUpdating] = useState<string | null>(null);
 
-  const fetchApplications = async () => {
-    if (!isConfigured()) {
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const supabase = getSupabase();
-      const { data } = await supabase
-        .from("credit_applications")
-        .select("*, customers(full_name, phone, address)")
-        .order("created_at", { ascending: false });
-
-      setApplications(data || []);
-    } catch (err) {
-      console.error("Failed to fetch applications:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchApplications();
+    async function loadApplications() {
+      if (!isConfigured()) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const supabase = getSupabase();
+        const { data } = await supabase
+          .from("credit_applications")
+          .select("*, customers(full_name, phone, address)")
+          .order("created_at", { ascending: false });
+
+        setApplications(data || []);
+      } catch (err) {
+        console.error("Failed to fetch applications:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadApplications();
   }, []);
 
-  useEffect(() => {
+  const filteredApps = useMemo(() => {
     let filtered = applications;
 
     if (statusFilter !== "all") {
@@ -83,7 +81,7 @@ export default function AdminCreditApplications() {
       );
     }
 
-    setFilteredApps(filtered);
+    return filtered;
   }, [applications, statusFilter, searchQuery]);
 
   const updateStatus = async (id: string, newStatus: string) => {

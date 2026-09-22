@@ -55,34 +55,33 @@ export default function ReviewApplication({ params }: { params: Promise<{ id: st
   const [showApproveForm, setShowApproveForm] = useState(false);
   const [error, setError] = useState("");
 
-  const fetchApplication = async () => {
-    if (!isConfigured()) {
-      setError("Supabase is not configured.");
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const supabase = getSupabase();
-      const { data, error: fetchError } = await supabase
-        .from("credit_applications")
-        .select("*, customers(full_name, phone, address, username)")
-        .eq("id", id)
-        .single();
-
-      if (fetchError) throw fetchError;
-
-      setApplication(data);
-      setReviewNotes(data.review_notes || "");
-    } catch (err) {
-      setError(getErrorMessage(err, "Failed to load application."));
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchApplication();
+    async function loadApplication() {
+      if (!isConfigured()) {
+        setError("Supabase is not configured.");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const supabase = getSupabase();
+        const { data, error: fetchError } = await supabase
+          .from("credit_applications")
+          .select("*, customers(full_name, phone, address, username)")
+          .eq("id", id)
+          .single();
+
+        if (fetchError) throw fetchError;
+
+        setApplication(data);
+        setReviewNotes(data.review_notes || "");
+      } catch (err) {
+        setError(getErrorMessage(err, "Failed to load application."));
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadApplication();
   }, [id]);
 
   const handleApprove = async () => {

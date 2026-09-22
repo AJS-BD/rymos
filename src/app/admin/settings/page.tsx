@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import {
   Store,
   MessageSquare,
@@ -133,30 +133,29 @@ export default function AdminSettings() {
   const [saveMessage, setSaveMessage] = useState<{ success: boolean; message: string } | null>(null);
   const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({});
 
-  const loadSettings = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/settings");
-      if (res.ok) {
-        const { data } = await res.json();
-        const settingsMap: SettingsMap = {};
-        data?.forEach((item: { key: string; value: string | null }) => {
-          if (item.value !== null) {
-            settingsMap[item.key] = item.value;
-          }
-        });
-        setSettings(settingsMap);
-      }
-    } catch (err) {
-      console.error("Failed to load settings:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
+    async function loadSettings() {
+      setLoading(true);
+      try {
+        const res = await fetch("/api/settings");
+        if (res.ok) {
+          const { data } = await res.json();
+          const settingsMap: SettingsMap = {};
+          data?.forEach((item: { key: string; value: string | null }) => {
+            if (item.value !== null) {
+              settingsMap[item.key] = item.value;
+            }
+          });
+          setSettings(settingsMap);
+        }
+      } catch (err) {
+        console.error("Failed to load settings:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
     loadSettings();
-  }, [loadSettings]);
+  }, []);
 
   const handleSave = async () => {
     setSaving(true);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { getSupabase, isConfigured } from "@/lib/supabase";
 import { formatBDT } from "@/lib/utils";
 import { Search, ShoppingCart, X, Plus, Minus, Trash2, CreditCard, Banknote, Smartphone, User, Phone, MessageCircle, Mail, Link2 } from "lucide-react";
@@ -37,7 +37,6 @@ function generateOrderNumber(): string {
 
 export default function POSPage() {
   const [products, setProducts] = useState<Product[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -64,13 +63,12 @@ export default function POSPage() {
       const { data } = await supabase.from("products").select("*").order("name");
       if (data) {
         setProducts(data);
-        setFilteredProducts(data);
       }
     }
     loadProducts();
   }, []);
 
-  useEffect(() => {
+  const filteredProducts = useMemo(() => {
     let filtered = products;
     if (selectedCategory !== "all") {
       filtered = filtered.filter(p => p.category === selectedCategory);
@@ -81,7 +79,7 @@ export default function POSPage() {
         p.brand?.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
-    setFilteredProducts(filtered);
+    return filtered;
   }, [products, searchQuery, selectedCategory]);
 
   const categories = [...new Set(products.map(p => p.category))];

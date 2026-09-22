@@ -43,6 +43,7 @@ export default function CustomerMessages() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- SSR-safe localStorage hydration: customer ID must be read client-side only */
     const storedId = localStorage.getItem("rymos_customer_id");
     if (storedId) {
       setCustomerId(storedId);
@@ -51,6 +52,7 @@ export default function CustomerMessages() {
       localStorage.setItem("rymos_customer_id", demoId);
       setCustomerId(demoId);
     }
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
   useEffect(() => {

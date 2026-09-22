@@ -78,6 +78,7 @@ export default function CustomerReviews() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- shared with handleSubmit; guard-only sync prefix (setLoading(false) when unconfigured), no cascade
     fetchData();
   }, []);
 

@@ -87,6 +87,7 @@ export default function WishlistPage() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- shared with handleRemove revert path; guard-only sync prefix (localStorage fallback), no cascade
     fetchWishlist();
   }, [fetchWishlist]);
 

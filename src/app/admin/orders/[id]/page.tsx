@@ -87,31 +87,6 @@ export default function OrderDetail() {
   const [trackingInput, setTrackingInput] = useState("");
   const [showTrackingForm, setShowTrackingForm] = useState(false);
 
-  const fetchOrder = useCallback(async () => {
-    if (!id || !isConfigured()) {
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const supabase = getSupabase();
-      const { data, error: fetchError } = await supabase
-        .from("orders")
-        .select("*, customers(full_name, phone, address, username)")
-        .eq("id", id)
-        .single();
-
-      if (fetchError) throw fetchError;
-
-      setOrder(data);
-      setTrackingInput(data.tracking_info || "");
-    } catch (err) {
-      setError(getErrorMessage(err, "Failed to load order."));
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
-
   const fetchStatusHistory = useCallback(async () => {
     if (!id || !isConfigured()) return;
 
@@ -130,9 +105,34 @@ export default function OrderDetail() {
   }, [id]);
 
   useEffect(() => {
-    fetchOrder();
+    async function loadOrder() {
+      if (!id || !isConfigured()) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const supabase = getSupabase();
+        const { data, error: fetchError } = await supabase
+          .from("orders")
+          .select("*, customers(full_name, phone, address, username)")
+          .eq("id", id)
+          .single();
+
+        if (fetchError) throw fetchError;
+
+        setOrder(data);
+        setTrackingInput(data.tracking_info || "");
+      } catch (err) {
+        setError(getErrorMessage(err, "Failed to load order."));
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadOrder();
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- shared with handleStatusUpdate; all setStates are post-await (no sync cascade)
     fetchStatusHistory();
-  }, [fetchOrder, fetchStatusHistory]);
+  }, [id, fetchStatusHistory]);
 
   const handleStatusUpdate = async (newStatus: OrderStatus) => {
     if (!order || saving) return;

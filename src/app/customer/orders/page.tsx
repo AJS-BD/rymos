@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { getSupabase, isConfigured } from "@/lib/supabase";
 import { formatBDT, getErrorMessage } from "@/lib/utils";
 import {
@@ -46,40 +46,39 @@ export default function CustomerOrders() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const fetchOrders = useCallback(async () => {
-    if (!isConfigured()) {
-      setLoading(false);
-      return;
-    }
-
-    const customerId = localStorage.getItem("rymos_customer_id");
-    if (!customerId) {
-      setError("No customer ID found. Please log in again.");
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const supabase = getSupabase();
-      const { data, error: fetchError } = await supabase
-        .from("orders")
-        .select("*")
-        .eq("customer_id", customerId)
-        .order("created_at", { ascending: false });
-
-      if (fetchError) throw fetchError;
-
-      setOrders(data || []);
-    } catch (err) {
-      setError(getErrorMessage(err, "Failed to load orders."));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
-    fetchOrders();
-  }, [fetchOrders]);
+    async function loadOrders() {
+      if (!isConfigured()) {
+        setLoading(false);
+        return;
+      }
+
+      const customerId = localStorage.getItem("rymos_customer_id");
+      if (!customerId) {
+        setError("No customer ID found. Please log in again.");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const supabase = getSupabase();
+        const { data, error: fetchError } = await supabase
+          .from("orders")
+          .select("*")
+          .eq("customer_id", customerId)
+          .order("created_at", { ascending: false });
+
+        if (fetchError) throw fetchError;
+
+        setOrders(data || []);
+      } catch (err) {
+        setError(getErrorMessage(err, "Failed to load orders."));
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadOrders();
+  }, []);
 
   const getOrderItemCount = (items: OrderItem[]) => {
     return items?.reduce((sum, item) => sum + item.quantity, 0) || 0;

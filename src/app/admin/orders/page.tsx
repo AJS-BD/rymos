@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Search,
   Filter,
@@ -67,39 +67,37 @@ const TYPE_FILTERS = [
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState<Order[]>([]);
-  const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
 
-  const fetchOrders = async () => {
-    if (!isConfigured()) {
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const supabase = getSupabase();
-      const { data } = await supabase
-        .from("orders")
-        .select("*, customers(full_name, phone)")
-        .order("created_at", { ascending: false });
-
-      setOrders(data || []);
-    } catch (err) {
-      console.error("Failed to fetch orders:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchOrders();
+    async function loadOrders() {
+      if (!isConfigured()) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const supabase = getSupabase();
+        const { data } = await supabase
+          .from("orders")
+          .select("*, customers(full_name, phone)")
+          .order("created_at", { ascending: false });
+
+        setOrders(data || []);
+      } catch (err) {
+        console.error("Failed to fetch orders:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadOrders();
   }, []);
 
-  useEffect(() => {
+  const filteredOrders = useMemo(() => {
     let filtered = orders;
 
     if (statusFilter !== "all") {
@@ -121,7 +119,7 @@ export default function AdminOrders() {
       );
     }
 
-    setFilteredOrders(filtered);
+    return filtered;
   }, [orders, statusFilter, typeFilter, searchQuery]);
 
   const handleStatusChange = async (orderId: string, currentStatus: OrderStatus, newStatus: OrderStatus) => {

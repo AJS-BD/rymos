@@ -153,6 +153,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- SSR-safe localStorage hydration: restore persisted user before first authenticated paint */
     // Try to restore from localStorage first
     const stored = localStorage.getItem(USER_STORAGE_KEY);
     if (stored) {
@@ -162,6 +163,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.removeItem(USER_STORAGE_KEY);
       }
     }
+    /* eslint-enable react-hooks/set-state-in-effect */
     refreshUser();
   }, [refreshUser]);
 

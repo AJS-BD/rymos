@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, use } from "react";
+import { useState, useEffect, use } from "react";
 import { getSupabase, isConfigured } from "@/lib/supabase";
 import { formatBDT, getErrorMessage } from "@/lib/utils";
 import Link from "next/link";
@@ -86,52 +86,52 @@ export default function CustomerOrderDetail({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const fetchOrder = useCallback(async () => {
-    if (!isConfigured()) {
-      setError("Supabase is not configured.");
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const supabase = getSupabase();
-      const { data, error: fetchError } = await supabase
-        .from("orders")
-        .select("*")
-        .eq("id", id)
-        .single();
-
-      if (fetchError) throw fetchError;
-
-      setOrder(data);
-    } catch (err) {
-      setError(getErrorMessage(err, "Failed to load order."));
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
-
-  const fetchStatusHistory = useCallback(async () => {
-    if (!isConfigured()) return;
-
-    try {
-      const supabase = getSupabase();
-      const { data } = await supabase
-        .from("order_status_history")
-        .select("*")
-        .eq("order_id", id)
-        .order("changed_at", { ascending: true });
-
-      setStatusHistory(data || []);
-    } catch (err) {
-      console.error("Failed to fetch status history:", err);
-    }
-  }, [id]);
-
   useEffect(() => {
-    fetchOrder();
-    fetchStatusHistory();
-  }, [fetchOrder, fetchStatusHistory]);
+    async function loadOrder() {
+      if (!isConfigured()) {
+        setError("Supabase is not configured.");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const supabase = getSupabase();
+        const { data, error: fetchError } = await supabase
+          .from("orders")
+          .select("*")
+          .eq("id", id)
+          .single();
+
+        if (fetchError) throw fetchError;
+
+        setOrder(data);
+      } catch (err) {
+        setError(getErrorMessage(err, "Failed to load order."));
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    async function loadStatusHistory() {
+      if (!isConfigured()) return;
+
+      try {
+        const supabase = getSupabase();
+        const { data } = await supabase
+          .from("order_status_history")
+          .select("*")
+          .eq("order_id", id)
+          .order("changed_at", { ascending: true });
+
+        setStatusHistory(data || []);
+      } catch (err) {
+        console.error("Failed to fetch status history:", err);
+      }
+    }
+
+    loadOrder();
+    loadStatusHistory();
+  }, [id]);
 
   const getStepStatus = (step: OrderStatus): "completed" | "current" | "upcoming" | "cancelled" => {
     if (!order) return "upcoming";

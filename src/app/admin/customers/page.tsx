@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { getSupabase, isConfigured } from "@/lib/supabase";
 
 interface Customer {
@@ -19,7 +19,6 @@ interface Customer {
 
 export default function AdminCustomers() {
   const [customers, setCustomers] = useState<Customer[]>([]);
-  const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
   const [createdViaFilter, setCreatedViaFilter] = useState<string>("all");
   const [customerTypeFilter, setCustomerTypeFilter] = useState<string>("all");
   const [loading, setLoading] = useState(true);
@@ -34,14 +33,13 @@ export default function AdminCustomers() {
       const { data } = await supabase.from("customers").select("*").order("created_at", { ascending: false });
       if (data) {
         setCustomers(data);
-        setFilteredCustomers(data);
       }
       setLoading(false);
     }
     loadCustomers();
   }, []);
 
-  useEffect(() => {
+  const filteredCustomers = useMemo(() => {
     let filtered = customers;
     if (createdViaFilter !== "all") {
       filtered = filtered.filter(c => c.created_via === createdViaFilter);
@@ -49,7 +47,7 @@ export default function AdminCustomers() {
     if (customerTypeFilter !== "all") {
       filtered = filtered.filter(c => c.customer_type === customerTypeFilter);
     }
-    setFilteredCustomers(filtered);
+    return filtered;
   }, [customers, createdViaFilter, customerTypeFilter]);
 
   if (loading) {

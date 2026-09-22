@@ -33,19 +33,17 @@ export default function AdminCoupons() {
   const [deleting, setDeleting] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  async function fetchCoupons() {
-    setLoading(true);
-    const supabase = getSupabase();
-    const { data } = await supabase
-      .from("coupons")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (data) setCoupons(data as Coupon[]);
-    setLoading(false);
-  }
-
   useEffect(() => {
-    fetchCoupons();
+    async function loadCoupons() {
+      const supabase = getSupabase();
+      const { data } = await supabase
+        .from("coupons")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (data) setCoupons(data as Coupon[]);
+      setLoading(false);
+    }
+    loadCoupons();
   }, []);
 
   const handleDelete = async () => {
