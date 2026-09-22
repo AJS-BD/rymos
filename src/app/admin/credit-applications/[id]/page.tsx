@@ -56,10 +56,6 @@ export default function ReviewApplication({ params }: { params: Promise<{ id: st
   const [showApproveForm, setShowApproveForm] = useState(false);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    fetchApplication();
-  }, [id]);
-
   const fetchApplication = async () => {
     if (!isConfigured()) {
       setError("Supabase is not configured.");
@@ -85,6 +81,10 @@ export default function ReviewApplication({ params }: { params: Promise<{ id: st
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchApplication();
+  }, [id]);
 
   const handleApprove = async () => {
     if (!application) return;

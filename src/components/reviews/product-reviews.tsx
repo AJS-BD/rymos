@@ -45,11 +45,6 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
   const [error, setError] = useState("");
   const [isVerifiedPurchaser, setIsVerifiedPurchaser] = useState(false);
 
-  useEffect(() => {
-    fetchReviews();
-    checkVerifiedPurchase();
-  }, [productId]);
-
   const fetchReviews = async () => {
     if (!isConfigured()) {
       setLoading(false);
@@ -100,6 +95,11 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
       console.error("Failed to check purchase:", err);
     }
   };
+
+  useEffect(() => {
+    fetchReviews();
+    checkVerifiedPurchase();
+  }, [productId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

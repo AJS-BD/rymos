@@ -17,17 +17,6 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
-  useEffect(() => {
-    // Wait for auth to initialize before doing anything
-    if (loading) return;
-    
-    if (isLoggedIn && user?.id) {
-      fetchOrders();
-    } else {
-      setDataLoading(false);
-    }
-  }, [loading, isLoggedIn, user?.id]);
-
   const fetchOrders = async () => {
     if (!isConfigured() || !user?.id) {
       setDataLoading(false);
@@ -47,6 +36,17 @@ export default function ProfilePage() {
     }
     setDataLoading(false);
   };
+
+  useEffect(() => {
+    // Wait for auth to initialize before doing anything
+    if (loading) return;
+    
+    if (isLoggedIn && user?.id) {
+      fetchOrders();
+    } else {
+      setDataLoading(false);
+    }
+  }, [loading, isLoggedIn, user?.id]);
 
   const handleLogout = async () => {
     await logout();

@@ -34,10 +34,6 @@ export default function AdminCoupons() {
   const [deleting, setDeleting] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  useEffect(() => {
-    fetchCoupons();
-  }, []);
-
   async function fetchCoupons() {
     setLoading(true);
     const supabase = getSupabase();
@@ -48,6 +44,10 @@ export default function AdminCoupons() {
     if (data) setCoupons(data as Coupon[]);
     setLoading(false);
   }
+
+  useEffect(() => {
+    fetchCoupons();
+  }, []);
 
   const handleDelete = async () => {
     if (!deleteId) return;

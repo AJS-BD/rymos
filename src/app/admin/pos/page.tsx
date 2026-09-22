@@ -30,6 +30,10 @@ interface CustomerResult {
   created_via?: string;
 }
 
+function generateOrderNumber(): string {
+  return `RY-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9999)).padStart(4, '0')}`;
+}
+
 export default function POSPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
@@ -164,7 +168,7 @@ export default function POSPage() {
     const supabase = getSupabase();
 
     // Generate order number
-    const newOrderNumber = `RY-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9999)).padStart(4, '0')}`;
+    const newOrderNumber = generateOrderNumber();
     setOrderNumber(newOrderNumber);
 
     // Create customer if name and phone provided

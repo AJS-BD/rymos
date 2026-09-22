@@ -25,7 +25,7 @@ export default function FindPhoneQuiz() {
             Find Your Perfect Phone
           </h2>
           <p className="mt-2 text-sm sm:text-base text-[var(--color-text-muted)]">
-            Answer a few simple questions and we'll recommend the best phone for you.
+            Answer a few simple questions and we&apos;ll recommend the best phone for you.
           </p>
         </motion.div>
 

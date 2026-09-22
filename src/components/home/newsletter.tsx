@@ -3,7 +3,7 @@ export default function Newsletter() {
     <section className="py-8 sm:py-12 bg-[var(--color-bg-alt)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h2 className="text-xl sm:text-2xl font-bold text-[var(--color-text)]">
-          Stay ahead of what's next.
+          Stay ahead of what&apos;s next.
         </h2>
         <p className="mt-2 text-sm sm:text-base text-[var(--color-text-muted)]">
           Subscribe to get the latest updates, offers and new arrivals.

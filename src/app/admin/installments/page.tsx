@@ -72,6 +72,27 @@ export default function AdminInstallments() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
+  const fetchPlans = async () => {
+    if (!isConfigured()) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const supabase = getSupabase();
+      const { data } = await supabase
+        .from("credit_plans")
+        .select("*, customers(full_name, phone), installments(*)")
+        .order("created_at", { ascending: false });
+
+      setPlans(data || []);
+    } catch (err) {
+      console.error("Failed to fetch plans:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchPlans();
   }, []);
@@ -103,27 +124,6 @@ export default function AdminInstallments() {
 
     setFilteredPlans(filtered);
   }, [plans, statusFilter, searchQuery]);
-
-  const fetchPlans = async () => {
-    if (!isConfigured()) {
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const supabase = getSupabase();
-      const { data } = await supabase
-        .from("credit_plans")
-        .select("*, customers(full_name, phone), installments(*)")
-        .order("created_at", { ascending: false });
-
-      setPlans(data || []);
-    } catch (err) {
-      console.error("Failed to fetch plans:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const recordPayment = async () => {
     if (!paymentModal) return;

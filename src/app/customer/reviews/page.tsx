@@ -49,10 +49,6 @@ export default function CustomerReviews() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
   const fetchData = async () => {
     if (!isConfigured()) {
       setLoading(false);
@@ -80,6 +76,10 @@ export default function CustomerReviews() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

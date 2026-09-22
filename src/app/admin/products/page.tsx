@@ -26,10 +26,6 @@ export default function AdminProducts() {
   const [deleting, setDeleting] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
   async function fetchProducts() {
     setLoading(true);
     const supabase = getSupabase();
@@ -40,6 +36,10 @@ export default function AdminProducts() {
     if (data) setProducts(data);
     setLoading(false);
   }
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
 
   const handleDelete = async () => {
     if (!deleteId) return;

@@ -47,7 +47,6 @@ export function SmoothScroll({
   const [lenis, setLenis] = useState<Lenis | null>(null);
 
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const lenisInstance = new Lenis({
       duration: options.duration ?? 1.2,
       easing: options.easing ?? ((t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t))),

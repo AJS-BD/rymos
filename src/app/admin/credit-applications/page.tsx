@@ -41,6 +41,27 @@ export default function AdminCreditApplications() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [updating, setUpdating] = useState<string | null>(null);
 
+  const fetchApplications = async () => {
+    if (!isConfigured()) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const supabase = getSupabase();
+      const { data } = await supabase
+        .from("credit_applications")
+        .select("*, customers(full_name, phone, address)")
+        .order("created_at", { ascending: false });
+
+      setApplications(data || []);
+    } catch (err) {
+      console.error("Failed to fetch applications:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchApplications();
   }, []);
@@ -64,27 +85,6 @@ export default function AdminCreditApplications() {
 
     setFilteredApps(filtered);
   }, [applications, statusFilter, searchQuery]);
-
-  const fetchApplications = async () => {
-    if (!isConfigured()) {
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const supabase = getSupabase();
-      const { data } = await supabase
-        .from("credit_applications")
-        .select("*, customers(full_name, phone, address)")
-        .order("created_at", { ascending: false });
-
-      setApplications(data || []);
-    } catch (err) {
-      console.error("Failed to fetch applications:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const updateStatus = async (id: string, newStatus: string) => {
     setUpdating(id);

@@ -74,6 +74,27 @@ export default function AdminOrders() {
   const [typeFilter, setTypeFilter] = useState("all");
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
 
+  const fetchOrders = async () => {
+    if (!isConfigured()) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const supabase = getSupabase();
+      const { data } = await supabase
+        .from("orders")
+        .select("*, customers(full_name, phone)")
+        .order("created_at", { ascending: false });
+
+      setOrders(data || []);
+    } catch (err) {
+      console.error("Failed to fetch orders:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchOrders();
   }, []);
@@ -102,27 +123,6 @@ export default function AdminOrders() {
 
     setFilteredOrders(filtered);
   }, [orders, statusFilter, typeFilter, searchQuery]);
-
-  const fetchOrders = async () => {
-    if (!isConfigured()) {
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const supabase = getSupabase();
-      const { data } = await supabase
-        .from("orders")
-        .select("*, customers(full_name, phone)")
-        .order("created_at", { ascending: false });
-
-      setOrders(data || []);
-    } catch (err) {
-      console.error("Failed to fetch orders:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleStatusChange = async (orderId: string, currentStatus: OrderStatus, newStatus: OrderStatus) => {
     if (!isConfigured() || updatingOrderId === orderId) return;
