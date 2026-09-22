@@ -42,8 +42,13 @@ export default function ContactForm() {
       });
 
       if (insertError) {
+        // 42P01 = relation missing; PGRST205 = table hidden by RLS/schema cache
+        // (what Supabase returns when the table doesn't exist yet for this role)
         setError(
-          insertError.code === "42P01" || insertError.message.includes("does not exist")
+          insertError.code === "42P01" ||
+            insertError.code === "PGRST205" ||
+            insertError.message.includes("does not exist") ||
+            insertError.message.includes("schema cache")
             ? "We could not save your message right now. Please reach us by phone or WhatsApp instead."
             : "Something went wrong while sending. Please try again."
         );
