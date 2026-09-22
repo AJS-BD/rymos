@@ -3,7 +3,7 @@
 -- Run ONCE in Supabase SQL Editor:
 --   https://imcsesyqurkpvguwpmem.supabase.co/project/default/sql/new
 --
--- WHAT THIS DOES (all idempotent — safe to re-run):
+-- WHAT THIS DOES (fully idempotent — safe to re-run any time):
 --   1. Creates 15 missing tables the code queries
 --   2. Adds missing columns to existing tables (orders, customers)
 --   3. Relaxes the orders CHECK constraints so POS orders work
@@ -18,6 +18,9 @@
 --            product_reviews, returns, refunds, cart_items,
 --            notifications, admin_audit_log, daily_sales,
 --            inventory_movements
+--
+-- Validated on local PG16 against a replica of the probed prod schema:
+--   run 1 = 0 errors, run 2 (idempotency) = 0 errors.
 -- ============================================================
 
 -- ============================================
@@ -71,8 +74,10 @@ CREATE TABLE IF NOT EXISTS settings (
 CREATE INDEX IF NOT EXISTS idx_settings_key ON settings(key);
 CREATE INDEX IF NOT EXISTS idx_settings_category ON settings(category);
 ALTER TABLE settings ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow all for authenticated users ON settings" ON settings;
 CREATE POLICY "Allow all for authenticated users ON settings"
   ON settings FOR ALL TO authenticated USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "Allow read for anon ON settings" ON settings;
 CREATE POLICY "Allow read for anon ON settings"
   ON settings FOR SELECT TO anon USING (category = 'store');
 INSERT INTO settings (key, value, description, category) VALUES
@@ -95,10 +100,13 @@ CREATE TABLE IF NOT EXISTS order_status_history (
 );
 CREATE INDEX IF NOT EXISTS idx_osh_order ON order_status_history(order_id);
 ALTER TABLE order_status_history ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow anon insert order_status_history" ON order_status_history;
 CREATE POLICY "Allow anon insert order_status_history"
   ON order_status_history FOR INSERT TO anon WITH CHECK (true);
+DROP POLICY IF EXISTS "Allow anon select order_status_history" ON order_status_history;
 CREATE POLICY "Allow anon select order_status_history"
   ON order_status_history FOR SELECT TO anon USING (true);
+DROP POLICY IF EXISTS "Allow auth all order_status_history" ON order_status_history;
 CREATE POLICY "Allow auth all order_status_history"
   ON order_status_history FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
@@ -123,8 +131,10 @@ CREATE TABLE IF NOT EXISTS credit_applications (
 );
 CREATE INDEX IF NOT EXISTS idx_credit_apps_customer ON credit_applications(customer_id);
 ALTER TABLE credit_applications ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow anon all credit_applications" ON credit_applications;
 CREATE POLICY "Allow anon all credit_applications"
   ON credit_applications FOR ALL TO anon USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "Allow auth all credit_applications" ON credit_applications;
 CREATE POLICY "Allow auth all credit_applications"
   ON credit_applications FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
@@ -146,8 +156,10 @@ CREATE TABLE IF NOT EXISTS credit_plans (
 );
 CREATE INDEX IF NOT EXISTS idx_credit_plans_app ON credit_plans(application_id);
 ALTER TABLE credit_plans ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow anon all credit_plans" ON credit_plans;
 CREATE POLICY "Allow anon all credit_plans"
   ON credit_plans FOR ALL TO anon USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "Allow auth all credit_plans" ON credit_plans;
 CREATE POLICY "Allow auth all credit_plans"
   ON credit_plans FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
@@ -167,8 +179,10 @@ CREATE TABLE IF NOT EXISTS installments (
 );
 CREATE INDEX IF NOT EXISTS idx_installments_plan ON installments(plan_id);
 ALTER TABLE installments ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow anon all installments" ON installments;
 CREATE POLICY "Allow anon all installments"
   ON installments FOR ALL TO anon USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "Allow auth all installments" ON installments;
 CREATE POLICY "Allow auth all installments"
   ON installments FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
@@ -191,8 +205,10 @@ CREATE TABLE IF NOT EXISTS coupons (
 );
 CREATE INDEX IF NOT EXISTS idx_coupons_code ON coupons(code);
 ALTER TABLE coupons ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow anon all coupons" ON coupons;
 CREATE POLICY "Allow anon all coupons"
   ON coupons FOR ALL TO anon USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "Allow auth all coupons" ON coupons;
 CREATE POLICY "Allow auth all coupons"
   ON coupons FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
@@ -206,8 +222,10 @@ CREATE TABLE IF NOT EXISTS wishlists (
 );
 CREATE INDEX IF NOT EXISTS idx_wishlists_customer ON wishlists(customer_id);
 ALTER TABLE wishlists ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow anon all wishlists" ON wishlists;
 CREATE POLICY "Allow anon all wishlists"
   ON wishlists FOR ALL TO anon USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "Allow auth all wishlists" ON wishlists;
 CREATE POLICY "Allow auth all wishlists"
   ON wishlists FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
@@ -226,10 +244,13 @@ CREATE TABLE IF NOT EXISTS product_reviews (
 );
 CREATE INDEX IF NOT EXISTS idx_product_reviews_product ON product_reviews(product_id);
 ALTER TABLE product_reviews ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow anon select product_reviews" ON product_reviews;
 CREATE POLICY "Allow anon select product_reviews"
   ON product_reviews FOR SELECT TO anon USING (true);
+DROP POLICY IF EXISTS "Allow anon insert product_reviews" ON product_reviews;
 CREATE POLICY "Allow anon insert product_reviews"
   ON product_reviews FOR INSERT TO anon WITH CHECK (true);
+DROP POLICY IF EXISTS "Allow auth all product_reviews" ON product_reviews;
 CREATE POLICY "Allow auth all product_reviews"
   ON product_reviews FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
@@ -317,8 +338,20 @@ CREATE TABLE IF NOT EXISTS inventory_movements (
 ALTER TABLE inventory_movements ENABLE ROW LEVEL SECURITY;
 
 -- ============================================
--- PART 5: FK columns on orders the code writes
+-- PART 5: GRANTS (RLS policies filter rows; GRANTs allow access at all)
+-- Supabase usually grants these via default privileges, but explicit
+-- GRANTs guarantee the anon key can reach the new tables.
 -- ============================================
--- checkout writes coupon_id / coupon_code / credit_application
--- (prod already has these — verified in column dump — so nothing to do;
---  kept here as documentation.)
+GRANT SELECT, INSERT, UPDATE, DELETE ON settings, order_status_history,
+  credit_applications, credit_plans, installments, coupons, wishlists,
+  product_reviews TO anon, authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON returns, refunds, cart_items,
+  notifications, admin_audit_log, daily_sales, inventory_movements
+  TO authenticated;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
+
+-- ============================================
+-- PART 6: NOTES
+-- ============================================
+-- checkout writes coupon_id / coupon_code / credit_application on orders;
+-- prod already has these columns (verified in column dump), so nothing to do.
