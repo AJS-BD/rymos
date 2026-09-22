@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Tag, Trash2, Plus, AlertTriangle, CheckCircle, XCircle, Clock } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
+import { getErrorMessage } from "@/lib/utils";
 
 interface Coupon {
   id: number;
@@ -57,8 +58,8 @@ export default function AdminCoupons() {
       setCoupons((prev) => prev.filter((c) => c.id !== deleteId));
       setMessage({ type: "success", text: "Coupon deleted successfully!" });
       setTimeout(() => setMessage(null), 3000);
-    } catch (err: any) {
-      setMessage({ type: "error", text: err?.message || "Failed to delete coupon" });
+    } catch (err) {
+      setMessage({ type: "error", text: getErrorMessage(err, "Failed to delete coupon") });
     } finally {
       setDeleting(false);
       setDeleteId(null);

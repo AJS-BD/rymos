@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { getSupabase, isConfigured } from "@/lib/supabase";
 import StarRating from "@/components/shared/star-rating";
+import { getErrorMessage } from "@/lib/utils";
 import {
   Star,
   MessageSquare,
@@ -130,8 +131,8 @@ export default function CustomerReviews() {
       fetchData();
 
       setTimeout(() => setSuccess(false), 3000);
-    } catch (err: any) {
-      setError(err.message || "Failed to submit review. Please try again.");
+    } catch (err) {
+      setError(getErrorMessage(err, "Failed to submit review. Please try again."));
     } finally {
       setSubmitting(false);
     }

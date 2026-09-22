@@ -111,7 +111,7 @@ export default function ProductScroll() {
           return;
         }
 
-        const mappedProducts: Product[] = data.map((item: any) => ({
+        const mappedProducts: Product[] = data.map((item) => ({
           id: String(item.id),
           name: item.name,
           price: item.price ? `৳${Number(item.price).toLocaleString()}` : "",

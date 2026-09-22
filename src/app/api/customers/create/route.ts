@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase, isConfigured } from '@/lib/supabase';
 import { generateProfileToken, getTokenExpiry } from '@/lib/token';
+import { getErrorMessage } from '@/lib/utils';
 
 export async function POST(request: NextRequest) {
   if (!isConfigured()) {
@@ -67,8 +68,8 @@ export async function POST(request: NextRequest) {
       tokenExpiresAt,
       message: 'Customer created successfully',
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error in customer creation:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 });
   }
 }

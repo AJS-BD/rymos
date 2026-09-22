@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { getSupabase, isConfigured } from "@/lib/supabase";
-import { formatBDT } from "@/lib/utils";
+import { formatBDT, getErrorMessage } from "@/lib/utils";
 import {
   Package,
   Calendar,
@@ -35,7 +35,7 @@ interface Order {
   subtotal: number;
   total: number;
   payment_method: string;
-  shipping_address: any;
+  shipping_address: Record<string, unknown> | null;
   tracking_info: string | null;
   created_at: string;
   updated_at: string;
@@ -70,8 +70,8 @@ export default function CustomerOrders() {
       if (fetchError) throw fetchError;
 
       setOrders(data || []);
-    } catch (err: any) {
-      setError(err.message || "Failed to load orders.");
+    } catch (err) {
+      setError(getErrorMessage(err, "Failed to load orders."));
     } finally {
       setLoading(false);
     }

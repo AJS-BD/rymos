@@ -11,7 +11,7 @@ import {
   X,
 } from "lucide-react";
 import { getSupabase, isConfigured } from "@/lib/supabase";
-import { formatBDT } from "@/lib/utils";
+import { formatBDT, getErrorMessage } from "@/lib/utils";
 
 interface Installment {
   id: string;
@@ -170,8 +170,8 @@ export default function AdminInstallments() {
       setPaymentAmount("");
       setPaymentMethod("cash");
       setPaymentReference("");
-    } catch (err: any) {
-      setError(err.message || "Failed to record payment.");
+    } catch (err) {
+      setError(getErrorMessage(err, "Failed to record payment."));
     } finally {
       setSaving(false);
     }

@@ -7,6 +7,7 @@ import { CheckCircle, AlertCircle, ArrowLeft, Save, Plus, Trash2, Star, Video, M
 import { getSupabase } from "@/lib/supabase";
 import ProductImageUpload from "@/components/ProductImageUpload";
 import StarRating from "@/components/shared/star-rating";
+import { getErrorMessage } from "@/lib/utils";
 
 interface Category {
   id: number;
@@ -160,8 +161,8 @@ export default function EditProduct() {
         router.push("/admin/products");
         router.refresh();
       }, 1000);
-    } catch (err: any) {
-      setMessage({ type: "error", text: err?.message || "Failed to update product" });
+    } catch (err) {
+      setMessage({ type: "error", text: getErrorMessage(err, "Failed to update product") });
     } finally {
       setLoading(false);
     }
@@ -199,8 +200,8 @@ export default function EditProduct() {
       if (data) setYoutubeReviews(data);
       setNewYtReview({ title: "", youtube_url: "", thumbnail_url: "", creator_name: "" });
       setYtMessage({ type: "success", text: "YouTube review added!" });
-    } catch (err: any) {
-      setYtMessage({ type: "error", text: err?.message || "Failed to add YouTube review" });
+    } catch (err) {
+      setYtMessage({ type: "error", text: getErrorMessage(err, "Failed to add YouTube review") });
     } finally {
       setYtSaving(false);
     }
@@ -218,8 +219,8 @@ export default function EditProduct() {
 
       setYoutubeReviews((prev) => prev.filter((r) => r.id !== reviewId));
       setYtMessage({ type: "success", text: "YouTube review removed" });
-    } catch (err: any) {
-      setYtMessage({ type: "error", text: err?.message || "Failed to remove" });
+    } catch (err) {
+      setYtMessage({ type: "error", text: getErrorMessage(err, "Failed to remove") });
     } finally {
       setYtSaving(false);
     }
@@ -258,8 +259,8 @@ export default function EditProduct() {
       if (data) setCustomerReviews(data);
       setNewReview({ customer_name: "", rating: 5, content: "", is_verified_purchase: false });
       setReviewMessage({ type: "success", text: "Review seeded successfully!" });
-    } catch (err: any) {
-      setReviewMessage({ type: "error", text: err?.message || "Failed to seed review" });
+    } catch (err) {
+      setReviewMessage({ type: "error", text: getErrorMessage(err, "Failed to seed review") });
     } finally {
       setReviewSaving(false);
     }
@@ -277,8 +278,8 @@ export default function EditProduct() {
 
       setCustomerReviews((prev) => prev.filter((r) => r.id !== reviewId));
       setReviewMessage({ type: "success", text: "Review deleted" });
-    } catch (err: any) {
-      setReviewMessage({ type: "error", text: err?.message || "Failed to delete" });
+    } catch (err) {
+      setReviewMessage({ type: "error", text: getErrorMessage(err, "Failed to delete") });
     } finally {
       setReviewSaving(false);
     }

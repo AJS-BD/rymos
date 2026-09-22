@@ -28,7 +28,7 @@ export default function HomePage() {
     { id: "xiaomi-14-ultra", name: "Xiaomi 14 Ultra", price: 54999, brand: "Xiaomi", img: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500&q=85" },
   ];
 
-  const handleAddToCart = (product: any) => {
+  const handleAddToCart = (product: (typeof featuredProducts)[number]) => {
     if (!isLoggedIn) {
       router.push("/auth/login");
       return;

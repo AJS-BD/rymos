@@ -16,7 +16,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { getSupabase, isConfigured } from "@/lib/supabase";
-import { formatBDT } from "@/lib/utils";
+import { formatBDT, getErrorMessage } from "@/lib/utils";
 import Link from "next/link";
 
 interface CreditApplication {
@@ -74,8 +74,8 @@ export default function ReviewApplication({ params }: { params: Promise<{ id: st
 
       setApplication(data);
       setReviewNotes(data.review_notes || "");
-    } catch (err: any) {
-      setError(err.message || "Failed to load application.");
+    } catch (err) {
+      setError(getErrorMessage(err, "Failed to load application."));
     } finally {
       setLoading(false);
     }
@@ -143,8 +143,8 @@ export default function ReviewApplication({ params }: { params: Promise<{ id: st
           : null
       );
       setShowApproveForm(false);
-    } catch (err: any) {
-      setError(err.message || "Failed to approve application.");
+    } catch (err) {
+      setError(getErrorMessage(err, "Failed to approve application."));
     } finally {
       setSaving(false);
     }
@@ -192,8 +192,8 @@ export default function ReviewApplication({ params }: { params: Promise<{ id: st
           : null
       );
       setShowRejectForm(false);
-    } catch (err: any) {
-      setError(err.message || "Failed to reject application.");
+    } catch (err) {
+      setError(getErrorMessage(err, "Failed to reject application."));
     } finally {
       setSaving(false);
     }
@@ -215,8 +215,8 @@ export default function ReviewApplication({ params }: { params: Promise<{ id: st
       if (error) throw error;
 
       setApplication((prev) => (prev ? { ...prev, status: "under_review", updated_at: now } : null));
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(getErrorMessage(err, "Failed to update application."));
     } finally {
       setSaving(false);
     }

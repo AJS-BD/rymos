@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import { Upload, FileText, CreditCard, User, MapPin, Briefcase, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import { getSupabase, isConfigured } from "@/lib/supabase";
-import { formatBDT } from "@/lib/utils";
+import { formatBDT, getErrorMessage } from "@/lib/utils";
 interface FormState {
   // Personal Info
   fullName: string;
@@ -172,8 +172,8 @@ export default function CreditApplication() {
       if (appError) throw appError;
 
       setSubmitted(true);
-    } catch (err: any) {
-      setError(err.message || "Failed to submit application. Please try again.");
+    } catch (err) {
+      setError(getErrorMessage(err, "Failed to submit application. Please try again."));
     } finally {
       setSubmitting(false);
     }

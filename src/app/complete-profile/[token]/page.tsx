@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useParams } from 'next/navigation';
 import { CheckCircle, AlertCircle, Loader2, User, Phone, MapPin, Store } from 'lucide-react';
+import { getErrorMessage } from "@/lib/utils";
 function CompleteProfileContent() {
   const params = useParams();
   const token = params.token as string;
@@ -78,8 +79,8 @@ function CompleteProfileContent() {
       }
 
       setSuccess(true);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(getErrorMessage(err, "Failed to save profile."));
     } finally {
       setSubmitting(false);
     }

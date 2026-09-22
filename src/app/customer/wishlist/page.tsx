@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { getSupabase, isConfigured } from "@/lib/supabase";
-import { formatBDT } from "@/lib/utils";
+import { formatBDT, getErrorMessage } from "@/lib/utils";
 import {
   Heart,
   Trash2,
@@ -68,7 +68,7 @@ export default function WishlistPage() {
       if (fetchError) throw fetchError;
 
       setWishlistItems(data || []);
-    } catch (err: any) {
+    } catch (err) {
       // Fallback to localStorage
       const stored = localStorage.getItem("rymos_wishlist");
       if (stored) {
@@ -79,7 +79,7 @@ export default function WishlistPage() {
           setWishlistItems([]);
         }
       } else {
-        setError(err.message || "Failed to load wishlist.");
+        setError(getErrorMessage(err, "Failed to load wishlist."));
       }
     } finally {
       setLoading(false);

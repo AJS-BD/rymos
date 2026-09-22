@@ -10,7 +10,7 @@ import { User, Mail, Phone, Package, MessageSquare, LogOut, ChevronRight, MapPin
 export default function ProfilePage() {
   const router = useRouter();
   const { user, isLoggedIn, loading, logout, updateUserProfile } = useAuth();
-  const [orders, setOrders] = useState<any[]>([]);
+  const [orders, setOrders] = useState<{ id: string; order_number: string; created_at: string; total?: number; status: string; }[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({ fullName: "", phone: "", address: "" });

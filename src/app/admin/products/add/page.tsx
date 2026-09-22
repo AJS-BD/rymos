@@ -6,6 +6,7 @@ import Link from "next/link";
 import { CheckCircle, AlertCircle, ArrowLeft, Save } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
 import ProductImageUpload from "@/components/ProductImageUpload";
+import { getErrorMessage } from "@/lib/utils";
 
 interface Category {
   id: number;
@@ -78,8 +79,8 @@ export default function AddProduct() {
         router.push("/admin/products");
         router.refresh();
       }, 1000);
-    } catch (err: any) {
-      setMessage({ type: "error", text: err?.message || "Failed to save product" });
+    } catch (err) {
+      setMessage({ type: "error", text: getErrorMessage(err, "Failed to save product") });
     } finally {
       setLoading(false);
     }

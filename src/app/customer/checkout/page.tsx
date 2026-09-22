@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/cart-context";
-import { formatBDT, generateOrderNumber } from "@/lib/utils";
+import { formatBDT, generateOrderNumber, getErrorMessage } from "@/lib/utils";
 import { getSupabase, isConfigured } from "@/lib/supabase";
 import { motion, AnimatePresence } from "framer-motion";
 import { Truck, Store, CreditCard, MapPin, Loader2 } from "lucide-react";
@@ -261,8 +261,8 @@ export default function CheckoutPage() {
 
       clearCart();
       setPlacedOrder({ orderNumber });
-    } catch (err: any) {
-      setError(err.message || "Failed to place order. Please try again.");
+    } catch (err) {
+      setError(getErrorMessage(err, "Failed to place order. Please try again."));
     } finally {
       setIsPlacing(false);
     }

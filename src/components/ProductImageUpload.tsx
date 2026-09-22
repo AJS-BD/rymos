@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback } from "react";
 import { getSupabase } from "@/lib/supabase";
 import { Upload, X, Image as ImageIcon, Loader2, Link2 } from "lucide-react";
+import { getErrorMessage } from "@/lib/utils";
 
 const BUCKET_NAME = "product-images";
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -103,8 +104,8 @@ export default function ProductImageUpload({
         }
 
         onChange([...images, ...uploadedUrls]);
-      } catch (err: any) {
-        setError(err?.message || "Failed to upload images");
+      } catch (err) {
+        setError(getErrorMessage(err, "Failed to upload images"));
       } finally {
         setUploading(false);
         if (fileInputRef.current) {

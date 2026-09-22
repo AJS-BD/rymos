@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Package, Trash2, Edit, Plus, AlertTriangle } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
+import { getErrorMessage } from "@/lib/utils";
 
 interface Product {
   id: number;
@@ -49,8 +50,8 @@ export default function AdminProducts() {
       setProducts((prev) => prev.filter((p) => p.id !== deleteId));
       setMessage({ type: "success", text: "Product deleted successfully!" });
       setTimeout(() => setMessage(null), 3000);
-    } catch (err: any) {
-      setMessage({ type: "error", text: err?.message || "Failed to delete product" });
+    } catch (err) {
+      setMessage({ type: "error", text: getErrorMessage(err, "Failed to delete product") });
     } finally {
       setDeleting(false);
       setDeleteId(null);

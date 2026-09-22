@@ -13,7 +13,7 @@ interface Product {
   price: number;
   original_price: number;
   stock: number;
-  specs: any;
+  specs?: Record<string, string> | null;
   images: string[];
   category: string;
   is_featured: boolean;

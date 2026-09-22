@@ -15,7 +15,7 @@ interface Product {
   brand: string;
   price: number;
   original_price: number;
-  specs: any;
+  specs?: Record<string, string> | null;
   category: string;
   is_featured: boolean;
   is_new_arrival: boolean;

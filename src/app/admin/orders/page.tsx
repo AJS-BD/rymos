@@ -38,7 +38,7 @@ interface Order {
   subtotal: number;
   total: number;
   payment_method: string;
-  shipping_address: any;
+  shipping_address: Record<string, unknown> | null;
   tracking_info: string | null;
   created_at: string;
   updated_at: string;

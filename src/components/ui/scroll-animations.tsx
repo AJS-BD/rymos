@@ -55,7 +55,7 @@ export function SmoothScroll({
       touchMultiplier: options.touchMultiplier ?? 2,
       wheelMultiplier: options.wheelMultiplier ?? 1,
       infinite: options.infinite ?? false,
-    } as any);
+    });
 
     lenisRef.current = lenisInstance;
     setLenis(lenisInstance);

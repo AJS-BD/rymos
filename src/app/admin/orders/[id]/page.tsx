@@ -17,7 +17,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { getSupabase, isConfigured } from "@/lib/supabase";
-import { formatBDT } from "@/lib/utils";
+import { formatBDT, getErrorMessage } from "@/lib/utils";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import {
@@ -105,8 +105,8 @@ export default function OrderDetail() {
 
       setOrder(data);
       setTrackingInput(data.tracking_info || "");
-    } catch (err: any) {
-      setError(err.message || "Failed to load order.");
+    } catch (err) {
+      setError(getErrorMessage(err, "Failed to load order."));
     } finally {
       setLoading(false);
     }
@@ -169,8 +169,8 @@ export default function OrderDetail() {
         });
 
       fetchStatusHistory();
-    } catch (err: any) {
-      setError(err.message || "Failed to update status.");
+    } catch (err) {
+      setError(getErrorMessage(err, "Failed to update status."));
     } finally {
       setSaving(false);
     }
@@ -199,8 +199,8 @@ export default function OrderDetail() {
           : null
       );
       setShowTrackingForm(false);
-    } catch (err: any) {
-      setError(err.message || "Failed to save tracking info.");
+    } catch (err) {
+      setError(getErrorMessage(err, "Failed to save tracking info."));
     } finally {
       setSaving(false);
     }

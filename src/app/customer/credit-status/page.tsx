@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { CreditCard, Clock, CheckCircle, XCircle, AlertCircle, Loader2 } from "lucide-react";
 import { getSupabase, isConfigured } from "@/lib/supabase";
-import { formatBDT } from "@/lib/utils";
+import { formatBDT, getErrorMessage } from "@/lib/utils";
 interface Application {
   id: string;
   status: string;
@@ -106,8 +106,8 @@ export default function CreditStatus() {
       }
 
       setSearched(true);
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch data.");
+    } catch (err) {
+      setError(getErrorMessage(err, "Failed to fetch data."));
     } finally {
       setSearching(false);
     }

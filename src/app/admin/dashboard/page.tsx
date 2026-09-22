@@ -144,7 +144,7 @@ export default async function AdminDashboard() {
               </p>
             ) : (
               <div className="space-y-3">
-                {stats.recentOrders.map((order: any) => (
+                {stats.recentOrders.map((order) => (
                   <div
                     key={order.id}
                     className="flex items-center justify-between py-2"
@@ -206,7 +206,7 @@ export default async function AdminDashboard() {
               </p>
             ) : (
               <div className="space-y-3">
-                {stats.lowStockProducts.map((product: any) => (
+                {stats.lowStockProducts.map((product) => (
                   <div
                     key={product.id}
                     className="flex items-center justify-between py-2"

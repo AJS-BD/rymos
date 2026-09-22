@@ -146,7 +146,7 @@ export default function TrackOrderPage() {
     }
   };
 
-  function buildTimeline(data: any) {
+  function buildTimeline(data: { created_at: string; updated_at?: string | null; status: string; }) {
     const timeline = [];
     const statusOrder = [
       "pending",

@@ -12,7 +12,7 @@ interface Product {
   brand: string;
   price: number;
   stock: number;
-  specs: any;
+  specs?: Record<string, string> | null;
   images: string[];
   category: string;
 }

@@ -69,3 +69,18 @@ export function truncate(text: string, maxLength: number): string {
 export function cn(...classes: (string | boolean | undefined | null)[]): string {
   return classes.filter(Boolean).join(" ");
 }
+
+/**
+ * Safely extract a human-readable message from an unknown thrown value.
+ * Handles Error instances, Supabase PostgrestError (not an Error subclass),
+ * and plain objects/strings.
+ */
+export function getErrorMessage(err: unknown, fallback = "Something went wrong. Please try again."): string {
+  if (err instanceof Error && err.message) return err.message;
+  if (typeof err === "object" && err !== null) {
+    const message = (err as { message?: unknown }).message;
+    if (typeof message === "string" && message) return message;
+  }
+  if (typeof err === "string" && err) return err;
+  return fallback;
+}

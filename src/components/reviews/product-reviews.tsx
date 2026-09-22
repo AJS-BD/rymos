@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { getSupabase, isConfigured } from "@/lib/supabase";
 import StarRating from "@/components/shared/star-rating";
+import { getErrorMessage } from "@/lib/utils";
 import {
   Star,
   Send,
@@ -85,9 +86,9 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
         .eq("status", "delivered");
 
       if (orders && orders.length > 0) {
-        const hasProduct = orders.some((order: any) => {
+        const hasProduct = orders.some((order) => {
           const items = Array.isArray(order.items) ? order.items : [];
-          return items.some((item: any) => item.product_id === productId);
+          return items.some((item) => item.product_id === productId);
         });
         setIsVerifiedPurchaser(hasProduct);
       }
@@ -145,8 +146,8 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
       setContent("");
 
       setTimeout(() => setSuccess(false), 5000);
-    } catch (err: any) {
-      setError(err.message || "Failed to submit review. Please try again.");
+    } catch (err) {
+      setError(getErrorMessage(err, "Failed to submit review. Please try again."));
     } finally {
       setSubmitting(false);
     }

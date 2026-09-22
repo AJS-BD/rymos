@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle, AlertCircle, ArrowLeft, Save } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
+import { getErrorMessage } from "@/lib/utils";
 
 export default function AddCoupon() {
   const router = useRouter();
@@ -62,8 +63,8 @@ export default function AddCoupon() {
         router.push("/admin/coupons");
         router.refresh();
       }, 1000);
-    } catch (err: any) {
-      setMessage({ type: "error", text: err?.message || "Failed to create coupon" });
+    } catch (err) {
+      setMessage({ type: "error", text: getErrorMessage(err, "Failed to create coupon") });
     } finally {
       setLoading(false);
     }

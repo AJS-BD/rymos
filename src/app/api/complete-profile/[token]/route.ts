@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase, isConfigured } from '@/lib/supabase';
 import { isTokenExpired } from '@/lib/token';
+import { getErrorMessage } from '@/lib/utils';
 
 interface RouteContext {
   params: Promise<{ token: string }>;
@@ -55,8 +56,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
         customer_type: customer.customer_type,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error validating token:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 });
   }
 }

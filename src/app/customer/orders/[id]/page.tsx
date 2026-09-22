@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, use } from "react";
 import { getSupabase, isConfigured } from "@/lib/supabase";
-import { formatBDT } from "@/lib/utils";
+import { formatBDT, getErrorMessage } from "@/lib/utils";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -104,8 +104,8 @@ export default function CustomerOrderDetail({
       if (fetchError) throw fetchError;
 
       setOrder(data);
-    } catch (err: any) {
-      setError(err.message || "Failed to load order.");
+    } catch (err) {
+      setError(getErrorMessage(err, "Failed to load order."));
     } finally {
       setLoading(false);
     }

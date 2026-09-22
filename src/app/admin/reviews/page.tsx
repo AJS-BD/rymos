@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { getSupabase, isConfigured } from "@/lib/supabase";
+import { getErrorMessage } from "@/lib/utils";
 import {
   Star,
   Trash2,
@@ -138,8 +139,8 @@ export default function AdminReviews() {
       );
       setMessage({ type: "success", text: `Review ${!currentStatus ? "approved" : "rejected"} successfully!` });
       setTimeout(() => setMessage(null), 3000);
-    } catch (err: any) {
-      setMessage({ type: "error", text: err?.message || "Failed to update review" });
+    } catch (err) {
+      setMessage({ type: "error", text: getErrorMessage(err, "Failed to update review") });
       setTimeout(() => setMessage(null), 3000);
     } finally {
       setUpdating(null);
@@ -156,8 +157,8 @@ export default function AdminReviews() {
       setReviews((prev) => prev.filter((r) => r.id !== deleteId));
       setMessage({ type: "success", text: "Review deleted successfully!" });
       setTimeout(() => setMessage(null), 3000);
-    } catch (err: any) {
-      setMessage({ type: "error", text: err?.message || "Failed to delete review" });
+    } catch (err) {
+      setMessage({ type: "error", text: getErrorMessage(err, "Failed to delete review") });
       setTimeout(() => setMessage(null), 3000);
     } finally {
       setDeleting(false);
@@ -196,8 +197,8 @@ export default function AdminReviews() {
       setMessage({ type: "success", text: "Review seeded successfully!" });
       setTimeout(() => setMessage(null), 3000);
       fetchReviews();
-    } catch (err: any) {
-      setMessage({ type: "error", text: err?.message || "Failed to seed review" });
+    } catch (err) {
+      setMessage({ type: "error", text: getErrorMessage(err, "Failed to seed review") });
       setTimeout(() => setMessage(null), 3000);
     } finally {
       setSubmitting(false);

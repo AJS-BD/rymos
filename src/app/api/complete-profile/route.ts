@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase, isConfigured } from '@/lib/supabase';
 import { isTokenExpired } from '@/lib/token';
+import { getErrorMessage } from '@/lib/utils';
 
 export async function POST(request: NextRequest) {
   if (!isConfigured()) {
@@ -69,8 +70,8 @@ export async function POST(request: NextRequest) {
       customer: updatedCustomer,
       message: 'Profile completed successfully',
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error completing profile:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 });
   }
 }
