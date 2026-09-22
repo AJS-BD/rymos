@@ -40,9 +40,13 @@ const FALLBACK_ADMIN: AdminUser = {
   fallback: true,
 };
 
-/** Postgrest error code when the table is missing in the deployed schema */
-function isMissingTable(err: { code?: string } | null | undefined): boolean {
-  return !!err && (err.code === "PGRST205" || err.code === "42P01");
+/** Postgrest codes meaning "admin_users schema not deployed/upgraded yet" —
+ *  PGRST205/42P01 = table missing, 42703/PGRST204 = legacy stub missing new
+ *  columns, 42501 = grants not applied. In all these cases the panel falls
+ *  back to unprotected mode until the sync SQL runs. */
+function isSchemaNotReady(err: { code?: string } | null | undefined): boolean {
+  if (!err?.code) return false;
+  return ["PGRST205", "42P01", "42703", "PGRST204", "42501"].includes(err.code);
 }
 
 export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
@@ -74,7 +78,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
       .eq("auth_user_id", session?.user?.id ?? "00000000-0000-0000-0000-000000000000")
       .maybeSingle();
 
-    if (error && isMissingTable(error)) {
+    if (error && isSchemaNotReady(error)) {
       setAdmin(FALLBACK_ADMIN);
       setLoading(false);
       return;
@@ -134,8 +138,8 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
       .eq("is_active", true)
       .maybeSingle();
 
-    if (error && isMissingTable(error)) {
-      // Table not deployed yet — accept the login (panel is in unprotected
+    if (error && isSchemaNotReady(error)) {
+      // Schema not deployed yet — accept the login (panel is in unprotected
       // mode anyway) so the login page still works during setup.
       setAdmin(FALLBACK_ADMIN);
       return {};
