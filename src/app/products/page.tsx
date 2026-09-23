@@ -44,17 +44,23 @@ function SearchBar({ value, onChange }: { value: string; onChange: (v: string) =
   );
 }
 
-function CategoryFilter({ categories, active, onSelect }: { categories: Category[]; active: string; onSelect: (c: string) => void }) {
+function CategoryFilter({ categories, active, dealsActive, onSelect, onToggleDeals }: { categories: Category[]; active: string; dealsActive: boolean; onSelect: (c: string) => void; onToggleDeals: () => void }) {
   return (
     <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
       <button
         onClick={() => onSelect("all")}
-        className={`px-4 sm:px-5 py-2 rounded-full text-sm font-light transition-all duration-200 ${active === "all" ? "bg-gray-900 text-white shadow-sm" : "bg-transparent text-gray-500 border border-gray-200 hover:border-gray-900 hover:text-gray-900"}`}
+        className={`px-4 sm:px-5 py-2 rounded-full text-sm font-light transition-all duration-200 ${active === "all" && !dealsActive ? "bg-gray-900 text-white shadow-sm" : "bg-transparent text-gray-500 border border-gray-200 hover:border-gray-900 hover:text-gray-900"}`}
       >
         All
       </button>
+      <button
+        onClick={onToggleDeals}
+        className={`px-4 sm:px-5 py-2 rounded-full text-sm font-light transition-all duration-200 ${dealsActive ? "bg-gray-900 text-white shadow-sm" : "bg-transparent text-gray-500 border border-gray-200 hover:border-gray-900 hover:text-gray-900"}`}
+      >
+        Deals
+      </button>
       {categories.map((cat) => {
-        const isActive = cat.slug === active;
+        const isActive = cat.slug === active && !dealsActive;
         return (
           <button key={cat.id} onClick={() => onSelect(cat.slug)}
             className={`px-4 sm:px-5 py-2 rounded-full text-sm font-light transition-all duration-200 ${isActive ? "bg-gray-900 text-white shadow-sm" : "bg-transparent text-gray-500 border border-gray-200 hover:border-gray-900 hover:text-gray-900"}`}>
@@ -173,12 +179,34 @@ export default function ProductsPage() {
 
 function ProductsPageContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [sortOption, setSortOption] = useState<SortOption>("name");
+
+  // URL params are the single source of truth for category/deals so every
+  // /products?category=... and /products?deals=true link (header nav,
+  // homepage sections) actually filters, and back/forward stays correct.
+  const categoryParam = searchParams.get("category") || "all";
+  const dealsActive = searchParams.get("deals") === "true";
+
+  const selectCategory = (c: string) => {
+    const params = new URLSearchParams();
+    if (searchQuery.trim()) params.set("q", searchQuery.trim());
+    if (dealsActive) params.set("deals", "true");
+    if (c !== "all") params.set("category", c);
+    router.replace(`/products${params.toString() ? `?${params}` : ""}`, { scroll: false });
+  };
+
+  const toggleDeals = () => {
+    const params = new URLSearchParams();
+    if (searchQuery.trim()) params.set("q", searchQuery.trim());
+    if (!dealsActive) params.set("deals", "true");
+    if (categoryParam !== "all") params.set("category", categoryParam);
+    router.replace(`/products${params.toString() ? `?${params}` : ""}`, { scroll: false });
+  };
 
   useEffect(() => {
     async function loadData() {
@@ -197,7 +225,8 @@ function ProductsPageContent() {
 
   const filteredProducts = useMemo(() => {
     let result = products;
-    if (selectedCategory !== "all") result = result.filter((p) => p.category === selectedCategory);
+    if (categoryParam !== "all") result = result.filter((p) => p.category === categoryParam);
+    if (dealsActive) result = result.filter((p) => p.original_price != null && p.original_price > p.price);
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       result = result.filter((p) => p.name.toLowerCase().includes(query) || p.brand?.toLowerCase().includes(query));
@@ -205,10 +234,10 @@ function ProductsPageContent() {
     switch (sortOption) {
       case "price-asc": result = [...result].sort((a, b) => a.price - b.price); break;
       case "price-desc": result = [...result].sort((a, b) => b.price - a.price); break;
-      default: result = [...result].sort((a, b) => a.name.localeCompare(b.name));
+      default: result = [...result].sort((a, b) => a.name.localeCompare(b.name)); break;
     }
     return result;
-  }, [products, searchQuery, selectedCategory, sortOption]);
+  }, [products, searchQuery, categoryParam, dealsActive, sortOption]);
 
   return (
     <main className="flex-1 min-h-screen bg-white">
@@ -227,7 +256,7 @@ function ProductsPageContent() {
 
       <section className="py-6 sm:py-8 bg-white border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-6 sm:px-8">
-          <CategoryFilter categories={categories} active={selectedCategory} onSelect={setSelectedCategory} />
+          <CategoryFilter categories={categories} active={categoryParam} dealsActive={dealsActive} onSelect={selectCategory} onToggleDeals={toggleDeals} />
         </div>
       </section>
 
@@ -243,8 +272,8 @@ function ProductsPageContent() {
           ) : filteredProducts.length === 0 ? (
             <div className="text-center py-20">
               <p className="text-lg font-light text-gray-500">No products found.</p>
-              {(searchQuery || selectedCategory !== "all") && (
-                <button onClick={() => { setSearchQuery(""); setSelectedCategory("all"); }} className="mt-4 text-sm font-light text-blue-600 hover:text-blue-700">Clear filters</button>
+              {(searchQuery || categoryParam !== "all" || dealsActive) && (
+                <button onClick={() => router.replace("/products", { scroll: false })} className="mt-4 text-sm font-light text-blue-600 hover:text-blue-700">Clear filters</button>
               )}
             </div>
           ) : (
