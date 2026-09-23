@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import FaqAccordion from "./faq-accordion";
+import WhatsappCta from "./whatsapp-cta";
 import { HelpCircle, MessageCircle } from "lucide-react";
 import Link from "next/link";
 
@@ -180,15 +181,7 @@ export default function FaqPage() {
               >
                 Contact Us
               </Link>
-              <a
-                href="https://wa.me/8801XXXXXXXXX"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 bg-green-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-green-700 transition-colors"
-              >
-                <MessageCircle className="h-4 w-4" />
-                WhatsApp Us
-              </a>
+              <WhatsappCta />
             </div>
           </div>
         </section>
