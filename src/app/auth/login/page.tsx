@@ -106,7 +106,13 @@ export default function LoginPage() {
       });
 
       if (otpError) {
-        setError(otpError.message || "Failed to send OTP. Please try again.");
+        // No SMS provider is configured on this Supabase project yet —
+        // surface friendly copy instead of the raw provider error.
+        if (/unsupported phone provider|SMS provider|phone provider not/i.test(otpError.message)) {
+          setError("Phone sign-in is not available yet. Please use the Email tab to sign in.");
+        } else {
+          setError(otpError.message || "Failed to send OTP. Please try again.");
+        }
         return;
       }
 
