@@ -60,7 +60,7 @@ function CategoryFilter({ categories, active, dealsActive, onSelect, onToggleDea
         Deals
       </button>
       {categories.map((cat) => {
-        const isActive = cat.slug === active && !dealsActive;
+        const isActive = cat.slug === active;
         return (
           <button key={cat.id} onClick={() => onSelect(cat.slug)}
             className={`px-4 sm:px-5 py-2 rounded-full text-sm font-light transition-all duration-200 ${isActive ? "bg-gray-900 text-white shadow-sm" : "bg-transparent text-gray-500 border border-gray-200 hover:border-gray-900 hover:text-gray-900"}`}>
