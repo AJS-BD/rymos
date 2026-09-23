@@ -523,6 +523,120 @@ GRANT SELECT ON admin_users TO authenticated;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
 
 -- ============================================
+-- PART 5.5: CORE-TABLE SECURITY HARDENING (2026-09-23)
+-- ============================================
+-- Live-prod audit found the PRE-SYNC tables (orders, customers, products,
+-- categories) running with RLS DISABLED: anyone with the public anon key
+-- (embedded in every page load) could UPDATE or DELETE any order, product,
+-- customer, or category via plain REST calls. Verified working before this
+-- fix with actual anon UPDATE/DELETE probes on real rows.
+--
+-- After this part, anon can only do exactly what the storefront needs:
+--   orders:     SELECT, INSERT (checkout + track-order)
+--   customers:  SELECT, INSERT, UPDATE (checkout, /api/complete-profile,
+--               profile edit) — DELETE never needed by any code path
+--   products:   SELECT only (catalog). Stock updates move to authenticated
+--               (admins doing POS / product edits).
+--   categories: SELECT only
+--   messages:   SELECT, INSERT, UPDATE(read flag) — anon DELETE already
+--               blocked; the UPDATE grant below FIXES the chat read-ticks,
+--               which were silently failing in prod (verified 0 rows).
+--   reviews/youtube_reviews: SELECT was already public; this adds the
+--               authenticated policies the admin moderation UI needs
+--               (its DELETEs were failing even for signed-in admins).
+--
+-- Admins sign in via Supabase Auth, so their requests carry the
+-- authenticated role and get full access via the policies below.
+
+-- ---- orders ----
+ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "anon select orders" ON orders;
+CREATE POLICY "anon select orders" ON orders FOR SELECT TO anon USING (true);
+DROP POLICY IF EXISTS "anon insert orders" ON orders;
+CREATE POLICY "anon insert orders" ON orders FOR INSERT TO anon WITH CHECK (true);
+DROP POLICY IF EXISTS "anon update orders" ON orders; -- legacy hole, was USING(true)
+DROP POLICY IF EXISTS "Allow anon update orders" ON orders; -- same hole, old name
+DROP POLICY IF EXISTS "Allow anon select orders" ON orders; -- superseded
+DROP POLICY IF EXISTS "auth all orders" ON orders;
+CREATE POLICY "auth all orders" ON orders FOR ALL TO authenticated USING (true) WITH CHECK (true);
+-- GRANT level: anon never updates/deletes orders (status changes are admin-only)
+REVOKE UPDATE, DELETE ON orders FROM anon;
+
+-- ---- customers ----
+ALTER TABLE customers ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "anon select customers" ON customers;
+CREATE POLICY "anon select customers" ON customers FOR SELECT TO anon USING (true);
+DROP POLICY IF EXISTS "anon insert customers" ON customers;
+CREATE POLICY "anon insert customers" ON customers FOR INSERT TO anon WITH CHECK (true);
+DROP POLICY IF EXISTS "anon update customers" ON customers;
+CREATE POLICY "anon update customers" ON customers FOR UPDATE TO anon
+  USING (true) WITH CHECK (true); -- /api/complete-profile (server, anon key) + profile edit
+DROP POLICY IF EXISTS "Allow anon insert customers" ON customers;
+DROP POLICY IF EXISTS "Allow anon select customers" ON customers;
+DROP POLICY IF EXISTS "Allow anon update customers" ON customers;
+DROP POLICY IF EXISTS "Allow auth all customers" ON customers;
+DROP POLICY IF EXISTS "auth all customers" ON customers;
+CREATE POLICY "auth all customers" ON customers FOR ALL TO authenticated USING (true) WITH CHECK (true);
+-- GRANT level: anon can never delete customers, and can only touch profile columns
+-- (not username / auth_user_id / created_via)
+REVOKE UPDATE, DELETE ON customers FROM anon;
+GRANT UPDATE (full_name, phone, shop_name, address, customer_type,
+  profile_completed, profile_token, token_expires_at, updated_at)
+  ON customers TO anon;
+
+-- ---- products ----
+ALTER TABLE products ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "anon select products" ON products;
+CREATE POLICY "anon select products" ON products FOR SELECT TO anon USING (true);
+-- Stock decrement runs client-side at checkout; guests with a saved customer ID
+-- (localStorage, no active session) send it as anon — allow UPDATE of the stock
+-- COLUMN only, nothing else (no price/name/image tampering).
+DROP POLICY IF EXISTS "anon update stock products" ON products;
+CREATE POLICY "anon update stock products" ON products FOR UPDATE TO anon
+  USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "auth all products" ON products;
+CREATE POLICY "auth all products" ON products FOR ALL TO authenticated USING (true) WITH CHECK (true);
+REVOKE INSERT, UPDATE, DELETE ON products FROM anon;
+GRANT UPDATE (stock) ON products TO anon;
+
+-- ---- categories ----
+ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "anon select categories" ON categories;
+CREATE POLICY "anon select categories" ON categories FOR SELECT TO anon USING (true);
+DROP POLICY IF EXISTS "auth all categories" ON categories;
+CREATE POLICY "auth all categories" ON categories FOR ALL TO authenticated USING (true) WITH CHECK (true);
+REVOKE INSERT, UPDATE, DELETE ON categories FROM anon;
+
+-- ---- messages (chat) ----
+-- RLS was already on but had NO anon policies: SELECT worked only through the
+-- default-privilege GRANT, INSERT worked, UPDATE (read ticks) silently failed,
+-- DELETE was blocked. This fixes read-ticks — column-restricted to the read
+-- so anon can never rewrite message content.
+ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "anon select messages" ON messages;
+CREATE POLICY "anon select messages" ON messages FOR SELECT TO anon USING (true);
+DROP POLICY IF EXISTS "anon insert messages" ON messages;
+CREATE POLICY "anon insert messages" ON messages FOR INSERT TO anon WITH CHECK (true);
+DROP POLICY IF EXISTS "anon update read messages" ON messages;
+CREATE POLICY "anon update read messages" ON messages FOR UPDATE TO anon
+  USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "auth all messages" ON messages;
+CREATE POLICY "auth all messages" ON messages FOR ALL TO authenticated USING (true) WITH CHECK (true);
+REVOKE UPDATE, DELETE ON messages FROM anon;
+GRANT UPDATE (read) ON messages TO anon;
+
+-- ---- reviews + youtube_reviews (admin moderation) ----
+-- Public SELECT already existed ("Public read reviews" = approved only).
+-- Admin UI deletes/moderates reviews; those calls run authenticated, but no
+-- authenticated policy existed — moderation was failing. These fix it.
+DROP POLICY IF EXISTS "auth all reviews" ON reviews;
+CREATE POLICY "auth all reviews" ON reviews FOR ALL TO authenticated USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "auth all youtube_reviews" ON youtube_reviews;
+CREATE POLICY "auth all youtube_reviews" ON youtube_reviews FOR ALL TO authenticated USING (true) WITH CHECK (true);
+-- GRANT level: anon never deletes/moderates reviews (admin-only)
+REVOKE INSERT, UPDATE, DELETE ON reviews, youtube_reviews FROM anon;
+
+-- ============================================
 -- PART 6: NOTES
 -- ============================================
 -- checkout writes coupon_id / coupon_code / credit_application on orders;
