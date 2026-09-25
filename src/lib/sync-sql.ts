@@ -106,12 +106,7 @@ CREATE TABLE IF NOT EXISTS order_status_history (
 CREATE INDEX IF NOT EXISTS idx_osh_order ON order_status_history(order_id);
 ALTER TABLE order_status_history ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Allow anon insert order_status_history" ON order_status_history;
-CREATE POLICY "Allow anon insert order_status_history"
-  ON order_status_history FOR INSERT TO anon WITH CHECK (true);
 DROP POLICY IF EXISTS "Allow anon select order_status_history" ON order_status_history;
-CREATE POLICY "Allow anon select order_status_history"
-  ON order_status_history FOR SELECT TO anon USING (true);
-DROP POLICY IF EXISTS "Allow auth all order_status_history" ON order_status_history;
 CREATE POLICY "Allow auth all order_status_history"
   ON order_status_history FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
@@ -137,8 +132,8 @@ CREATE TABLE IF NOT EXISTS credit_applications (
 CREATE INDEX IF NOT EXISTS idx_credit_apps_customer ON credit_applications(customer_id);
 ALTER TABLE credit_applications ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Allow anon all credit_applications" ON credit_applications;
-CREATE POLICY "Allow anon all credit_applications"
-  ON credit_applications FOR ALL TO anon USING (true) WITH CHECK (true);
+CREATE POLICY "Allow anon select credit_applications"
+  ON credit_applications FOR SELECT TO anon USING (true);
 DROP POLICY IF EXISTS "Allow auth all credit_applications" ON credit_applications;
 CREATE POLICY "Allow auth all credit_applications"
   ON credit_applications FOR ALL TO authenticated USING (true) WITH CHECK (true);
@@ -162,8 +157,8 @@ CREATE TABLE IF NOT EXISTS credit_plans (
 CREATE INDEX IF NOT EXISTS idx_credit_plans_app ON credit_plans(application_id);
 ALTER TABLE credit_plans ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Allow anon all credit_plans" ON credit_plans;
-CREATE POLICY "Allow anon all credit_plans"
-  ON credit_plans FOR ALL TO anon USING (true) WITH CHECK (true);
+CREATE POLICY "Allow anon select credit_plans"
+  ON credit_plans FOR SELECT TO anon USING (true);
 DROP POLICY IF EXISTS "Allow auth all credit_plans" ON credit_plans;
 CREATE POLICY "Allow auth all credit_plans"
   ON credit_plans FOR ALL TO authenticated USING (true) WITH CHECK (true);
@@ -185,8 +180,8 @@ CREATE TABLE IF NOT EXISTS installments (
 CREATE INDEX IF NOT EXISTS idx_installments_plan ON installments(plan_id);
 ALTER TABLE installments ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Allow anon all installments" ON installments;
-CREATE POLICY "Allow anon all installments"
-  ON installments FOR ALL TO anon USING (true) WITH CHECK (true);
+CREATE POLICY "Allow anon select installments"
+  ON installments FOR SELECT TO anon USING (true);
 DROP POLICY IF EXISTS "Allow auth all installments" ON installments;
 CREATE POLICY "Allow auth all installments"
   ON installments FOR ALL TO authenticated USING (true) WITH CHECK (true);
@@ -211,8 +206,8 @@ CREATE TABLE IF NOT EXISTS coupons (
 CREATE INDEX IF NOT EXISTS idx_coupons_code ON coupons(code);
 ALTER TABLE coupons ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Allow anon all coupons" ON coupons;
-CREATE POLICY "Allow anon all coupons"
-  ON coupons FOR ALL TO anon USING (true) WITH CHECK (true);
+CREATE POLICY "Allow anon select active coupons"
+  ON coupons FOR SELECT TO anon USING (is_active = true);
 DROP POLICY IF EXISTS "Allow auth all coupons" ON coupons;
 CREATE POLICY "Allow auth all coupons"
   ON coupons FOR ALL TO authenticated USING (true) WITH CHECK (true);
@@ -228,8 +223,10 @@ CREATE TABLE IF NOT EXISTS wishlists (
 CREATE INDEX IF NOT EXISTS idx_wishlists_customer ON wishlists(customer_id);
 ALTER TABLE wishlists ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Allow anon all wishlists" ON wishlists;
-CREATE POLICY "Allow anon all wishlists"
-  ON wishlists FOR ALL TO anon USING (true) WITH CHECK (true);
+CREATE POLICY "Allow anon select own wishlists"
+  ON wishlists FOR SELECT TO anon USING (true);
+CREATE POLICY "Allow anon insert own wishlist"
+  ON wishlists FOR INSERT TO anon WITH CHECK (true);
 DROP POLICY IF EXISTS "Allow auth all wishlists" ON wishlists;
 CREATE POLICY "Allow auth all wishlists"
   ON wishlists FOR ALL TO authenticated USING (true) WITH CHECK (true);
@@ -250,11 +247,11 @@ CREATE TABLE IF NOT EXISTS product_reviews (
 CREATE INDEX IF NOT EXISTS idx_product_reviews_product ON product_reviews(product_id);
 ALTER TABLE product_reviews ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Allow anon select product_reviews" ON product_reviews;
-CREATE POLICY "Allow anon select product_reviews"
-  ON product_reviews FOR SELECT TO anon USING (true);
+CREATE POLICY "Allow anon select approved reviews"
+  ON product_reviews FOR SELECT TO anon USING (is_approved = true);
 DROP POLICY IF EXISTS "Allow anon insert product_reviews" ON product_reviews;
-CREATE POLICY "Allow anon insert product_reviews"
-  ON product_reviews FOR INSERT TO anon WITH CHECK (true);
+CREATE POLICY "Allow authenticated insert reviews"
+  ON product_reviews FOR INSERT TO authenticated WITH CHECK (true);
 DROP POLICY IF EXISTS "Allow auth all product_reviews" ON product_reviews;
 CREATE POLICY "Allow auth all product_reviews"
   ON product_reviews FOR ALL TO authenticated USING (true) WITH CHECK (true);
@@ -362,17 +359,13 @@ CREATE INDEX IF NOT EXISTS idx_contact_messages_status ON contact_messages(statu
 CREATE INDEX IF NOT EXISTS idx_contact_messages_created_at ON contact_messages(created_at DESC);
 ALTER TABLE contact_messages ENABLE ROW LEVEL SECURITY;
 
--- anon may INSERT (submit the form) and SELECT (admin panel reads with the
--- anon client today — same posture as the messages table; tighten when
--- admin auth lands)
+-- anon may INSERT (submit the form) only; admin reads via authenticated
 DROP POLICY IF EXISTS "Allow anon insert contact_messages" ON contact_messages;
 CREATE POLICY "Allow anon insert contact_messages"
   ON contact_messages FOR INSERT TO anon WITH CHECK (true);
 DROP POLICY IF EXISTS "Allow anon select contact_messages" ON contact_messages;
-CREATE POLICY "Allow anon select contact_messages"
-  ON contact_messages FOR SELECT TO anon USING (true);
 DROP POLICY IF EXISTS "Allow authenticated all contact_messages" ON contact_messages;
-CREATE POLICY "Allow authenticated all contact_messages"
+CREATE POLICY "Allow auth all contact_messages"
   ON contact_messages FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
 -- ============================================

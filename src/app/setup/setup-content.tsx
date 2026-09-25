@@ -21,6 +21,14 @@ export default function SetupContent() {
   const [detail, setDetail] = useState<string | null>(null);
   const [result, setResult] = useState<SetupResult | null>(null);
 
+  // Restore setup code from localStorage (survives page refresh)
+  const [savedCode, setSavedCode] = useState<string | null>(null);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("rymos_setup_code");
+    if (stored) setSavedCode(stored);
+  }, []);
+
   async function handleApply() {
     if (!token.trim()) {
       setError("Paste your Supabase access token first.");
@@ -45,6 +53,9 @@ export default function SetupContent() {
       }
       setResult(data as SetupResult);
       setPhase("done");
+      if (data.setupCode) {
+        localStorage.setItem("rymos_setup_code", data.setupCode);
+      }
     } catch {
       setPhase("error");
       setError("Network error — check your connection and try again.");
@@ -143,11 +154,11 @@ export default function SetupContent() {
               </p>
             </div>
 
-            {result.setupCode && (
+            {(result.setupCode || savedCode) && (
               <div className="rounded-xl bg-gray-900 text-white px-5 py-5">
                 <p className="text-[13px] text-gray-300">Your first-admin setup code</p>
                 <p className="mt-2 text-3xl font-mono font-semibold tracking-widest">
-                  {result.setupCode}
+                  {result.setupCode || savedCode}
                 </p>
                 <p className="mt-3 text-[13px] text-gray-300 leading-relaxed">
                   Open{" "}

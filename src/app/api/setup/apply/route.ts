@@ -50,7 +50,8 @@ function randomCode(): string {
 
 async function mgmtQuery(
   token: string,
-  query: string
+  query: string,
+  params: unknown[] = []
 ): Promise<{ ok: boolean; status: number; data: unknown }> {
   const res = await fetch(
     `https://api.supabase.com/v1/projects/${PROJECT_REF}/database/query`,
@@ -60,7 +61,7 @@ async function mgmtQuery(
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ query }),
+      body: JSON.stringify({ query, params }),
       cache: "no-store",
     }
   );
@@ -135,9 +136,11 @@ export async function POST(req: NextRequest) {
 
     if (adminCount === 0) {
       setupCode = randomCode();
+      const params: unknown[] = [setupCode];
       const insert = await mgmtQuery(
         token,
-        `INSERT INTO admin_bootstrap (code) VALUES ('${setupCode}');`
+        `INSERT INTO admin_bootstrap (code) VALUES ($1);`,
+        params
       );
       if (!insert.ok) {
         codeError = "Tables are synced, but storing the setup code failed — open /admin/login and use the GitHub workflow code instead.";

@@ -216,6 +216,8 @@ function ProductsPageContent() {
         supabase.from("products").select("*").order("name"),
         supabase.from("categories").select("*").order("sort_order"),
       ]);
+      if (productsRes.error) console.error("Products load error:", productsRes.error);
+      if (categoriesRes.error) console.error("Categories load error:", categoriesRes.error);
       if (productsRes.data) setProducts(productsRes.data);
       if (categoriesRes.data) setCategories(categoriesRes.data);
       setLoading(false);

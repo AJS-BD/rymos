@@ -1,4 +1,5 @@
 import { getSupabase, isConfigured } from "@/lib/supabase";
+import { formatBDT } from "@/lib/utils";
 
 async function getDashboardStats() {
   if (!isConfigured()) {
@@ -31,11 +32,19 @@ async function getDashboardStats() {
       .limit(5),
   ]);
 
+  // Compute revenue from orders (total column)
+  const { data: revenueRows } = await supabase
+    .from("orders")
+    .select("total")
+    .neq("total", null);
+  const totalRevenue =
+    revenueRows?.reduce((sum: number, o: { total: number }) => sum + (o.total || 0), 0) ?? 0;
+
   return {
     totalProducts: products.count || 0,
     totalOrders: orders.count || 0,
     totalCustomers: customers.count || 0,
-    totalRevenue: 0,
+    totalRevenue,
     recentOrders: recentOrders.data || [],
     lowStockProducts: lowStock.data || [],
   };
@@ -120,7 +129,7 @@ export default async function AdminDashboard() {
             className="text-[32px] font-semibold mt-2 tracking-tight"
             style={{ color: "var(--color-text)" }}
           >
-            ৳0
+            {formatBDT(stats.totalRevenue)}
           </p>
         </div>
       </div>

@@ -42,6 +42,23 @@ async function nextOrderNumber(supabase: ReturnType<typeof getSupabase>): Promis
   return `RY-${year}-${String((count || 0) + 1).padStart(4, "0")}`;
 }
 
+async function nextOrderNumberSafe(supabase: ReturnType<typeof getSupabase>): Promise<string> {
+  const maxAttempts = 3;
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const candidate = await nextOrderNumber(supabase);
+    const { data: existing } = await supabase
+      .from("orders")
+      .select("id")
+      .eq("order_number", candidate)
+      .maybeSingle();
+    if (!existing) return candidate;
+  }
+  // Fallback: timestamp-based suffix to guarantee uniqueness
+  const year = new Date().getFullYear();
+  const suffix = Date.now().toString(36).slice(-4);
+  return `RY-${year}-${suffix}`;
+}
+
 export default function POSPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -174,7 +191,7 @@ export default function POSPage() {
     const supabase = getSupabase();
 
     // Generate order number
-    const newOrderNumber = await nextOrderNumber(supabase);
+    const newOrderNumber = await nextOrderNumberSafe(supabase);
     setOrderNumber(newOrderNumber);
 
     // Create customer if name and phone provided
@@ -233,10 +250,11 @@ export default function POSPage() {
 
     // Update stock
     for (const item of cart) {
-      await supabase
+      const { error: stockErr } = await supabase
         .from("products")
         .update({ stock: item.product.stock - item.quantity })
         .eq("id", item.product.id);
+      if (stockErr) console.error("POS stock update error:", stockErr);
     }
 
     setCart([]);

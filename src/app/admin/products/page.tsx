@@ -7,7 +7,7 @@ import { getSupabase } from "@/lib/supabase";
 import { getErrorMessage } from "@/lib/utils";
 
 interface Product {
-  id: number;
+  id: string;
   name: string;
   brand: string | null;
   price: number;

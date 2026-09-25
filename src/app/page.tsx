@@ -38,7 +38,7 @@ export default function HomePage() {
       name: product.name,
       brand: product.brand,
       price: product.price,
-      stock: 10,
+      stock: product.stock ?? 10,
       images: [product.img],
       category: "smartphones",
     });

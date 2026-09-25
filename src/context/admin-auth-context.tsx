@@ -165,6 +165,9 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
   const adminLogout = useCallback(async () => {
     const supabase = getSupabase();
     await supabase.auth.signOut();
+    localStorage.removeItem("rymos_user");
+    localStorage.removeItem("rymos_customer_id");
+    localStorage.removeItem("rymos_cart");
     setAdmin(null);
     router.push("/admin/login");
   }, [router]);
