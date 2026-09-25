@@ -272,6 +272,10 @@ CREATE TABLE IF NOT EXISTS returns (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ALTER TABLE returns ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow anon all returns" ON returns;
+CREATE POLICY "Allow auth all returns"
+  ON returns FOR ALL TO authenticated USING (true) WITH CHECK (true);
+GRANT SELECT, INSERT, UPDATE, DELETE ON returns TO authenticated;
 
 CREATE TABLE IF NOT EXISTS refunds (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -283,6 +287,10 @@ CREATE TABLE IF NOT EXISTS refunds (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ALTER TABLE refunds ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS \"Allow anon all refunds\" ON refunds;
+CREATE POLICY \"Allow auth all refunds\"
+  ON refunds FOR ALL TO authenticated USING (true) WITH CHECK (true);
+GRANT SELECT, INSERT, UPDATE, DELETE ON refunds TO authenticated;
 
 CREATE TABLE IF NOT EXISTS cart_items (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -293,6 +301,10 @@ CREATE TABLE IF NOT EXISTS cart_items (
   UNIQUE(customer_id, product_id)
 );
 ALTER TABLE cart_items ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS \"Allow anon all cart_items\" ON cart_items;
+CREATE POLICY \"Allow auth all cart_items\"
+  ON cart_items FOR ALL TO authenticated USING (true) WITH CHECK (true);
+GRANT SELECT, INSERT, UPDATE, DELETE ON cart_items TO authenticated;
 
 CREATE TABLE IF NOT EXISTS notifications (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -304,6 +316,10 @@ CREATE TABLE IF NOT EXISTS notifications (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS \"Allow anon all notifications\" ON notifications;
+CREATE POLICY \"Allow auth all notifications\"
+  ON notifications FOR ALL TO authenticated USING (true) WITH CHECK (true);
+GRANT SELECT, INSERT, UPDATE, DELETE ON notifications TO authenticated;
 
 CREATE TABLE IF NOT EXISTS admin_audit_log (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -315,6 +331,10 @@ CREATE TABLE IF NOT EXISTS admin_audit_log (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ALTER TABLE admin_audit_log ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS \"Allow anon all admin_audit_log\" ON admin_audit_log;
+CREATE POLICY \"Allow auth all admin_audit_log\"
+  ON admin_audit_log FOR ALL TO authenticated USING (true) WITH CHECK (true);
+GRANT SELECT, INSERT, UPDATE, DELETE ON admin_audit_log TO authenticated;
 
 CREATE TABLE IF NOT EXISTS daily_sales (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -326,6 +346,10 @@ CREATE TABLE IF NOT EXISTS daily_sales (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ALTER TABLE daily_sales ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS \"Allow anon all daily_sales\" ON daily_sales;
+CREATE POLICY \"Allow auth all daily_sales\"
+  ON daily_sales FOR ALL TO authenticated USING (true) WITH CHECK (true);
+GRANT SELECT, INSERT, UPDATE, DELETE ON daily_sales TO authenticated;
 
 CREATE TABLE IF NOT EXISTS inventory_movements (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -338,6 +362,10 @@ CREATE TABLE IF NOT EXISTS inventory_movements (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ALTER TABLE inventory_movements ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS \"Allow anon all inventory_movements\" ON inventory_movements;
+CREATE POLICY \"Allow auth all inventory_movements\"
+  ON inventory_movements FOR ALL TO authenticated USING (true) WITH CHECK (true);
+GRANT SELECT, INSERT, UPDATE, DELETE ON inventory_movements TO authenticated;
 
 -- ============================================
 -- PART 4.5: CONTACT FORM (public /contact submissions)
