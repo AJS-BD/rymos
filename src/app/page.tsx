@@ -8,7 +8,6 @@ import { useCart } from "@/context/cart-context";
 import { useAuth } from "@/context/auth-context";
 import { useRouter } from "next/navigation";
 import {
-  ShoppingBag,
   Banknote,
   Store,
   CreditCard,
@@ -18,26 +17,46 @@ import { getSupabase, isConfigured } from "@/lib/supabase";
 import StarRating from "@/components/shared/star-rating";
 
 /**
- * Homepage — Apple.com style.
+ * Homepage — Apple.com structure, rebuilt from a fresh look at apple.com
+ * (5 Nov 2026).
  *
- * Layout (all content from the database, nothing hardcoded):
- *   1. Hero — top featured product, black, huge name + spec tagline + price
- *   2. Hero — second featured product, light grey, same treatment
- *   3. "The latest." — the rest of the featured products as large tiles
- *   4. "Built for everything." — spec highlights, real spec values only
- *   5. Shop-with-confidence strip — the shop's real payment/return options
+ * What Apple actually does on its homepage:
+ *   - Dark nav, then ONE product per full-width band: huge product name,
+ *     ONE short punchy subhead ("Pro further.", "Hello, hello.",
+ *     "Sound in living color."), two pill buttons (solid blue "Learn
+ *     more" + outlined "Buy"), and ONE single large product photo doing
+ *     most of the work.
+ *   - Then 2-column tile rows repeating the same pattern at half width
+ *     (light grey band next to a black band, alternating).
+ *   - Then a services/offers row, then entertainment, then the footer.
+ *   - Apple shows NO prices on the homepage — price lives on the
+ *     product page. This page follows that: no prices anywhere here.
+ *
+ * Layout here (all content from the database, nothing hardcoded):
+ *   1. Hero band 1 — top featured product, black
+ *   2. Hero band 2 — second featured product, light grey (#f5f5f7)
+ *   3. Hero band 3 — third featured product, black (only if it exists)
+ *   4. Promo tiles — the remaining featured products, 2-column, light
+ *      and black alternating, same band pattern at half width
+ *   5. Shop with confidence — the shop's real options only
  *   6. Testimonials — real approved product reviews only
  *
- * The header is transparent white text over the top of the page until the
- * user scrolls, so the first hero is deliberately black (like Apple's
- * iPhone hero) — a white first hero would make the header unreadable.
- * The second hero is light grey; by then the header has turned dark.
+ * Why the first preview looked empty: the Vercel Preview deployment had
+ * no Supabase env vars, so zero products loaded and the page fell back
+ * to plain text. That is an env problem, not a design problem — but this
+ * rebuild also makes sure a band is NEVER blank: if a product has no
+ * usable image, the visual is a bold gradient panel with huge
+ * typography instead of an empty placeholder box, and with zero
+ * featured products the hero is a bold colourful typographic band.
  *
- * Product images come from the product records. A broken/missing image
- * falls back to the neutral local placeholder — never a random stock
- * photo. (Note: a wrong-but-loading image in the DB, e.g. a chair photo
- * on a phone, cannot be detected here — that has to be fixed in the
- * product data itself.)
+ * The header is transparent white text over the top of the page until
+ * the user scrolls, so the first hero is deliberately black (like
+ * Apple's iPhone hero) — a white first hero would make the header
+ * unreadable.
+ *
+ * Product images come from the product records. A wrong-but-loading
+ * image in the DB (e.g. a chair photo on a phone) cannot be detected
+ * here — that has to be fixed in the product data itself.
  */
 const placeholderImage = "/images/placeholder.svg";
 
@@ -62,89 +81,137 @@ interface ApprovedReview {
   product_name: string | null;
 }
 
-const SPEC_KEY_ORDER = [
-  "camera",
-  "display",
-  "battery",
-  "processor",
-  "storage",
-  "ram",
+/** Bold Apple-style gradients, one per product (picked by a stable hash
+ *  of the product id, so the same product always gets the same colour).
+ *  Full class strings are written out literally so Tailwind picks them up. */
+const GRADIENTS = [
+  "bg-gradient-to-br from-[#0071e3] via-[#5e5ce6] to-[#bf5af2]",
+  "bg-gradient-to-br from-[#ff375f] via-[#ff9f0a] to-[#ffd60a]",
+  "bg-gradient-to-br from-[#30b0c7] via-[#0071e3] to-[#0a84ff]",
+  "bg-gradient-to-br from-[#ff6482] via-[#bf5af2] to-[#5e5ce6]",
+  "bg-gradient-to-br from-[#30d158] via-[#64d2ff] to-[#0071e3]",
+  "bg-gradient-to-br from-[#ff9f0a] via-[#ff375f] to-[#bf5af2]",
 ];
 
-function formatSpecLabel(key: string): string {
-  return key
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+function gradientFor(product: FeaturedProduct): string {
+  let hash = 0;
+  for (let i = 0; i < product.id.length; i++) {
+    hash = (hash * 31 + product.id.charCodeAt(i)) % 997;
+  }
+  return GRADIENTS[hash % GRADIENTS.length];
 }
 
-/** First image of a product, or the neutral placeholder when it has none. */
-function productImage(product: FeaturedProduct): string {
+/** First image of a product, or null when it has none. */
+function productImage(product: FeaturedProduct): string | null {
   return product.images && product.images.length > 0
     ? product.images[0]
-    : placeholderImage;
+    : null;
 }
 
-/** next/image that swaps to the neutral placeholder if the DB image fails
- *  (or its host is not in the next.config remotePatterns allowlist). */
-function ProductImage({
-  src,
-  alt,
-  className,
+/**
+ * The big visual of a band: the product's DB photo, large.
+ * When there is no usable photo (none in the DB, or it fails to load),
+ * the band stays full and striking — a bold gradient panel with huge
+ * typography — instead of an empty placeholder box.
+ */
+function ProductVisual({
+  product,
+  dark,
+  large,
 }: {
-  src: string;
-  alt: string;
-  className?: string;
+  product: FeaturedProduct;
+  dark: boolean;
+  large?: boolean;
 }) {
-  const [currentSrc, setCurrentSrc] = useState(src);
+  const src = productImage(product);
+  const [failed, setFailed] = useState(false);
+  const showImage = src !== null && !failed;
+
+  if (!showImage) {
+    return (
+      <div
+        className={`relative mx-auto mt-10 sm:mt-14 w-full max-w-4xl overflow-hidden rounded-3xl ${gradientFor(product)} ${
+          large ? "min-h-[340px] sm:min-h-[480px]" : "min-h-[280px] sm:min-h-[360px]"
+        } flex flex-col items-center justify-center px-6 py-12 text-center`}
+      >
+        <span
+          aria-hidden
+          className="pointer-events-none absolute -top-10 select-none text-[11rem] sm:text-[15rem] font-bold leading-none text-white/10"
+        >
+          {(product.brand ?? product.name).charAt(0).toUpperCase()}
+        </span>
+        <p className="relative text-sm sm:text-base font-semibold uppercase tracking-[0.3em] text-white/80">
+          {product.brand ?? "RYmos"}
+        </p>
+        <p className="relative mt-3 text-5xl sm:text-7xl font-bold tracking-tight text-white text-balance">
+          {product.name}
+        </p>
+        <p className="relative mt-4 text-lg sm:text-xl text-white/85">
+          {punchySubhead(product)}
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <Image
-      src={currentSrc}
-      alt={alt}
-      width={1200}
-      height={900}
-      loading="lazy"
-      onError={() => {
-        if (currentSrc !== placeholderImage) setCurrentSrc(placeholderImage);
-      }}
-      className={className}
-    />
+    <div className="mt-10 sm:mt-14">
+      <Link href={`/products/${product.id}`}>
+        <Image
+          src={src}
+          alt={product.name}
+          width={1200}
+          height={900}
+          loading="lazy"
+          onError={() => setFailed(true)}
+          className={`mx-auto w-auto max-w-full object-contain ${
+            large
+              ? "max-h-[340px] sm:max-h-[520px]"
+              : "max-h-[260px] sm:max-h-[360px]"
+          } ${dark ? "" : ""}`}
+        />
+      </Link>
+    </div>
   );
 }
 
-/** Up to 4 spec-highlight strings from the real specs of featured products. */
-function buildSpecHighlights(products: FeaturedProduct[]): string[] {
-  const highlights: string[] = [];
-  const seen = new Set<string>();
-
-  for (const product of products) {
-    if (highlights.length >= 4 || !product.specs) continue;
-    const entries = Object.entries(product.specs);
-    entries.sort(([a], [b]) => {
-      const ai = SPEC_KEY_ORDER.indexOf(a.toLowerCase());
-      const bi = SPEC_KEY_ORDER.indexOf(b.toLowerCase());
-      return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
-    });
-    for (const [key, value] of entries) {
-      if (highlights.length >= 4) break;
+/**
+ * ONE short punchy subhead per band, built only from the product's real
+ * spec values — Apple style ("Pro further.", "Sound in living color.").
+ * Picks the single most attractive spec and phrases it in one line.
+ * Never invents a spec: with no usable spec it falls back to a plain
+ * generic line, not a made-up feature.
+ */
+function punchySubhead(product: FeaturedProduct): string {
+  if (product.specs) {
+    const specs: Record<string, string> = {};
+    for (const [key, value] of Object.entries(product.specs)) {
       const text = String(value).trim();
-      if (!text) continue;
-      const highlight = `${text} ${formatSpecLabel(key)}`;
-      if (seen.has(highlight)) continue;
-      seen.add(highlight);
-      highlights.push(highlight);
+      if (text) specs[key.toLowerCase()] = text;
+    }
+    const pick = (
+      keys: string[],
+      format: (value: string) => string
+    ): string | null => {
+      for (const key of keys) {
+        if (specs[key]) return format(specs[key]);
+      }
+      return null;
+    };
+    const line =
+      pick(["processor", "chip", "chipset"], (v) => `Powered by ${v}.`) ??
+      pick(["rear_camera", "camera"], (v) => `${v} camera.`) ??
+      pick(["battery"], (v) => `${v} battery.`) ??
+      pick(["display", "screen"], (v) => `${v} display.`) ??
+      pick(["charging"], (v) => `${v} charging.`) ??
+      pick(["ram"], (v) => `${v} RAM.`) ??
+      pick(["storage"], (v) => `${v} storage.`) ??
+      pick(["os"], (v) => `Runs ${v}.`);
+    if (line) {
+      return line.length > 64 ? `${line.slice(0, 61).trimEnd()}…` : line;
     }
   }
-  return highlights;
-}
-
-/** Short tagline for a hero, derived from the product's real specs. */
-function specSummary(product: FeaturedProduct): string | null {
-  if (!product.specs) return null;
-  const parts = Object.entries(product.specs)
-    .filter(([, v]) => String(v).trim() !== "")
-    .slice(0, 3)
-    .map(([k, v]) => `${String(v).trim()} ${formatSpecLabel(k)}`);
-  return parts.length > 0 ? parts.join(". ") : null;
+  if (product.brand) return `The latest from ${product.brand}.`;
+  return "New in. Ready for everything.";
 }
 
 export default function HomePage() {
@@ -166,8 +233,8 @@ export default function HomePage() {
 
   useEffect(() => {
     async function loadHomepage() {
-      // Supabase not configured (placeholder client) — show the empty
-      // state instead of fake products or a crash.
+      // Supabase not configured (placeholder client) — show the bold
+      // typographic hero instead of fake products or a crash.
       if (!isConfigured()) {
         setLoading(false);
         return;
@@ -251,298 +318,197 @@ export default function HomePage() {
 
   const heroProduct = featuredProducts[0] ?? null;
   const secondHeroProduct = featuredProducts[1] ?? null;
-  const gridProducts = featuredProducts.slice(2);
-  const specHighlights = buildSpecHighlights(featuredProducts);
+  const thirdHeroProduct = featuredProducts[2] ?? null;
+  const tileProducts = featuredProducts.slice(3);
+
+  /** Apple's two pill buttons: solid blue "Learn more" + outlined "Buy". */
+  const bandButtons = (product: FeaturedProduct, dark: boolean) => {
+    const outOfStock = product.stock <= 0;
+    return (
+      <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+        <Link
+          href={`/products/${product.id}`}
+          className="rounded-full bg-[#0071e3] px-5 py-2 text-sm sm:text-base font-medium text-white hover:bg-[#0077ed] transition-colors"
+        >
+          Learn more
+        </Link>
+        {outOfStock ? (
+          <span
+            className={`rounded-full border px-5 py-2 text-sm sm:text-base font-medium ${
+              dark
+                ? "border-white/30 text-white/50"
+                : "border-[#86868b] text-[#86868b]"
+            }`}
+          >
+            Out of stock
+          </span>
+        ) : (
+          <button
+            onClick={() => handleAddToCart(product)}
+            className={`rounded-full border px-5 py-2 text-sm sm:text-base font-medium transition-colors ${
+              dark
+                ? "border-[#2997ff] text-[#2997ff] hover:bg-[#2997ff]/10"
+                : "border-[#0066cc] text-[#0066cc] hover:bg-[#0066cc]/10"
+            }`}
+          >
+            Buy
+          </button>
+        )}
+      </div>
+    );
+  };
+
+  /** One full-width Apple band: huge name, one punchy subhead, two pill
+   *  buttons, one large photo (or a bold gradient visual). */
+  const heroBand = (
+    product: FeaturedProduct,
+    dark: boolean,
+    headingLevel: 1 | 2,
+    withMotion: boolean
+  ) => {
+    const bg = dark ? "bg-black" : "bg-[#f5f5f7]";
+    const nameColor = dark ? "text-white" : "text-[#1d1d1f]";
+    const subColor = dark ? "text-[#a1a1a6]" : "text-[#6e6e73]";
+    const Heading = headingLevel === 1 ? "h1" : "h2";
+    const inner = (
+      <div className="max-w-5xl mx-auto px-6 pt-24 sm:pt-32 pb-12 sm:pb-16 text-center">
+        {product.brand && (
+          <p className="text-sm sm:text-base font-medium text-[#86868b] uppercase tracking-widest mb-3">
+            {product.brand}
+          </p>
+        )}
+        <Heading className="text-5xl sm:text-6xl md:text-7xl font-semibold tracking-tight text-balance">
+          <span className={nameColor}>{product.name}</span>
+        </Heading>
+        <p
+          className={`mt-4 text-xl sm:text-2xl md:text-[28px] font-normal leading-snug ${subColor} max-w-2xl mx-auto`}
+        >
+          {punchySubhead(product)}
+        </p>
+        {bandButtons(product, dark)}
+        <ProductVisual product={product} dark={dark} large />
+      </div>
+    );
+    return withMotion ? (
+      <motion.section
+        style={{ opacity: heroOpacity, scale: heroScale }}
+        className={`relative overflow-hidden ${bg}`}
+      >
+        {inner}
+      </motion.section>
+    ) : (
+      <section className={`overflow-hidden ${bg}`}>{inner}</section>
+    );
+  };
+
+  /** Half-width promo tile: the same band pattern, smaller. */
+  const promoTile = (product: FeaturedProduct, index: number) => {
+    const dark = index % 2 === 1;
+    const bg = dark ? "bg-black" : "bg-[#f5f5f7]";
+    const nameColor = dark ? "text-white" : "text-[#1d1d1f]";
+    const subColor = dark ? "text-[#a1a1a6]" : "text-[#6e6e73]";
+    return (
+      <motion.article
+        key={product.id}
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5, delay: (index % 2) * 0.08 }}
+        className={`overflow-hidden px-6 pt-12 sm:pt-16 pb-10 sm:pb-12 text-center flex flex-col ${bg}`}
+      >
+        {product.brand && (
+          <p className="text-xs sm:text-sm font-medium text-[#86868b] uppercase tracking-widest mb-2">
+            {product.brand}
+          </p>
+        )}
+        <h3 className="text-3xl sm:text-4xl md:text-[40px] font-semibold tracking-tight text-balance">
+          <Link href={`/products/${product.id}`} className={nameColor}>
+            {product.name}
+          </Link>
+        </h3>
+        <p className={`mt-3 text-lg sm:text-xl font-normal ${subColor}`}>
+          {punchySubhead(product)}
+        </p>
+        {bandButtons(product, dark)}
+        <div className="flex-1 flex flex-col justify-end">
+          <ProductVisual product={product} dark={dark} />
+        </div>
+      </motion.article>
+    );
+  };
 
   return (
     <main className="flex-1 bg-white">
-      {/* Hero 1 — top featured product, black like Apple's iPhone hero */}
-      <motion.section
-        ref={heroRef}
-        style={{ opacity: heroOpacity, scale: heroScale }}
-        className="relative bg-black overflow-hidden"
-      >
-        <div className="max-w-5xl mx-auto px-6 pt-24 sm:pt-32 pb-12 sm:pb-16 text-center">
-          {loading ? (
-            <>
-              <div className="h-12 sm:h-16 w-3/4 mx-auto rounded-lg bg-white/10 animate-pulse" />
-              <div className="h-6 w-1/2 mx-auto mt-6 rounded-lg bg-white/10 animate-pulse" />
-              <div className="h-5 w-40 mx-auto mt-6 rounded-lg bg-white/10 animate-pulse" />
-              <div className="h-[320px] sm:h-[480px] w-full mt-12 rounded-3xl bg-white/10 animate-pulse" />
-            </>
-          ) : heroProduct ? (
-            <>
-              {heroProduct.brand && (
-                <p className="text-sm sm:text-base font-medium text-[#86868b] uppercase tracking-widest mb-3">
-                  {heroProduct.brand}
-                </p>
-              )}
-              <motion.h1
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-                className="text-5xl sm:text-6xl md:text-7xl font-semibold tracking-tight text-white text-balance"
-              >
-                {heroProduct.name}
-              </motion.h1>
-              {specSummary(heroProduct) && (
-                <motion.p
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: 0.4 }}
-                  className="mt-4 text-xl sm:text-2xl font-normal text-[#a1a1a6] max-w-2xl mx-auto"
-                >
-                  {specSummary(heroProduct)}
-                </motion.p>
-              )}
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.5 }}
-                className="mt-4 text-base sm:text-lg text-[#86868b]"
-              >
-                From ৳{heroProduct.price.toLocaleString()}
-              </motion.p>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.6 }}
-                className="mt-6 flex items-center justify-center gap-8"
-              >
-                <Link
-                  href={`/products/${heroProduct.id}`}
-                  className="text-[#2997ff] hover:underline text-lg sm:text-xl font-normal"
-                >
-                  Learn more &gt;
-                </Link>
-                <Link
-                  href={`/products/${heroProduct.id}`}
-                  className="text-[#2997ff] hover:underline text-lg sm:text-xl font-normal"
-                >
-                  Buy &gt;
-                </Link>
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, scale: 0.96 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 1, delay: 0.7 }}
-                className="mt-10 sm:mt-14"
-              >
-                <Link href={`/products/${heroProduct.id}`}>
-                  <ProductImage
-                    src={productImage(heroProduct)}
-                    alt={heroProduct.name}
-                    className="mx-auto max-h-[320px] sm:max-h-[480px] w-auto max-w-full object-contain rounded-3xl"
-                  />
-                </Link>
-              </motion.div>
-            </>
-          ) : (
-            <>
-              <h1 className="text-5xl sm:text-6xl md:text-7xl font-semibold tracking-tight text-white text-balance">
-                Technology, Made Yours
-              </h1>
-              <p className="mt-6 text-xl sm:text-2xl text-[#a1a1a6] max-w-2xl mx-auto">
-                Discover the latest smartphones and premium accessories.
-              </p>
-              <div className="mt-8">
-                <Link
-                  href="/products"
-                  className="text-[#2997ff] hover:underline text-lg sm:text-xl font-normal"
-                >
-                  Shop all products &gt;
-                </Link>
-              </div>
-            </>
-          )}
-        </div>
-      </motion.section>
-
-      {/* Hero 2 — second featured product, light grey */}
-      {secondHeroProduct && (
-        <section className="bg-[#f5f5f7] overflow-hidden">
-          <div className="max-w-5xl mx-auto px-6 py-16 sm:py-24 text-center">
-            {secondHeroProduct.brand && (
-              <p className="text-sm sm:text-base font-medium text-[#86868b] uppercase tracking-widest mb-3">
-                {secondHeroProduct.brand}
-              </p>
-            )}
-            <motion.h2
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.7 }}
-              className="text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight text-[#1d1d1f] text-balance"
-            >
-              {secondHeroProduct.name}
-            </motion.h2>
-            {specSummary(secondHeroProduct) && (
-              <p className="mt-4 text-xl sm:text-2xl font-normal text-[#6e6e73] max-w-2xl mx-auto">
-                {specSummary(secondHeroProduct)}
-              </p>
-            )}
-            <p className="mt-4 text-base sm:text-lg text-[#86868b]">
-              From ৳{secondHeroProduct.price.toLocaleString()}
-            </p>
-            <div className="mt-6 flex items-center justify-center gap-8">
-              <Link
-                href={`/products/${secondHeroProduct.id}`}
-                className="text-[#0066cc] hover:underline text-lg sm:text-xl font-normal"
-              >
-                Learn more &gt;
-              </Link>
-              <Link
-                href={`/products/${secondHeroProduct.id}`}
-                className="text-[#0066cc] hover:underline text-lg sm:text-xl font-normal"
-              >
-                Buy &gt;
-              </Link>
-            </div>
-            <motion.div
-              initial={{ opacity: 0, scale: 0.96 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
-              className="mt-10 sm:mt-14"
-            >
-              <Link href={`/products/${secondHeroProduct.id}`}>
-                <ProductImage
-                  src={productImage(secondHeroProduct)}
-                  alt={secondHeroProduct.name}
-                  className="mx-auto max-h-[280px] sm:max-h-[440px] w-auto max-w-full object-contain rounded-3xl"
-                />
-              </Link>
-            </motion.div>
+      {loading ? (
+        /* Loading: dark band skeleton so the page never opens blank. */
+        <section className="bg-black overflow-hidden">
+          <div className="max-w-5xl mx-auto px-6 pt-24 sm:pt-32 pb-16 text-center">
+            <div className="h-12 sm:h-16 w-3/4 mx-auto rounded-lg bg-white/10 animate-pulse" />
+            <div className="h-6 w-1/2 mx-auto mt-6 rounded-lg bg-white/10 animate-pulse" />
+            <div className="h-10 w-48 mx-auto mt-8 rounded-full bg-white/10 animate-pulse" />
+            <div className="h-[320px] sm:h-[480px] w-full mt-12 rounded-3xl bg-white/10 animate-pulse" />
           </div>
         </section>
-      )}
-
-      {/* The latest — remaining featured products, large tiles */}
-      <section className="py-16 sm:py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-6">
-          <h2 className="text-4xl sm:text-5xl font-semibold tracking-tight text-[#1d1d1f] text-center mb-3">
-            The latest.
-          </h2>
-          <p className="text-xl sm:text-2xl text-[#86868b] text-center mb-12 sm:mb-16">
-            Take a look at what&apos;s new.
-          </p>
-
-          {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {[0, 1].map((i) => (
-                <div key={i} className="bg-[#f5f5f7] rounded-3xl p-8 text-center">
-                  <div className="h-64 rounded-2xl bg-gray-200 animate-pulse" />
-                  <div className="h-6 w-3/4 mx-auto mt-6 rounded bg-gray-200 animate-pulse" />
-                  <div className="h-4 w-1/3 mx-auto mt-3 rounded bg-gray-200 animate-pulse" />
-                </div>
-              ))}
-            </div>
-          ) : gridProducts.length === 0 ? (
-            <div className="text-center">
-              <p className="text-lg text-[#86868b] mb-6">
-                {featuredProducts.length === 0
-                  ? "No featured products right now. Check back soon, or browse the full collection."
-                  : "That's everything featured right now — browse the full collection for more."}
-              </p>
+      ) : heroProduct ? (
+        <>
+          {/* Hero band 1 — top featured product, black */}
+          <div ref={heroRef}>{heroBand(heroProduct, true, 1, true)}</div>
+          {/* Hero band 2 — second featured product, light grey */}
+          {secondHeroProduct && heroBand(secondHeroProduct, false, 2, false)}
+          {/* Hero band 3 — third featured product, black */}
+          {thirdHeroProduct && heroBand(thirdHeroProduct, true, 2, false)}
+        </>
+      ) : (
+        /* Zero featured products: a bold, colourful typographic hero —
+         * gradient, huge type, shop button — never a plain empty message. */
+        <section className="relative overflow-hidden bg-gradient-to-br from-[#0071e3] via-[#5e5ce6] to-[#bf5af2]">
+          <div className="max-w-5xl mx-auto px-6 pt-24 sm:pt-32 pb-16 sm:pb-24 text-center">
+            <p className="text-sm sm:text-base font-semibold uppercase tracking-[0.3em] text-white/80">
+              RYmos
+            </p>
+            <h1 className="mt-4 text-6xl sm:text-7xl md:text-8xl font-bold tracking-tight text-white text-balance">
+              Technology, Made Yours.
+            </h1>
+            <p className="mt-6 text-xl sm:text-2xl md:text-[28px] text-white/85 max-w-2xl mx-auto">
+              The latest smartphones and premium accessories.
+            </p>
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <Link
                 href="/products"
-                className="text-[#0066cc] hover:underline text-lg font-normal"
+                className="rounded-full bg-white px-6 py-2.5 text-sm sm:text-base font-medium text-[#1d1d1f] hover:bg-white/90 transition-colors"
               >
-                Browse all products &gt;
+                Shop all products
               </Link>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {gridProducts.map((product, index) => {
-                const outOfStock = product.stock <= 0;
-                return (
-                  <motion.article
-                    key={product.id}
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.5, delay: index * 0.08 }}
-                    className="bg-[#f5f5f7] rounded-3xl px-6 sm:px-10 pt-10 sm:pt-12 pb-8 text-center flex flex-col"
-                  >
-                    {product.brand && (
-                      <p className="text-xs font-medium text-[#86868b] uppercase tracking-widest mb-2">
-                        {product.brand}
-                      </p>
-                    )}
-                    <h3 className="text-2xl sm:text-3xl font-semibold tracking-tight text-[#1d1d1f]">
-                      <Link href={`/products/${product.id}`}>{product.name}</Link>
-                    </h3>
-                    <p className="mt-2 text-base text-[#6e6e73]">
-                      From ৳{product.price.toLocaleString()}
-                    </p>
-                    <div className="mt-4 flex items-center justify-center gap-6">
-                      <Link
-                        href={`/products/${product.id}`}
-                        className="text-[#0066cc] hover:underline text-base"
-                      >
-                        Learn more &gt;
-                      </Link>
-                      {outOfStock ? (
-                        <span className="text-base text-[#86868b]">Out of stock</span>
-                      ) : (
-                        <button
-                          onClick={() => handleAddToCart(product)}
-                          className="inline-flex items-center gap-2 rounded-full bg-[#0071e3] px-5 py-2 text-sm font-medium text-white hover:bg-[#0077ed] transition-colors"
-                        >
-                          <ShoppingBag className="w-4 h-4" />
-                          Add to Bag
-                        </button>
-                      )}
-                    </div>
-                    <Link
-                      href={`/products/${product.id}`}
-                      className="mt-8 block"
-                    >
-                      <ProductImage
-                        src={productImage(product)}
-                        alt={product.name}
-                        className="mx-auto max-h-[240px] sm:max-h-[300px] w-auto max-w-full object-contain transition-transform duration-500 hover:scale-[1.03]"
-                      />
-                    </Link>
-                  </motion.article>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Spec highlights — real spec values, clean text tiles */}
-      {specHighlights.length > 0 && (
-        <section className="py-16 sm:py-24 bg-[#f5f5f7]">
-          <div className="max-w-7xl mx-auto px-6">
-            <h2 className="text-4xl sm:text-5xl font-semibold tracking-tight text-[#1d1d1f] text-center mb-12 sm:mb-16">
-              Built for everything.
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {specHighlights.map((highlight, index) => (
-                <motion.div
-                  key={highlight}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: index * 0.08 }}
-                  className="bg-white rounded-3xl px-8 py-12 sm:py-16 text-center"
-                >
-                  <p className="text-2xl sm:text-3xl font-semibold tracking-tight text-[#1d1d1f]">
-                    {highlight}
-                  </p>
-                </motion.div>
-              ))}
+              <Link
+                href="/products"
+                className="rounded-full border border-white/70 px-6 py-2.5 text-sm sm:text-base font-medium text-white hover:bg-white/10 transition-colors"
+              >
+                Browse the collection
+              </Link>
             </div>
           </div>
         </section>
       )}
 
-      {/* How to pay — the shop's real options, nothing invented */}
-      <section className="py-14 sm:py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 text-center">
+      {/* Promo tiles — remaining featured products, 2-column, Apple style */}
+      {!loading && tileProducts.length > 0 && (
+        <section className="px-3 pt-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {tileProducts.map((product, index) => promoTile(product, index))}
+          </div>
+        </section>
+      )}
+
+      {/* Shop with confidence — the shop's real options, nothing invented */}
+      <section className="bg-white">
+        <div className="max-w-7xl mx-auto px-6 py-16 sm:py-20">
+          <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-[#1d1d1f] text-center">
+            Shop with confidence.
+          </h2>
+          <p className="mt-3 text-lg sm:text-xl text-[#86868b] text-center">
+            Pay your way, and return it easily if you change your mind.
+          </p>
+          <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 text-center">
             {[
               {
                 icon: Banknote,
@@ -566,7 +532,10 @@ export default function HomePage() {
               },
             ].map((item) => (
               <div key={item.title}>
-                <item.icon className="w-6 h-6 mx-auto text-[#1d1d1f]" strokeWidth={1.5} />
+                <item.icon
+                  className="w-7 h-7 mx-auto text-[#1d1d1f]"
+                  strokeWidth={1.5}
+                />
                 <h3 className="mt-4 text-lg font-semibold text-[#1d1d1f]">
                   {item.title}
                 </h3>
@@ -608,7 +577,9 @@ export default function HomePage() {
                     </p>
                     <p className="text-sm text-[#86868b]">
                       {review.product_name ? `on ${review.product_name}` : ""}
-                      {review.product_name && review.is_verified_purchase ? " · " : ""}
+                      {review.product_name && review.is_verified_purchase
+                        ? " · "
+                        : ""}
                       {review.is_verified_purchase ? "Verified purchase" : ""}
                     </p>
                   </figcaption>
