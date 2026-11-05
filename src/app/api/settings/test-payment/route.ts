@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 
+// Connection tests only. RYmos takes NO online payments — these endpoints
+// only verify that stored credentials can reach the provider. They do not
+// enable online checkout, and there is no Nagad test: no Nagad API check
+// is implemented, so Nagad honestly reports as unavailable instead of
+// returning a fake success.
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { gateway, secretKey, publishableKey } = body;
+    const { gateway } = body;
 
     if (!gateway) {
       return NextResponse.json(
@@ -14,6 +20,7 @@ export async function POST(req: NextRequest) {
 
     try {
       if (gateway === "stripe") {
+        const secretKey = body.secretKey as string | undefined;
         if (!secretKey) {
           return NextResponse.json({
             success: false,
@@ -21,7 +28,7 @@ export async function POST(req: NextRequest) {
           });
         }
 
-        // Test Stripe connection
+        // Real check: Stripe balance endpoint with the stored secret key.
         const response = await fetch("https://api.stripe.com/v1/balance", {
           method: "GET",
           headers: {
@@ -39,29 +46,37 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json({
           success: true,
-          message: "Stripe connection successful",
+          message:
+            "Stripe connection successful (connection test only — not used for online checkout)",
         });
       } else if (gateway === "bkash") {
-        if (!secretKey || !publishableKey) {
+        const { username, password, appKey, appSecret } = body as {
+          username?: string;
+          password?: string;
+          appKey?: string;
+          appSecret?: string;
+        };
+        if (!username || !password || !appKey || !appSecret) {
           return NextResponse.json({
             success: false,
-            error: "bKash API key and app secret are required",
+            error:
+              "bKash merchant username, password, app key and app secret are required",
           });
         }
 
-        // Test bKash connection
+        // Real check: bKash token-grant call with the stored credentials.
         const response = await fetch(
           "https://tokenized.pay.bka.sh/v1.2.0-beta/tokenized/checkout/token/grant",
           {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              username: publishableKey,
-              password: secretKey,
+              username,
+              password,
             },
             body: JSON.stringify({
-              app_key: publishableKey,
-              app_secret: secretKey,
+              app_key: appKey,
+              app_secret: appSecret,
             }),
           }
         );
@@ -75,21 +90,14 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json({
           success: true,
-          message: "bKash connection successful",
+          message:
+            "bKash connection successful (connection test only — not used for online checkout)",
         });
       } else if (gateway === "nagad") {
-        if (!secretKey || !publishableKey) {
-          return NextResponse.json({
-            success: false,
-            error: "Nagad merchant ID and API key are required",
-          });
-        }
-
-        // Test Nagad connection
-        // Nagad API endpoint would go here
         return NextResponse.json({
-          success: true,
-          message: "Nagad API credentials validated",
+          success: false,
+          error:
+            "Nagad connection test is not available — no Nagad API check is implemented. Nagad is accepted only as an in-store / manual payment.",
         });
       } else {
         return NextResponse.json({

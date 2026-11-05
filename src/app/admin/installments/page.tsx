@@ -50,6 +50,8 @@ const PAYMENT_METHODS = [
   { value: "cash", label: "Cash" },
   { value: "bkash", label: "bKash" },
   { value: "nagad", label: "Nagad" },
+  { value: "rocket", label: "Rocket" },
+  { value: "card", label: "Card (in store)" },
   { value: "bank", label: "Bank Transfer" },
 ];
 

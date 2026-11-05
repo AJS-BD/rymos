@@ -5,7 +5,15 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getSupabase, isConfigured } from "@/lib/supabase";
 import { useAuth } from "@/context/auth-context";
-import { Mail, Phone, Eye, EyeOff, ArrowRight, Smartphone } from "lucide-react";
+import { Mail, Phone, Eye, EyeOff, ArrowRight } from "lucide-react";
+
+// Phone OTP is NOT available: no SMS provider is configured for this
+// Supabase project (see docs/PHONE-OTP-SETUP.md). Supabase phone auth
+// cannot send an SMS without a provider configured in the Supabase
+// dashboard, so the Phone OTP tab is disabled and no signInWithOtp call
+// is made anywhere in the sign-in flow.
+export const PHONE_OTP_UNAVAILABLE_MESSAGE =
+  "Phone sign-in is not available yet — please sign in with email. The shop needs to connect an SMS provider in Supabase.";
 
 type LoginMethod = "email" | "phone";
 
@@ -15,19 +23,13 @@ export default function LoginPage() {
   const [method, setMethod] = useState<LoginMethod>("email");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [phone, setPhone] = useState("");
-  const [otp, setOtp] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [otpSent, setOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
   const validateEmail = (email: string) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
-  const validatePhone = (phone: string) =>
-    /^(\+?880|0)1[3-9]\d{8}$/.test(phone.replace(/\s/g, ""));
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,95 +81,6 @@ export default function LoginPage() {
     }
   };
 
-  const handleSendOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
-
-    if (!phone) {
-      setError("Please enter your phone number.");
-      return;
-    }
-    if (!validatePhone(phone)) {
-      setError("Please enter a valid Bangladeshi phone number.");
-      return;
-    }
-
-    if (!isConfigured()) {
-      setError("Authentication is not configured. Please contact support.");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const supabase = getSupabase();
-      const { error: otpError } = await supabase.auth.signInWithOtp({
-        phone: phone.startsWith("+") ? phone : `+880${phone.replace(/^0/, "")}`,
-      });
-
-      if (otpError) {
-        // No SMS provider is configured on this Supabase project yet —
-        // surface friendly copy instead of the raw provider error.
-        if (/unsupported phone provider|SMS provider|phone provider not/i.test(otpError.message)) {
-          setError("Phone sign-in is not available yet. Please use the Email tab to sign in.");
-        } else {
-          setError(otpError.message || "Failed to send OTP. Please try again.");
-        }
-        return;
-      }
-
-      setOtpSent(true);
-      setSuccess("OTP sent to your phone. Please check your messages.");
-    } catch {
-      setError("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
-
-    if (!otp || otp.length !== 6) {
-      setError("Please enter the 6-digit OTP.");
-      return;
-    }
-
-    if (!isConfigured()) {
-      setError("Authentication is not configured. Please contact support.");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const supabase = getSupabase();
-      const { error: verifyError, data } = await supabase.auth.verifyOtp({
-        phone: phone.startsWith("+") ? phone : `+880${phone.replace(/^0/, "")}`,
-        token: otp,
-        type: "sms",
-      });
-
-      if (verifyError) {
-        setError(verifyError.message || "Invalid OTP. Please try again.");
-        return;
-      }
-
-      if (data?.user?.id) {
-        localStorage.setItem("rymos_customer_id", data.user.id);
-      }
-
-      await refreshUser();
-      setSuccess("Login successful! Redirecting to your profile...");
-      router.push("/customer/profile");
-    } catch {
-      setError("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <main className="flex-1 pt-16 sm:pt-20">
       <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
@@ -196,7 +109,6 @@ export default function LoginPage() {
                 setMethod("email");
                 setError("");
                 setSuccess("");
-                setOtpSent(false);
               }}
               className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-md text-sm font-medium transition-colors ${
                 method === "email"
@@ -208,21 +120,18 @@ export default function LoginPage() {
               Email
             </button>
             <button
-              onClick={() => {
-                setMethod("phone");
-                setError("");
-                setSuccess("");
-                setOtpSent(false);
-              }}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-md text-sm font-medium transition-colors ${
-                method === "phone"
-                  ? "bg-white text-[var(--color-text)] shadow-sm"
-                  : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
-              }`}
+              disabled
+              aria-disabled="true"
+              title={PHONE_OTP_UNAVAILABLE_MESSAGE}
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-md text-sm font-medium text-[var(--color-text-muted)] opacity-50 cursor-not-allowed"
             >
               <Phone className="w-4 h-4" />
               Phone OTP
             </button>
+          </div>
+
+          <div className="mb-6 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+            {PHONE_OTP_UNAVAILABLE_MESSAGE}
           </div>
 
           {method === "email" && (
@@ -295,91 +204,8 @@ export default function LoginPage() {
           )}
 
           {method === "phone" && (
-            <div className="space-y-4">
-              {!otpSent ? (
-                <form onSubmit={handleSendOtp} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-[var(--color-text)] mb-1.5">
-                      Phone Number
-                    </label>
-                    <div className="relative">
-                      <Smartphone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                      <input
-                        type="tel"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        placeholder="01XXXXXXXXX"
-                        className="w-full pl-10 pr-4 py-3 border border-[var(--color-border)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
-                      />
-                    </div>
-                    <p className="text-xs text-[var(--color-text-muted)] mt-1">
-                      Enter your Bangladeshi phone number
-                    </p>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full py-3 bg-[var(--color-primary)] text-white rounded-lg font-medium hover:bg-[var(--color-primary-hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    {loading ? (
-                      <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <>
-                        Send OTP
-                        <ArrowRight className="w-4 h-4" />
-                      </>
-                    )}
-                  </button>
-                </form>
-              ) : (
-                <form onSubmit={handleVerifyOtp} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-[var(--color-text)] mb-1.5">
-                      Enter OTP
-                    </label>
-                    <input
-                      type="text"
-                      value={otp}
-                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                      placeholder="6-digit code"
-                      maxLength={6}
-                      className="w-full px-4 py-3 border border-[var(--color-border)] rounded-lg text-sm text-center tracking-[0.5em] font-mono focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
-                    />
-                    <p className="text-xs text-[var(--color-text-muted)] mt-1">
-                      Sent to {phone}
-                    </p>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full py-3 bg-[var(--color-primary)] text-white rounded-lg font-medium hover:bg-[var(--color-primary-hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    {loading ? (
-                      <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <>
-                        Verify & Sign In
-                        <ArrowRight className="w-4 h-4" />
-                      </>
-                    )}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setOtpSent(false);
-                      setOtp("");
-                      setError("");
-                      setSuccess("");
-                    }}
-                    className="w-full py-2 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
-                  >
-                    Change phone number
-                  </button>
-                </form>
-              )}
+            <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+              {PHONE_OTP_UNAVAILABLE_MESSAGE}
             </div>
           )}
 

@@ -55,19 +55,29 @@ export default function ContactContent() {
   const waDigits = info.whatsapp_sender_phone.replace(/\D/g, "");
   const waLink = waDigits ? `https://wa.me/${waDigits}` : null;
 
+  // Google Maps embed for the store address — plain maps link/embed,
+  // no API key needed.
+  const mapsQuery = encodeURIComponent(info.store_address);
+  const mapsEmbedUrl = `https://www.google.com/maps?q=${mapsQuery}&output=embed`;
+  const mapsLinkUrl = `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`;
+
   const contactInfo = [
     {
       icon: MapPin,
       title: "Visit Our Store",
       details: [info.store_address],
     },
-    {
-      icon: Phone,
-      title: "Call Us",
-      details: info.store_phone
-        ? [info.store_phone, "Sat–Thu: 10 AM – 9 PM"]
-        : ["Sat–Thu: 10 AM – 9 PM", "Phone number coming soon"],
-    },
+    // Only show the "Call Us" card when a real store phone is configured
+    // in settings — never show a "coming soon" placeholder.
+    ...(info.store_phone
+      ? [
+          {
+            icon: Phone,
+            title: "Call Us",
+            details: [info.store_phone, "Sat–Thu: 10 AM – 9 PM"],
+          },
+        ]
+      : []),
     {
       icon: Mail,
       title: "Email Us",
@@ -149,20 +159,20 @@ export default function ContactContent() {
 
               {/* Sidebar */}
               <div className="space-y-6">
-                {/* WhatsApp CTA */}
-                <div className="bg-green-50 border border-green-200 rounded-xl p-6">
-                  <div className="flex items-center gap-3 mb-3">
-                    <MessageCircle className="h-6 w-6 text-green-600" />
-                    <h3 className="font-semibold text-[var(--color-text)]">
-                      WhatsApp Support
-                    </h3>
-                  </div>
-                  <p className="text-sm text-[var(--color-text-muted)] mb-4">
-                    {waLink
-                      ? "Get instant help via WhatsApp. Our team is available during business hours."
-                      : "WhatsApp support is coming soon. Use the contact form and we'll reply within 24 hours."}
-                  </p>
-                  {waLink && (
+                {/* WhatsApp CTA — only shown when a WhatsApp number is
+                    configured in settings; hidden entirely otherwise. */}
+                {waLink && (
+                  <div className="bg-green-50 border border-green-200 rounded-xl p-6">
+                    <div className="flex items-center gap-3 mb-3">
+                      <MessageCircle className="h-6 w-6 text-green-600" />
+                      <h3 className="font-semibold text-[var(--color-text)]">
+                        WhatsApp Support
+                      </h3>
+                    </div>
+                    <p className="text-sm text-[var(--color-text-muted)] mb-4">
+                      Get instant help via WhatsApp. Our team is available
+                      during business hours.
+                    </p>
                     <a
                       href={waLink}
                       target="_blank"
@@ -172,8 +182,8 @@ export default function ContactContent() {
                       <MessageCircle className="h-4 w-4" />
                       Chat on WhatsApp
                     </a>
-                  )}
-                </div>
+                  </div>
+                )}
 
                 {/* Quick FAQ Links */}
                 <div className="bg-white rounded-xl p-6 shadow-sm">
@@ -198,23 +208,32 @@ export default function ContactContent() {
           </div>
         </section>
 
-        {/* Map Placeholder */}
+        {/* Map */}
         <section className="py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl font-bold text-[var(--color-text)] mb-6 text-center">
               Find Us
             </h2>
-            <div className="bg-[var(--color-bg-alt)] rounded-xl h-64 flex items-center justify-center">
-              <div className="text-center">
-                <MapPin className="h-12 w-12 text-[var(--color-text-muted)] mx-auto mb-3" />
-                <p className="text-[var(--color-text-muted)]">
-                  {info.store_address}
-                </p>
-                <p className="text-sm text-[var(--color-text-muted)]">
-                  Panthapath, Dhaka
-                </p>
-              </div>
+            <div className="rounded-xl overflow-hidden h-64 sm:h-80">
+              <iframe
+                title={`Map — ${info.store_address}`}
+                src={mapsEmbedUrl}
+                className="w-full h-full border-0"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                allowFullScreen
+              />
             </div>
+            <p className="text-center mt-4">
+              <a
+                href={mapsLinkUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-[var(--color-primary)] hover:underline"
+              >
+                Open {info.store_address} in Google Maps →
+              </a>
+            </p>
           </div>
         </section>
       </main>

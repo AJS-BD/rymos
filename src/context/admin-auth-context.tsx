@@ -9,6 +9,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import { getSupabase, isConfigured } from "@/lib/supabase";
+import { clearAdminSession, syncAdminSession } from "@/lib/admin-session";
 
 interface AdminUser {
   id: string;
@@ -42,11 +43,26 @@ const FALLBACK_ADMIN: AdminUser = {
 
 /** Postgrest codes meaning "admin_users schema not deployed/upgraded yet" —
  *  PGRST205/42P01 = table missing, 42703/PGRST204 = legacy stub missing new
- *  columns, 42501 = grants not applied. In all these cases the panel falls
- *  back to unprotected mode until the sync SQL runs. */
+ *  columns, 42501 = grants not applied. */
 function isSchemaNotReady(err: { code?: string } | null | undefined): boolean {
   if (!err?.code) return false;
   return ["PGRST205", "42P01", "42703", "PGRST204", "42501"].includes(err.code);
+}
+
+/**
+ * Unprotected (fallback) mode is a DEV-ONLY bootstrap aid. It is allowed
+ * only when BOTH hold: not production, AND the explicit opt-in flag is set
+ * (NEXT_PUBLIC_ prefix because this code runs in the browser bundle — a
+ * plain ALLOW_UNPROTECTED_ADMIN_DEV is not inlined into client code).
+ * In production the flag is ignored entirely: the panel fails closed
+ * (no admin, AdminShell redirects to /admin/login). Never set this flag
+ * in a production deployment.
+ */
+function isUnprotectedDevMode(): boolean {
+  return (
+    process.env.NODE_ENV !== "production" &&
+    process.env.NEXT_PUBLIC_ALLOW_UNPROTECTED_ADMIN_DEV === "true"
+  );
 }
 
 export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
@@ -56,9 +72,14 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshAdmin = useCallback(async () => {
     if (!isConfigured()) {
-      // No Supabase at all (e.g. local dev without env) — keep the panel
-      // usable rather than hard-locking the shop owner out.
-      setAdmin(FALLBACK_ADMIN);
+      // No Supabase at all. Dev-only unprotected mode keeps the panel usable
+      // locally; in production fail closed — no admin, AdminShell redirects
+      // to /admin/login (where adminLogin reports "not configured").
+      if (isUnprotectedDevMode()) {
+        setAdmin(FALLBACK_ADMIN);
+      } else {
+        setAdmin(null);
+      }
       setLoading(false);
       return;
     }
@@ -79,7 +100,22 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
       .maybeSingle();
 
     if (error && isSchemaNotReady(error)) {
-      setAdmin(FALLBACK_ADMIN);
+      // admin_users missing from prod = sync SQL not run yet. In dev-only
+      // unprotected mode stay open so /setup can run; in production fail
+      // closed and send the user to the login page with an error — an
+      // unprotected admin panel must never be reachable in production
+      // just because the database is misconfigured.
+      if (isUnprotectedDevMode()) {
+        setAdmin(FALLBACK_ADMIN);
+      } else {
+        setAdmin(null);
+        if (
+          typeof window !== "undefined" &&
+          window.location.pathname !== "/admin/login"
+        ) {
+          router.replace("/admin/login?error=admin-setup-incomplete");
+        }
+      }
       setLoading(false);
       return;
     }
@@ -98,7 +134,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
       fallback: false,
     });
     setLoading(false);
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     /* eslint-disable react-hooks/set-state-in-effect -- mount-only session restore: async fetch sets state post-await, matching auth-context precedent */
@@ -139,10 +175,18 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
       .maybeSingle();
 
     if (error && isSchemaNotReady(error)) {
-      // Schema not deployed yet — accept the login (panel is in unprotected
-      // mode anyway) so the login page still works during setup.
-      setAdmin(FALLBACK_ADMIN);
-      return {};
+      // Schema not deployed yet — in dev-only unprotected mode accept the
+      // login (panel is in unprotected mode anyway); in production refuse:
+      // there is no admin table to verify membership against.
+      if (isUnprotectedDevMode()) {
+        setAdmin(FALLBACK_ADMIN);
+        return {};
+      }
+      await supabase.auth.signOut();
+      return {
+        error:
+          "Admin setup is incomplete — run the one-time database setup (/setup) and try again.",
+      };
     }
 
     if (!adminRow) {
@@ -159,10 +203,23 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
       fallback: false,
     });
 
+    // Copy the verified admin session into the httpOnly cookie so the
+    // server proxy (src/proxy.ts) can gate /admin/*. Without it, the next
+    // navigation is bounced back to /admin/login. A failed sync is reported
+    // rather than silently leaving the user in a login loop.
+    const synced = await syncAdminSession();
+    if (!synced) {
+      return {
+        error:
+          "Signed in, but the admin session could not be established. Please try again.",
+      };
+    }
+
     return {};
   }, []);
 
   const adminLogout = useCallback(async () => {
+    await clearAdminSession();
     const supabase = getSupabase();
     await supabase.auth.signOut();
     localStorage.removeItem("rymos_user");

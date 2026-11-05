@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getSupabase, isConfigured } from "@/lib/supabase";
 import { formatBDT } from "@/lib/utils";
 
@@ -8,6 +9,7 @@ async function getDashboardStats() {
       totalOrders: 0,
       totalCustomers: 0,
       totalRevenue: 0,
+      pendingReturns: 0,
       recentOrders: [],
       lowStockProducts: [],
     };
@@ -15,7 +17,7 @@ async function getDashboardStats() {
 
   const supabase = getSupabase();
 
-  const [products, orders, customers, recentOrders, lowStock] = await Promise.all([
+  const [products, orders, customers, recentOrders, lowStock, pendingReturns] = await Promise.all([
     supabase.from("products").select("*", { count: "exact", head: true }),
     supabase.from("orders").select("*", { count: "exact", head: true }),
     supabase.from("customers").select("*", { count: "exact", head: true }),
@@ -30,6 +32,10 @@ async function getDashboardStats() {
       .lte("stock", 10)
       .order("stock", { ascending: true })
       .limit(5),
+    supabase
+      .from("returns")
+      .select("*", { count: "exact", head: true })
+      .in("status", ["requested", "pending"]),
   ]);
 
   // Compute revenue from orders (total column)
@@ -45,6 +51,7 @@ async function getDashboardStats() {
     totalOrders: orders.count || 0,
     totalCustomers: customers.count || 0,
     totalRevenue,
+    pendingReturns: pendingReturns.count || 0,
     recentOrders: recentOrders.data || [],
     lowStockProducts: lowStock.data || [],
   };
@@ -132,6 +139,26 @@ export default async function AdminDashboard() {
             {formatBDT(stats.totalRevenue)}
           </p>
         </div>
+
+        {/* Pending Returns */}
+        <Link
+          href="/admin/returns"
+          className="p-5 rounded-2xl block hover:shadow-md transition-shadow"
+          style={{ background: "var(--color-bg)", border: "1px solid #e5e5e7" }}
+        >
+          <p className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--color-text-muted)" }}>
+            Pending Returns
+          </p>
+          <p
+            className="text-[32px] font-semibold mt-2 tracking-tight"
+            style={{ color: stats.pendingReturns > 0 ? "#f57f17" : "var(--color-text)" }}
+          >
+            {stats.pendingReturns}
+          </p>
+          <p className="text-xs mt-1" style={{ color: "var(--color-text-muted)" }}>
+            Review return requests →
+          </p>
+        </Link>
       </div>
 
       {/* Recent Orders & Low Stock */}

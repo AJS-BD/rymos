@@ -92,10 +92,11 @@ export async function POST(req: NextRequest) {
           message: "UltraMsg connection successful",
         });
       } else {
-        // Generic test - just validate key format
+        // Unknown provider: no test is implemented for it — do not
+        // report a fake success.
         return NextResponse.json({
-          success: true,
-          message: "API key format validated",
+          success: false,
+          error: `No connection test is available for WhatsApp provider "${provider}"`,
         });
       }
     } catch (err) {
