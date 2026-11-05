@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useCart } from "@/context/cart-context";
@@ -13,55 +12,57 @@ import {
   CreditCard,
   RotateCcw,
   ChevronDown,
+  ChevronRight,
   Smartphone,
+  Headphones,
+  Tag,
+  ShoppingBag,
 } from "lucide-react";
 import { getSupabase, isConfigured } from "@/lib/supabase";
+import { formatBDT } from "@/lib/utils";
 import StarRating from "@/components/shared/star-rating";
 
 /**
- * Homepage v3 — storytelling layout inspired by the Uno Water site Xafor
- * shared (mobile-width screenshot, 5 Nov 2026), adapted to RYmos phones.
- * Uno's page, top to bottom, and how it maps here:
- *   1. Split hero — headline left, big product photo right, dark pill
- *      button. Here: top featured product, headline left, photo right,
- *      dark "Buy" pill + "Learn more" link. (Uno's hero is light; ours
- *      is dark at the top because the site header is white text until
- *      the user scrolls — a light hero would make it unreadable.)
- *   2. One huge full-width lifestyle photo band with the brand overlaid.
- *      Here: a second featured product's photo as a big rounded band,
- *      "RYmos" overlaid — or a bold gradient band when its photo is
- *      unusable.
- *   3. "About" — 2-column tiles (product photo + true line about the
- *      shop; lifestyle/product photo), then a wide tile + a trust tile
- *      with real numbers only (product/category counts from the DB).
- *   4. "Designed for you" — 3 photo tiles in a row with a short caption
- *      under each (real featured products, real photos/names).
- *   5. "Designed for simplicity" — light-grey band, simple steps with
- *      icons, big product photo below.
- *   6. "Take your RYmos anywhere" — 2 photos side by side with short
- *      real captions (battery / camera, from real specs only).
- *   7. Wide lifestyle band — photo left, headline + dark button right.
- *   8. Testimonial — ONE real approved review from the DB, big quote,
- *      reviewer name; initials in a coloured circle instead of photos
- *      of people we don't have. Omitted entirely when there is none.
- *   9. "Better tech, better living" article cards — OMITTED: the site
- *      has no blog/learning content, and nothing is invented here.
- *  10. FAQ — a few REAL questions from src/app/faq (already in the
- *      codebase), as an accordion, with a link to the full FAQ page.
- *  11. Dark footer — the site's own footer, untouched.
+ * Homepage v4 — mobile e-commerce shop page (Daraz / Amazon mobile /
+ * phone-shop app feel), NOT a brand-story page.
+ *
+ * Xafor's feedback on v3 (Uno Water storytelling): "More optimized,
+ * make the design more like for mobile e-commerce website — still it
+ * feels like other website. Change text, and some designs make it
+ * more convenient."
+ *
+ * So, top to bottom, short and shoppable:
+ *   1. Compact deal banner — top product, short shop text, "Shop now".
+ *   2. Category chips (horizontal scroll on mobile) — All, Deals, and
+ *      the real categories from the DB; tapping one opens that list.
+ *   3. "Top picks" product grid — THE page. 2 columns on mobile, real
+ *      photo, name, REAL PRICE in BDT big and clear, real stars only
+ *      when the product has real approved reviews, stock badge, and an
+ *      "Add to Bag" button on the card itself.
+ *   4. Compact trust chips — COD, pay in store, credit, 7-day returns.
+ *   5. "Shop by category" tiles — real categories, real product counts.
+ *   6. One compact review card (real approved review only, if any).
+ *   7. Short FAQ accordion (3 real questions, collapsed) — it still
+ *      lives in full at /faq.
+ *
+ * Cut from v3: the "About RYmos" essay, "Designed for you/simplicity",
+ * lifestyle bands, "Take your RYmos anywhere", the big testimonial,
+ * and all long brand copy. Text throughout is short shop text:
+ * "Top phones", "Best deals", "Shop now", "Add to Bag".
  *
  * Everything is from the database, nothing hardcoded: featured
- * products, prices (on product pages — none on the homepage), stock,
- * specs, reviews, category/product counts. No online-payment wording:
- * COD cash, in-store bKash/Nagad/Rocket/card, credit instalments.
+ * products, prices in BDT, stock, categories, counts, reviews. A
+ * discount badge ("-X%") only appears when the product's own
+ * original_price in the DB is higher than its price — no invented
+ * deals. No online-payment wording: COD cash, in-store
+ * bKash/Nagad/Rocket/card, credit instalments.
  *
  * The DB product images are unreliable (hero Xiaomi has no usable
  * photo, OnePlus 12 is a chair photo, Samsung's box says "S21 Ultra").
- * No section depends on a single photo to carry it: every photo tile
- * has a strong gradient + typography fallback, and every section is
- * still complete as text + colour when a photo is wrong or missing.
- * A wrong-but-loading image cannot be detected in code — that has to
- * be fixed in the product data itself.
+ * Every card looks complete with a gradient + big brand-initial
+ * fallback when a photo is missing or fails to load. A wrong-but-
+ * loading image cannot be detected in code — that has to be fixed
+ * in the product data itself.
  */
 const placeholderImage = "/images/placeholder.svg";
 
@@ -119,6 +120,19 @@ function productImage(product: FeaturedProduct): string | null {
     : null;
 }
 
+/** Real discount % from the DB's own original_price, or null — never
+ *  invented. Only when original_price is genuinely higher than price. */
+function discountPercent(product: FeaturedProduct): number | null {
+  if (
+    product.original_price !== null &&
+    product.original_price > product.price &&
+    product.original_price > 0
+  ) {
+    return Math.round((1 - product.price / product.original_price) * 100);
+  }
+  return null;
+}
+
 /**
  * ONE short punchy line per product, built only from its real spec
  * values. Picks the single most attractive spec. Never invents a spec:
@@ -157,39 +171,12 @@ function punchySubhead(product: FeaturedProduct): string {
   return "New in. Ready for everything.";
 }
 
-/** A spec value for one named feature, or null. */
-function specValue(
-  product: FeaturedProduct,
-  keys: string[]
-): string | null {
-  if (!product.specs) return null;
-  for (const key of keys) {
-    for (const [k, v] of Object.entries(product.specs)) {
-      if (k.toLowerCase() === key) {
-        const text = String(v).trim();
-        if (text) return text;
-      }
-    }
-  }
-  return null;
-}
-
 /**
- * A photo tile that never looks empty: the product's DB photo when it
- * loads, otherwise a bold gradient panel with huge typography.
- * `ratio` keeps the tile's shape even when the photo is missing.
+ * Product photo that never looks empty: the product's DB photo when it
+ * loads, otherwise a bold gradient panel with a big brand initial and
+ * the product name — a complete card, not a blank box.
  */
-function PhotoTile({
-  product,
-  ratio = "aspect-[4/3]",
-  rounded = "rounded-3xl",
-  showName = false,
-}: {
-  product: FeaturedProduct;
-  ratio?: string;
-  rounded?: string;
-  showName?: boolean;
-}) {
+function ProductPhoto({ product }: { product: FeaturedProduct }) {
   const src = productImage(product);
   const [failed, setFailed] = useState(false);
   const showImage = src !== null && !failed;
@@ -197,179 +184,59 @@ function PhotoTile({
   if (!showImage) {
     return (
       <div
-        className={`relative ${ratio} ${rounded} ${gradientForId(
+        className={`relative aspect-square ${gradientForId(
           product.id
-        )} overflow-hidden flex flex-col items-center justify-center px-6 text-center`}
+        )} overflow-hidden flex flex-col items-center justify-center px-3 text-center`}
       >
         <span
           aria-hidden
-          className="pointer-events-none absolute -top-6 select-none text-[8rem] font-bold leading-none text-white/10"
+          className="pointer-events-none absolute -top-4 select-none text-[6rem] font-bold leading-none text-white/15"
         >
           {(product.brand ?? product.name).charAt(0).toUpperCase()}
         </span>
-        <p className="relative text-xs font-semibold uppercase tracking-[0.3em] text-white/80">
+        <p className="relative text-[11px] font-semibold uppercase tracking-[0.25em] text-white/80">
           {product.brand ?? "RYmos"}
         </p>
-        <p className="relative mt-2 text-3xl font-bold tracking-tight text-white text-balance">
+        <p className="relative mt-1 text-lg font-bold tracking-tight text-white leading-tight line-clamp-2">
           {product.name}
         </p>
-        {showName && (
-          <p className="relative mt-2 text-sm text-white/85">
-            {punchySubhead(product)}
-          </p>
-        )}
       </div>
     );
   }
 
   return (
-    <div className={`relative ${ratio} ${rounded} overflow-hidden bg-[#f5f5f7]`}>
-      <Link href={`/products/${product.id}`} className="block h-full w-full">
-        <Image
-          src={src}
-          alt={product.name}
-          fill
-          loading="lazy"
-          onError={() => setFailed(true)}
-          className="object-cover"
-          sizes="(max-width: 768px) 100vw, 50vw"
-        />
-      </Link>
+    <div className="relative aspect-square overflow-hidden bg-[#f5f5f7]">
+      <Image
+        src={src}
+        alt={product.name}
+        fill
+        loading="lazy"
+        onError={() => setFailed(true)}
+        className="object-cover"
+        sizes="(max-width: 768px) 50vw, 25vw"
+      />
     </div>
   );
 }
 
-/** Real FAQ questions, copied from src/app/faq (already in the app) —
- *  a small selection for the homepage, with a link to the full page. */
-const HOME_FAQ = [
-  {
-    q: "What payment methods do you accept?",
-    a: "We accept Cash on Delivery (COD) — pay in cash when your order arrives. If you pick up from our Dhaka store, you can pay in store with bKash, Nagad, Rocket or card. We do not take online payments. We also offer a buy-on-credit program, and instalments are paid in store or by bKash, Nagad, Rocket or card.",
-  },
-  {
-    q: "How do I place an order?",
-    a: "Browse our products, add items to your cart, and proceed to checkout. You can pay cash on delivery, pay in store when you pick up your order, or apply for our buy-on-credit program.",
-  },
-  {
-    q: "Do you deliver nationwide?",
-    a: "Yes! We deliver to all 64 districts of Bangladesh. Delivery times vary by location: 1-2 days for Dhaka, 2-4 days for major cities, and 3-5 days for other areas.",
-  },
-  {
-    q: "What is your return policy?",
-    a: "We offer a 7-day return policy for unused, unopened products in original packaging. For defective items, you have 14 days from delivery to request a return or exchange.",
-  },
-  {
-    q: "How does the buy-on-credit program work?",
-    a: "Our buy-on-credit program allows you to purchase products and pay in monthly installments. Apply through your account, get approved, and choose a payment plan that suits your budget.",
-  },
-  {
-    q: "Are all products genuine?",
-    a: "Absolutely. We source all products directly from authorized distributors and manufacturers. Every product comes with a valid manufacturer warranty and is 100% genuine.",
-  },
-];
-
-export default function HomePage() {
-  const heroRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: heroRef,
-    offset: ["start start", "end start"],
-  });
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
-  const heroScale = useTransform(scrollYProgress, [0, 0.5], [1, 0.98]);
+/** The product card — the heart of the page. Price, stock, Add to Bag
+ *  all on the card, thumb-friendly. */
+function ProductCard({ product, rating }: {
+  product: FeaturedProduct;
+  rating: { avg: number; count: number } | null;
+}) {
   const { addItem } = useCart();
   const { isLoggedIn } = useAuth();
   const router = useRouter();
+  const outOfStock = product.stock <= 0;
+  const discount = discountPercent(product);
 
-  const [featuredProducts, setFeaturedProducts] = useState<FeaturedProduct[]>([]);
-  const [reviews, setReviews] = useState<ApprovedReview[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [productCount, setProductCount] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [faqOpen, setFaqOpen] = useState<number | null>(null);
-
-  useEffect(() => {
-    async function loadHomepage() {
-      // Supabase not configured — show the typographic hero instead of
-      // fake products or a crash.
-      if (!isConfigured()) {
-        setLoading(false);
-        return;
-      }
-      const supabase = getSupabase();
-      const [productsRes, reviewsRes, categoriesRes, countRes] =
-        await Promise.all([
-          supabase
-            .from("products")
-            .select("id,name,brand,price,original_price,stock,specs,images,category")
-            .eq("is_featured", true)
-            .order("created_at", { ascending: false })
-            .limit(8),
-          supabase
-            .from("product_reviews")
-            .select("id,customer_name,rating,content,is_verified_purchase,created_at,products(name)")
-            .eq("is_approved", true)
-            .order("created_at", { ascending: false })
-            .limit(3),
-          supabase
-            .from("categories")
-            .select("id,name,slug")
-            .order("name", { ascending: true })
-            .limit(10),
-          supabase
-            .from("products")
-            .select("id", { count: "exact", head: true }),
-        ]);
-      if (productsRes.error) {
-        console.error("Homepage featured products load error:", productsRes.error);
-      } else if (productsRes.data) {
-        setFeaturedProducts(
-          (productsRes.data as FeaturedProduct[]).map((p) => ({
-            ...p,
-            price: Number(p.price),
-            stock: p.stock ?? 0,
-          }))
-        );
-      }
-      if (reviewsRes.error) {
-        console.error("Homepage reviews load error:", reviewsRes.error);
-      } else if (reviewsRes.data) {
-        setReviews(
-          (reviewsRes.data as unknown as Array<{
-            id: string;
-            customer_name: string | null;
-            rating: number;
-            content: string;
-            is_verified_purchase: boolean;
-            products: { name: string } | { name: string }[] | null;
-          }>).map((r) => ({
-            id: r.id,
-            customer_name: r.customer_name,
-            rating: r.rating,
-            content: r.content,
-            is_verified_purchase: r.is_verified_purchase ?? false,
-            product_name: Array.isArray(r.products)
-              ? r.products[0]?.name ?? null
-              : r.products?.name ?? null,
-          }))
-        );
-      }
-      if (!categoriesRes.error && categoriesRes.data) {
-        setCategories(categoriesRes.data as Category[]);
-      }
-      if (!countRes.error && typeof countRes.count === "number") {
-        setProductCount(countRes.count);
-      }
-      setLoading(false);
-    }
-    loadHomepage();
-  }, []);
-
-  const handleAddToCart = (product: FeaturedProduct) => {
+  const handleAddToBag = () => {
     if (!isLoggedIn) {
       router.push("/auth/login");
       return;
     }
-    if (product.stock <= 0) return;
+    if (outOfStock) return;
     addItem({
       id: product.id,
       name: product.name,
@@ -384,519 +251,513 @@ export default function HomePage() {
     });
   };
 
-  const heroProduct = featuredProducts[0] ?? null;
-  const bandProduct = featuredProducts[1] ?? null;
-  const aboutProduct = featuredProducts[2] ?? heroProduct;
-  const designedProducts = featuredProducts.slice(1, 4);
-  const anywhereProducts = featuredProducts.slice(1, 3);
-  const wideProduct = featuredProducts[3] ?? featuredProducts[1] ?? heroProduct;
-  const review = reviews[0] ?? null;
-
-  /** Uno-style dark pill "Buy" + "Learn more" link. */
-  const buyButtons = (product: FeaturedProduct, light: boolean) => {
-    const outOfStock = product.stock <= 0;
-    return (
-      <div className="mt-6 flex flex-wrap items-center gap-4">
-        {outOfStock ? (
-          <span className="rounded-full border border-white/40 px-6 py-2.5 text-sm font-medium text-white/60">
-            Out of stock
-          </span>
-        ) : (
-          <button
-            onClick={() => handleAddToCart(product)}
-            className={`rounded-full px-6 py-2.5 text-sm font-medium transition-colors ${
-              light
-                ? "bg-[#1d1d1f] text-white hover:bg-black"
-                : "bg-white text-[#1d1d1f] hover:bg-white/90"
-            }`}
-          >
-            Buy
-          </button>
+  return (
+    <article className="flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+      <Link href={`/products/${product.id}`} className="block">
+        <ProductPhoto product={product} />
+      </Link>
+      <div className="flex flex-1 flex-col p-3">
+        {product.brand && (
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+            {product.brand}
+          </p>
         )}
-        <Link
-          href={`/products/${product.id}`}
-          className={`text-sm font-medium hover:underline ${
-            light ? "text-[#1d1d1f]" : "text-white"
-          }`}
+        <h3 className="mt-0.5 text-sm font-semibold leading-snug text-gray-900 line-clamp-2 min-h-[2.5rem]">
+          <Link href={`/products/${product.id}`}>{product.name}</Link>
+        </h3>
+        {rating && (
+          <div className="mt-1 flex items-center gap-1.5">
+            <StarRating rating={Math.round(rating.avg)} />
+            <span className="text-xs text-gray-500">
+              {rating.avg.toFixed(1)} ({rating.count})
+            </span>
+          </div>
+        )}
+        <div className="mt-2 flex flex-wrap items-baseline gap-x-2">
+          <span className="text-lg font-bold tracking-tight text-gray-900">
+            {formatBDT(product.price)}
+          </span>
+          {product.original_price !== null &&
+            product.original_price > product.price && (
+              <span className="text-xs text-gray-400 line-through">
+                {formatBDT(product.original_price)}
+              </span>
+            )}
+          {discount !== null && (
+            <span className="rounded-full bg-red-50 px-2 py-0.5 text-[11px] font-bold text-red-600">
+              -{discount}%
+            </span>
+          )}
+        </div>
+        <p className="mt-1 text-xs">
+          {outOfStock ? (
+            <span className="font-medium text-red-600">Out of stock</span>
+          ) : (
+            <span className="font-medium text-green-600">In stock</span>
+          )}
+        </p>
+        <button
+          onClick={handleAddToBag}
+          disabled={outOfStock}
+          className="mt-3 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-full bg-gray-900 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-black disabled:cursor-not-allowed disabled:bg-gray-300"
         >
-          Learn more &gt;
-        </Link>
+          <ShoppingBag className="h-4 w-4" />
+          {outOfStock ? "Out of stock" : "Add to Bag"}
+        </button>
       </div>
-    );
+    </article>
+  );
+}
+
+/** Short FAQ — 3 real questions from src/app/faq, collapsed. */
+const HOME_FAQ = [
+  {
+    q: "What payment methods do you accept?",
+    a: "Cash on Delivery — pay in cash when your order arrives. Pick up in store and pay with bKash, Nagad, Rocket or card. We do not take online payments. Buy on credit is also available, with instalments paid the same ways.",
+  },
+  {
+    q: "Do you deliver nationwide?",
+    a: "Yes — all 64 districts of Bangladesh. 1–2 days in Dhaka, 2–4 days in major cities, 3–5 days elsewhere.",
+  },
+  {
+    q: "What is your return policy?",
+    a: "7-day returns for unused, unopened products in original packaging. Defective items: 14 days for a return or exchange.",
+  },
+];
+
+function categoryIcon(name: string) {
+  const n = name.toLowerCase();
+  if (n.includes("accessor") || n.includes("audio") || n.includes("ear") || n.includes("headphone"))
+    return Headphones;
+  return Smartphone;
+}
+
+export default function HomePage() {
+  const router = useRouter();
+
+  const [featuredProducts, setFeaturedProducts] = useState<FeaturedProduct[]>([]);
+  const [ratings, setRatings] = useState<
+    Record<string, { avg: number; count: number }>
+  >({});
+  const [review, setReview] = useState<ApprovedReview | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
+  const [loading, setLoading] = useState(true);
+  const [faqOpen, setFaqOpen] = useState<number | null>(null);
+
+  useEffect(() => {
+    async function loadHomepage() {
+      if (!isConfigured()) {
+        setLoading(false);
+        return;
+      }
+      const supabase = getSupabase();
+      const [productsRes, categoriesRes, allCategoriesRes, reviewsRes] =
+        await Promise.all([
+          supabase
+            .from("products")
+            .select("id,name,brand,price,original_price,stock,specs,images,category")
+            .eq("is_featured", true)
+            .order("created_at", { ascending: false })
+            .limit(8),
+          supabase
+            .from("categories")
+            .select("id,name,slug")
+            .order("name", { ascending: true })
+            .limit(12),
+          supabase.from("products").select("category"),
+          supabase
+            .from("product_reviews")
+            .select("id,customer_name,rating,content,is_verified_purchase,created_at,products(name)")
+            .eq("is_approved", true)
+            .order("created_at", { ascending: false })
+            .limit(1),
+        ]);
+
+      let featured: FeaturedProduct[] = [];
+      if (productsRes.error) {
+        console.error("Homepage featured products load error:", productsRes.error);
+      } else if (productsRes.data) {
+        featured = (productsRes.data as FeaturedProduct[]).map((p) => ({
+          ...p,
+          price: Number(p.price),
+          stock: p.stock ?? 0,
+        }));
+        setFeaturedProducts(featured);
+      }
+      if (!categoriesRes.error && categoriesRes.data) {
+        setCategories(categoriesRes.data as Category[]);
+      }
+      if (!allCategoriesRes.error && allCategoriesRes.data) {
+        const counts: Record<string, number> = {};
+        for (const row of allCategoriesRes.data as { category: string | null }[]) {
+          if (row.category) counts[row.category] = (counts[row.category] ?? 0) + 1;
+        }
+        setCategoryCounts(counts);
+      }
+      if (!reviewsRes.error && reviewsRes.data && reviewsRes.data.length > 0) {
+        const r = reviewsRes.data[0] as unknown as {
+          id: string;
+          customer_name: string | null;
+          rating: number;
+          content: string;
+          is_verified_purchase: boolean;
+          products: { name: string } | { name: string }[] | null;
+        };
+        setReview({
+          id: r.id,
+          customer_name: r.customer_name,
+          rating: r.rating,
+          content: r.content,
+          is_verified_purchase: r.is_verified_purchase ?? false,
+          product_name: Array.isArray(r.products)
+            ? r.products[0]?.name ?? null
+            : r.products?.name ?? null,
+        });
+      }
+      // Real per-product ratings — approved reviews only, averaged.
+      if (featured.length > 0) {
+        const { data: ratingRows, error: ratingError } = await supabase
+          .from("product_reviews")
+          .select("product_id,rating")
+          .eq("is_approved", true)
+          .in(
+            "product_id",
+            featured.map((p) => p.id)
+          );
+        if (!ratingError && ratingRows) {
+          const sums: Record<string, { total: number; count: number }> = {};
+          for (const row of ratingRows as { product_id: string; rating: number }[]) {
+            const s = sums[row.product_id] ?? { total: 0, count: 0 };
+            s.total += row.rating;
+            s.count += 1;
+            sums[row.product_id] = s;
+          }
+          const avgs: Record<string, { avg: number; count: number }> = {};
+          for (const [id, s] of Object.entries(sums)) {
+            avgs[id] = { avg: s.total / s.count, count: s.count };
+          }
+          setRatings(avgs);
+        }
+      }
+      setLoading(false);
+    }
+    loadHomepage();
+  }, []);
+
+  const heroProduct = featuredProducts[0] ?? null;
+  const hasDeals = featuredProducts.some((p) => discountPercent(p) !== null);
+
+  const goCategory = (slug: string | null) => {
+    if (!slug) {
+      router.push("/products");
+    } else {
+      router.push(`/products?category=${encodeURIComponent(slug)}`);
+    }
   };
 
-  const initials = (name: string | null) =>
-    (name ?? "Verified customer")
-      .split(" ")
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((w) => w.charAt(0).toUpperCase())
-      .join("") || "R";
-
   return (
-    <main className="flex-1 bg-white">
-      {/* 1. Hero — split: headline left, big product photo right (stacks
-          on mobile, like the Uno screenshot). Dark, because the header
-          is white text until the user scrolls. */}
+    <main className="flex-1 bg-[#fafafa] pb-4">
+      {/* 1. Compact deal banner — top product, short shop text, Shop now.
+          Dark, because the header is white text until the user scrolls. */}
       {loading ? (
-        <section className="bg-[#111111]">
-          <div className="max-w-6xl mx-auto px-6 pt-28 sm:pt-36 pb-16">
-            <div className="h-10 w-2/3 rounded-lg bg-white/10 animate-pulse" />
-            <div className="h-6 w-1/2 mt-5 rounded-lg bg-white/10 animate-pulse" />
-            <div className="h-10 w-40 mt-8 rounded-full bg-white/10 animate-pulse" />
-            <div className="h-[300px] sm:h-[420px] w-full mt-12 rounded-3xl bg-white/10 animate-pulse" />
+        <section className="bg-[#111111] px-5 pb-8 pt-24 sm:pt-28">
+          <div className="mx-auto max-w-6xl">
+            <div className="h-8 w-2/3 rounded-lg bg-white/10 animate-pulse" />
+            <div className="mt-3 h-5 w-1/2 rounded-lg bg-white/10 animate-pulse" />
+            <div className="mt-5 h-11 w-40 rounded-full bg-white/10 animate-pulse" />
           </div>
         </section>
       ) : heroProduct ? (
-        <motion.section
-          ref={heroRef}
-          style={{ opacity: heroOpacity, scale: heroScale }}
-          className="bg-[#111111] text-white overflow-hidden"
-        >
-          <div className="max-w-6xl mx-auto px-6 pt-28 sm:pt-36 pb-14 sm:pb-20 grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-12 items-center">
-            <div>
-              {heroProduct.brand && (
-                <p className="text-xs sm:text-sm font-semibold uppercase tracking-[0.3em] text-white/60">
-                  {heroProduct.brand}
-                </p>
-              )}
-              <h1 className="mt-4 text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight leading-[1.02] text-balance">
+        <section className="bg-[#111111] px-5 pb-8 pt-24 text-white sm:pt-28">
+          <div className="mx-auto flex max-w-6xl flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+            <div className="max-w-xl">
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-yellow-400">
+                Top phones. Best prices in Dhaka.
+              </p>
+              <h1 className="mt-2 text-3xl font-bold leading-tight tracking-tight sm:text-4xl">
                 {heroProduct.name}
               </h1>
-              <p className="mt-5 text-xl sm:text-2xl text-white/70 leading-snug">
+              <p className="mt-1.5 text-base text-white/70">
                 {punchySubhead(heroProduct)}
               </p>
-              {buyButtons(heroProduct, false)}
-              <p className="mt-6 text-sm text-white/50">
-                Pay cash on delivery, or pick up in store.
+              <p className="mt-3 text-2xl font-bold">
+                {formatBDT(heroProduct.price)}
               </p>
-            </div>
-            <div>
-              <PhotoTile product={heroProduct} ratio="aspect-[4/3]" showName />
-            </div>
-          </div>
-        </motion.section>
-      ) : (
-        /* Zero featured products: bold colourful typographic hero. */
-        <section className="bg-gradient-to-br from-[#0071e3] via-[#5e5ce6] to-[#bf5af2] text-white overflow-hidden">
-          <div className="max-w-6xl mx-auto px-6 pt-28 sm:pt-36 pb-16 sm:pb-24 text-center">
-            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-white/80">
-              RYmos
-            </p>
-            <h1 className="mt-4 text-6xl sm:text-7xl md:text-8xl font-bold tracking-tight text-balance">
-              Technology, Made Yours.
-            </h1>
-            <p className="mt-6 text-xl sm:text-2xl text-white/85 max-w-2xl mx-auto">
-              The latest smartphones and premium accessories.
-            </p>
-            <div className="mt-8">
-              <Link
-                href="/products"
-                className="inline-block rounded-full bg-white px-6 py-2.5 text-sm font-medium text-[#1d1d1f] hover:bg-white/90 transition-colors"
-              >
-                Shop all products
-              </Link>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* 2. Full-width lifestyle band — a second product's photo, big and
-          rounded, with "RYmos" overlaid. Gradient + huge type when the
-          photo is unusable, never a blank band. */}
-      {!loading && bandProduct && (
-        <section className="px-4 sm:px-6 pt-4 sm:pt-6">
-          <div className="relative overflow-hidden rounded-3xl">
-            {productImage(bandProduct) ? (
-              <div className="relative aspect-[16/10] sm:aspect-[21/9]">
-                <Image
-                  src={productImage(bandProduct) as string}
-                  alt={bandProduct.name}
-                  fill
-                  loading="lazy"
-                  onError={() => {}}
-                  className="object-cover"
-                  sizes="100vw"
-                />
-                <div className="absolute inset-0 bg-black/25" />
-              </div>
-            ) : (
-              <div
-                className={`aspect-[16/10] sm:aspect-[21/9] ${gradientForId(
-                  bandProduct.id
-                )} flex flex-col items-center justify-center px-6 text-center`}
-              >
-                <p className="text-5xl sm:text-7xl font-bold tracking-tight text-white">
-                  RYmos
-                </p>
-                <p className="mt-3 text-lg sm:text-2xl text-white/85">
-                  {bandProduct.name}
-                </p>
-              </div>
-            )}
-            <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center pointer-events-none">
-              <p className="text-4xl sm:text-6xl font-bold tracking-tight text-white drop-shadow-lg">
-                RYmos
-              </p>
-              <p className="mt-2 text-base sm:text-xl text-white/90 drop-shadow">
-                The latest phones, right here in Dhaka.
-              </p>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* 3. About RYmos — two tiles, then a wide tile + a trust tile
-          with real counts only. */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-16 sm:pt-24">
-        <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-[#1d1d1f] text-center">
-          About RYmos
-        </h2>
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-          {aboutProduct && (
-            <article className="rounded-3xl bg-[#f5f5f7] overflow-hidden">
-              <PhotoTile product={aboutProduct} ratio="aspect-[4/3]" rounded="rounded-none" />
-              <div className="p-6 sm:p-8">
-                <h3 className="text-2xl font-semibold tracking-tight text-[#1d1d1f]">
-                  Since 2019, a Dhaka phone store you can trust.
-                </h3>
-                <p className="mt-2 text-base text-[#6e6e73] leading-relaxed">
-                  RYmos started in 2019 as a small electronics shop in Dhaka.
-                  Pay cash on delivery, pay in store, or buy on credit —
-                  the way that suits you.
-                </p>
-              </div>
-            </article>
-          )}
-          {wideProduct && wideProduct.id !== aboutProduct?.id && (
-            <article className="rounded-3xl bg-[#f5f5f7] overflow-hidden">
-              <PhotoTile product={wideProduct} ratio="aspect-[4/3]" rounded="rounded-none" />
-              <div className="p-6 sm:p-8">
-                <h3 className="text-2xl font-semibold tracking-tight text-[#1d1d1f]">
-                  {wideProduct.name}
-                </h3>
-                <p className="mt-2 text-base text-[#6e6e73] leading-relaxed">
-                  {punchySubhead(wideProduct)}
-                </p>
+              <div className="mt-4 flex flex-wrap items-center gap-3">
                 <Link
-                  href={`/products/${wideProduct.id}`}
-                  className="mt-3 inline-block text-sm font-medium text-[#0071e3] hover:underline"
+                  href={`/products/${heroProduct.id}`}
+                  className="inline-flex min-h-[44px] items-center rounded-full bg-white px-6 py-2.5 text-sm font-semibold text-gray-900 hover:bg-gray-100"
                 >
-                  Learn more &gt;
+                  Shop now
+                </Link>
+                <Link
+                  href="/products"
+                  className="inline-flex min-h-[44px] items-center gap-1 text-sm font-medium text-white/85 hover:text-white"
+                >
+                  See all phones
+                  <ChevronRight className="h-4 w-4" />
                 </Link>
               </div>
-            </article>
-          )}
-        </div>
-        <div className="mt-4 sm:mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-          <div className="rounded-3xl bg-gradient-to-br from-[#0071e3] to-[#5e5ce6] p-8 sm:p-10 text-white">
-            <h3 className="text-2xl sm:text-3xl font-semibold tracking-tight">
-              Pay your way.
-            </h3>
-            <p className="mt-2 text-white/85 leading-relaxed">
-              Cash on delivery, or pick up and pay in store with bKash,
-              Nagad, Rocket or card. No online payments — simple and
-              straightforward.
-            </p>
+            </div>
+            <div className="w-full max-w-[220px] shrink-0 overflow-hidden rounded-2xl sm:w-[220px]">
+              <ProductPhoto product={heroProduct} />
+            </div>
           </div>
-          <div className="rounded-3xl bg-[#f5f5f7] p-8 sm:p-10 flex flex-col justify-center">
-            {productCount !== null && productCount > 0 ? (
-              <>
-                <p className="text-4xl sm:text-5xl font-bold tracking-tight text-[#1d1d1f]">
-                  {productCount}+ products
-                </p>
-                <p className="mt-2 text-base text-[#6e6e73] leading-relaxed">
-                  Smartphones and accessories in the store
-                  {categories.length > 0
-                    ? ` across ${categories.length} categories`
-                    : ""}
-                  .
-                </p>
-              </>
-            ) : (
-              <>
-                <p className="text-2xl sm:text-3xl font-semibold tracking-tight text-[#1d1d1f]">
-                  Genuine phones, real warranty.
-                </p>
-                <p className="mt-2 text-base text-[#6e6e73] leading-relaxed">
-                  Every product comes from authorized distributors, with a
-                  valid manufacturer warranty.
-                </p>
-              </>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* 4. Designed for you — 3 photo tiles with a caption under each. */}
-      {designedProducts.length > 0 && (
-        <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-16 sm:pt-24">
-          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-[#1d1d1f] text-center">
-            Designed for you
-          </h2>
-          <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-            {designedProducts.map((product, index) => (
-              <motion.article
-                key={product.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.08 }}
-              >
-                <PhotoTile product={product} ratio="aspect-[4/5]" />
-                <h3 className="mt-4 text-lg font-semibold text-[#1d1d1f]">
-                  <Link href={`/products/${product.id}`}>{product.name}</Link>
-                </h3>
-                <p className="mt-1 text-sm text-[#6e6e73] leading-relaxed">
-                  {punchySubhead(product)}
-                </p>
-              </motion.article>
-            ))}
-          </div>
+        </section>
+      ) : (
+        <section className="bg-gradient-to-br from-[#0071e3] via-[#5e5ce6] to-[#bf5af2] px-5 pb-10 pt-24 text-center text-white sm:pt-28">
+          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+            Top phones. Best prices in Dhaka.
+          </h1>
+          <p className="mx-auto mt-2 max-w-md text-white/85">
+            Smartphones and accessories — pay cash on delivery, or pick up
+            in store.
+          </p>
+          <Link
+            href="/products"
+            className="mt-5 inline-flex min-h-[44px] items-center rounded-full bg-white px-6 py-2.5 text-sm font-semibold text-gray-900"
+          >
+            Shop all products
+          </Link>
         </section>
       )}
 
-      {/* 5. Designed for simplicity — light-grey band, simple steps,
-          big product photo below. */}
-      <section className="mt-16 sm:mt-24 bg-[#f5f5f7]">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
-          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-[#1d1d1f] text-center">
-            Designed for simplicity
-          </h2>
-          <p className="mt-3 text-base sm:text-lg text-[#6e6e73] text-center max-w-2xl mx-auto">
-            No accounts to set up, no online payment to figure out. Just
-            pick a phone and pay the way you like.
-          </p>
-          <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
-            {[
-              {
-                icon: Smartphone,
-                title: "Choose your phone",
-                text: "Browse the latest smartphones and accessories.",
-              },
-              {
-                icon: Banknote,
-                title: "Pay your way",
-                text: "Cash on delivery, or in store with bKash, Nagad, Rocket or card.",
-              },
-              {
-                icon: RotateCcw,
-                title: "Easy returns",
-                text: "Changed your mind? 7-day returns on unused products.",
-              },
-            ].map((item) => (
-              <div key={item.title}>
-                <item.icon
-                  className="w-7 h-7 mx-auto text-[#1d1d1f]"
-                  strokeWidth={1.5}
-                />
-                <h3 className="mt-4 text-lg font-semibold text-[#1d1d1f]">
-                  {item.title}
-                </h3>
-                <p className="mt-1 text-sm text-[#6e6e73] leading-relaxed">
-                  {item.text}
-                </p>
-              </div>
-            ))}
-          </div>
-          {heroProduct && (
-            <div className="mt-12 max-w-3xl mx-auto">
-              <PhotoTile product={heroProduct} ratio="aspect-[16/9]" />
-            </div>
-          )}
+      {/* 2. Category chips — horizontal scroll on mobile, sticky under
+          the fixed header (h-12 mobile / h-14 desktop). */}
+      <section className="sticky top-12 z-10 border-b border-gray-100 bg-white/95 backdrop-blur sm:top-14">
+        <div className="flex gap-2 overflow-x-auto px-4 py-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <button
+            onClick={() => router.push("/products")}
+            className="shrink-0 rounded-full bg-gray-900 px-4 py-2 text-sm font-medium text-white"
+          >
+            All
+          </button>
+          <button
+            onClick={() => router.push("/products?deals=true")}
+            className="flex shrink-0 items-center gap-1.5 rounded-full border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:border-gray-900"
+          >
+            <Tag className="h-3.5 w-3.5" />
+            Deals
+          </button>
+          {categories.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => goCategory(cat.slug)}
+              className="shrink-0 rounded-full border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:border-gray-900"
+            >
+              {cat.name}
+            </button>
+          ))}
         </div>
       </section>
 
-      {/* 6. Take your RYmos anywhere — 2 photos, short real captions. */}
-      {anywhereProducts.length > 0 && (
-        <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-16 sm:pt-24">
-          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-[#1d1d1f] text-center">
-            Take your RYmos anywhere.
-          </h2>
-          <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-            {anywhereProducts.map((product) => {
-              const battery = specValue(product, ["battery"]);
-              const camera = specValue(product, ["rear_camera", "camera"]);
-              const caption = battery
-                ? `${battery} battery — all day, every day.`
-                : camera
-                  ? `${camera} camera — every shot, ready.`
-                  : punchySubhead(product);
+      {/* 3. Top picks grid — the heart of the page. */}
+      <section className="mx-auto max-w-6xl px-4 pt-6 sm:px-6">
+        <div className="flex items-end justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-bold tracking-tight text-gray-900 sm:text-2xl">
+              Top picks
+            </h2>
+            <p className="mt-0.5 text-sm text-gray-500">
+              Best deals on the latest phones.
+            </p>
+          </div>
+          <Link
+            href="/products"
+            className="flex shrink-0 items-center gap-0.5 text-sm font-medium text-blue-600 hover:underline"
+          >
+            See all
+            <ChevronRight className="h-4 w-4" />
+          </Link>
+        </div>
+
+        {loading ? (
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div
+                key={i}
+                className="overflow-hidden rounded-2xl border border-gray-100 bg-white"
+              >
+                <div className="aspect-square animate-pulse bg-gray-100" />
+                <div className="space-y-2 p-3">
+                  <div className="h-4 w-3/4 animate-pulse rounded bg-gray-100" />
+                  <div className="h-5 w-1/2 animate-pulse rounded bg-gray-100" />
+                  <div className="h-10 w-full animate-pulse rounded-full bg-gray-100" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : featuredProducts.length > 0 ? (
+          <>
+            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
+              {featuredProducts.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  rating={ratings[product.id] ?? null}
+                />
+              ))}
+            </div>
+            {hasDeals && (
+              <div className="mt-5 text-center">
+                <Link
+                  href="/products?deals=true"
+                  className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-gray-900 px-5 py-2.5 text-sm font-semibold text-gray-900 hover:bg-gray-900 hover:text-white"
+                >
+                  <Tag className="h-4 w-4" />
+                  See all deals
+                </Link>
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="mt-4 rounded-2xl border border-gray-100 bg-white p-8 text-center">
+            <p className="font-semibold text-gray-900">
+              No top picks right now.
+            </p>
+            <p className="mt-1 text-sm text-gray-500">
+              Browse the full collection instead.
+            </p>
+            <Link
+              href="/products"
+              className="mt-4 inline-flex min-h-[44px] items-center rounded-full bg-gray-900 px-6 py-2.5 text-sm font-semibold text-white"
+            >
+              Shop all products
+            </Link>
+          </div>
+        )}
+      </section>
+
+      {/* 4. Trust chips — short shop language only. */}
+      <section className="mx-auto max-w-6xl px-4 pt-6 sm:px-6">
+        <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {[
+            { icon: Banknote, label: "Cash on Delivery" },
+            { icon: Store, label: "Pay in store: bKash, Nagad, Rocket, card" },
+            { icon: CreditCard, label: "Buy on Credit" },
+            { icon: RotateCcw, label: "Easy 7-day Returns" },
+          ].map((item) => (
+            <span
+              key={item.label}
+              className="flex shrink-0 items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700"
+            >
+              <item.icon className="h-4 w-4 text-gray-900" />
+              {item.label}
+            </span>
+          ))}
+        </div>
+      </section>
+
+      {/* 5. Shop by category — real categories, real counts. */}
+      {categories.length > 0 && (
+        <section className="mx-auto max-w-6xl px-4 pt-8 sm:px-6">
+          <div className="flex items-end justify-between gap-3">
+            <h2 className="text-xl font-bold tracking-tight text-gray-900 sm:text-2xl">
+              Shop by category
+            </h2>
+            <Link
+              href="/products"
+              className="flex shrink-0 items-center gap-0.5 text-sm font-medium text-blue-600 hover:underline"
+            >
+              See all
+              <ChevronRight className="h-4 w-4" />
+            </Link>
+          </div>
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {categories.map((cat) => {
+              const Icon = categoryIcon(cat.name);
+              const count = cat.slug ? categoryCounts[cat.slug] ?? 0 : 0;
               return (
-                <article key={product.id}>
-                  <PhotoTile product={product} ratio="aspect-[4/3]" />
-                  <h3 className="mt-4 text-lg font-semibold text-[#1d1d1f]">
-                    {product.name}
-                  </h3>
-                  <p className="mt-1 text-sm text-[#6e6e73] leading-relaxed">
-                    {caption}
-                  </p>
-                </article>
+                <button
+                  key={cat.id}
+                  onClick={() => goCategory(cat.slug)}
+                  className="flex min-h-[88px] flex-col items-start justify-center gap-1 rounded-2xl border border-gray-100 bg-white p-4 text-left shadow-sm transition-colors hover:border-gray-900"
+                >
+                  <Icon className="h-6 w-6 text-gray-900" />
+                  <span className="text-sm font-semibold text-gray-900">
+                    {cat.name}
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    {count} {count === 1 ? "product" : "products"}
+                  </span>
+                </button>
               );
             })}
           </div>
         </section>
       )}
 
-      {/* 7. Wide lifestyle band — photo left, headline + dark button right. */}
-      {wideProduct && (
-        <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-16 sm:pt-24">
-          <div className="rounded-3xl bg-[#f5f5f7] overflow-hidden grid grid-cols-1 md:grid-cols-2">
-            <PhotoTile product={wideProduct} ratio="aspect-[4/3] md:aspect-auto" rounded="rounded-none" />
-            <div className="p-8 sm:p-12 flex flex-col justify-center">
-              <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-[#1d1d1f]">
-                The latest phones. No extra hassle.
-              </h2>
-              <p className="mt-4 text-base sm:text-lg text-[#6e6e73] leading-relaxed">
-                Order online and pay cash on delivery, or pick up in our
-                Dhaka store and pay with bKash, Nagad, Rocket or card.
-                Buying on credit? Apply and pay in instalments.
-              </p>
-              <div className="mt-6">
-                <Link
-                  href="/products"
-                  className="inline-block rounded-full bg-[#1d1d1f] px-6 py-2.5 text-sm font-medium text-white hover:bg-black transition-colors"
-                >
-                  Shop all products
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* 8. Testimonial — ONE real approved review, big quote, initials
-          in a coloured circle. Omitted entirely when there is none. */}
+      {/* 6. One compact review — real approved review only, if any. */}
       {review && (
-        <section className="max-w-4xl mx-auto px-4 sm:px-6 pt-16 sm:pt-24 text-center">
-          <div className="flex justify-center">
-            <span
-              className={`w-16 h-16 rounded-full ${gradientForId(
-                review.id
-              )} flex items-center justify-center text-2xl font-bold text-white`}
-            >
-              {initials(review.customer_name)}
-            </span>
+        <section className="mx-auto max-w-6xl px-4 pt-8 sm:px-6">
+          <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+            <div className="flex items-center gap-2">
+              <StarRating rating={review.rating} />
+              <span className="text-sm font-semibold text-gray-900">
+                {review.customer_name ?? "Verified customer"}
+              </span>
+              {review.is_verified_purchase && (
+                <span className="rounded-full bg-green-50 px-2 py-0.5 text-[11px] font-medium text-green-700">
+                  Verified purchase
+                </span>
+              )}
+            </div>
+            <p className="mt-2 text-sm leading-relaxed text-gray-700 line-clamp-3">
+              &ldquo;{review.content}&rdquo;
+            </p>
+            {review.product_name && (
+              <p className="mt-1.5 text-xs text-gray-500">
+                on {review.product_name}
+              </p>
+            )}
           </div>
-          <blockquote className="mt-6 text-2xl sm:text-3xl font-medium tracking-tight text-[#1d1d1f] leading-snug text-balance">
-            &ldquo;{review.content}&rdquo;
-          </blockquote>
-          <div className="mt-5 flex justify-center">
-            <StarRating rating={review.rating} />
-          </div>
-          <p className="mt-3 text-base font-semibold text-[#1d1d1f]">
-            {review.customer_name ?? "Verified customer"}
-          </p>
-          <p className="text-sm text-[#86868b]">
-            {review.product_name ? `on ${review.product_name}` : ""}
-            {review.product_name && review.is_verified_purchase ? " · " : ""}
-            {review.is_verified_purchase ? "Verified purchase" : ""}
-          </p>
         </section>
       )}
 
-      {/* 9. "Better tech, better living" article cards — OMITTED. The site
-          has no blog/learning content, and nothing is invented here. */}
-
-      {/* 10. FAQ — real questions from src/app/faq, as an accordion. */}
-      <section className="max-w-3xl mx-auto px-4 sm:px-6 pt-16 sm:pt-24 pb-16 sm:pb-24">
-        <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-[#1d1d1f] text-center">
-          Frequently asked questions
+      {/* 7. Short FAQ — 3 real questions, collapsed by default. */}
+      <section className="mx-auto max-w-6xl px-4 pt-8 sm:px-6">
+        <h2 className="text-xl font-bold tracking-tight text-gray-900 sm:text-2xl">
+          Quick answers
         </h2>
-        <p className="mt-3 text-base text-[#6e6e73] text-center">
-          Can&apos;t find what you&apos;re looking for?{" "}
-          <Link href="/faq" className="text-[#0071e3] hover:underline">
-            See all FAQs
-          </Link>
-        </p>
-        <div className="mt-8 space-y-3">
+        <div className="mt-4 space-y-2">
           {HOME_FAQ.map((item, index) => (
             <div
               key={index}
-              className="border border-[#e5e5ea] rounded-2xl overflow-hidden bg-white"
+              className="overflow-hidden rounded-2xl border border-gray-100 bg-white"
             >
               <button
                 onClick={() => setFaqOpen(faqOpen === index ? null : index)}
-                className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-[#f5f5f7] transition-colors"
+                className="flex min-h-[48px] w-full items-center justify-between px-4 py-3 text-left"
                 aria-expanded={faqOpen === index}
               >
-                <span className="font-medium text-[#1d1d1f] pr-4">
+                <span className="text-sm font-semibold text-gray-900">
                   {item.q}
                 </span>
                 <ChevronDown
-                  className={`h-5 w-5 text-[#86868b] flex-shrink-0 transition-transform duration-200 ${
+                  className={`h-4 w-4 shrink-0 text-gray-400 transition-transform duration-200 ${
                     faqOpen === index ? "rotate-180" : ""
                   }`}
                 />
               </button>
               <div
                 className={`overflow-hidden transition-all duration-200 ${
-                  faqOpen === index ? "max-h-96" : "max-h-0"
+                  faqOpen === index ? "max-h-64" : "max-h-0"
                 }`}
               >
-                <div className="px-5 pb-4 text-[#6e6e73] text-sm leading-relaxed">
+                <p className="px-4 pb-4 text-sm leading-relaxed text-gray-600">
                   {item.a}
-                </div>
+                </p>
               </div>
             </div>
           ))}
         </div>
-        <div className="mt-8 text-center">
-          <Link
-            href="/faq"
-            className="inline-block rounded-full bg-[#1d1d1f] px-6 py-2.5 text-sm font-medium text-white hover:bg-black transition-colors"
-          >
+        <p className="mt-3 text-center text-sm text-gray-500">
+          More questions?{" "}
+          <Link href="/faq" className="font-medium text-blue-600 hover:underline">
             See all FAQs
           </Link>
-        </div>
-      </section>
-
-      {/* Shop with confidence — the shop's real options, kept from v2
-          (Uno has no equivalent strip, but the shop's payment/returns
-          options are the trust message that replaces it). */}
-      <section className="border-t border-[#f5f5f7]">
-        <div className="max-w-7xl mx-auto px-6 py-14 sm:py-16">
-          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-[#1d1d1f] text-center">
-            Shop with confidence.
-          </h2>
-          <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 text-center">
-            {[
-              {
-                icon: Banknote,
-                title: "Cash on delivery",
-                text: "Pay in cash when your order arrives.",
-              },
-              {
-                icon: Store,
-                title: "Pay in store",
-                text: "Pick up and pay with bKash, Nagad, Rocket or card.",
-              },
-              {
-                icon: CreditCard,
-                title: "Buy on credit",
-                text: "Apply for credit and pay in instalments.",
-              },
-              {
-                icon: RotateCcw,
-                title: "Easy returns",
-                text: "Changed your mind? Request a return from your orders.",
-              },
-            ].map((item) => (
-              <div key={item.title}>
-                <item.icon
-                  className="w-7 h-7 mx-auto text-[#1d1d1f]"
-                  strokeWidth={1.5}
-                />
-                <h3 className="mt-4 text-lg font-semibold text-[#1d1d1f]">
-                  {item.title}
-                </h3>
-                <p className="mt-1 text-sm text-[#86868b] leading-relaxed">
-                  {item.text}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
+        </p>
       </section>
     </main>
   );
