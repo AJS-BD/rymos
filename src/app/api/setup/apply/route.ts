@@ -20,6 +20,24 @@ export const maxDuration = 60;
  * first-admin setup code and returns it so the UI can display it.
  *
  * The token is used only for this request and never stored.
+ *
+ * SECURITY NOTE — unauthenticated by design, do not "fix" by adding an
+ * admin gate: this endpoint must work BEFORE any admin exists (it is how
+ * the first admin is bootstrapped). The Supabase personal access token in
+ * the request body IS the credential — anyone without a token for this
+ * project gets nothing (the probe query fails 401/403), and the token is
+ * never stored or logged. Residual risk: the endpoint is unauthenticated
+ * and reachable by anyone on the internet, so a leaked token can be used
+ * from anywhere to re-run the (idempotent) sync SQL, and the endpoint can
+ * be probed repeatedly.
+ * TODO (security, no new dependency yet): add rate limiting to this route
+ * (e.g. a small in-memory per-IP counter with a 429 response, or Vercel
+ * Firewall / Upstash Ratelimit when either is adopted) and consider
+ * disabling the route entirely once the first admin exists and the schema
+ * is stable — re-running the sync would then require the GitHub workflow
+ * instead. Deliberately NOT done in the 2026-11-05 security workstream:
+ * rate-limit state in a serverless route needs a shared store to be
+ * meaningful, and disabling the route would break legitimate re-syncs.
  */
 
 const PROJECT_REF = "imcsesyqurkpvguwpmem";

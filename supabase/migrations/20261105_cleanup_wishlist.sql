@@ -1,0 +1,26 @@
+-- RYmos cleanup migration — 2026-11-05
+--
+-- Drops the orphaned singular `wishlist` table.
+--
+-- Background: the initial schema (20260907000000_initial_schema.sql) created
+-- a table named `wishlist` (singular). The prod-sync SQL
+-- (supabase/sync_20260922_prod_sync.sql) and all app code use the plural
+-- `wishlists` table instead — see src/app/customer/wishlist/page.tsx
+-- (.from("wishlists")) and src/app/api/setup/apply/route.ts (verify list).
+-- Verified 2026-11-05 by grepping the whole repo: there is no
+-- `.from("wishlist")`, no query, policy, or code reference to the singular
+-- table other than its CREATE TABLE / ENABLE ROW LEVEL SECURITY lines in the
+-- initial migration (and its archived copy in
+-- supabase/migrations-archive/20260907_initial_schema.sql). The singular
+-- table therefore holds no data the app reads and can be dropped safely.
+--
+-- This migration is NOT applied automatically. Apply it manually (see
+-- README.md "Database migrations") after confirming in the Supabase
+-- dashboard that the singular `wishlist` table is empty / unused.
+-- It is idempotent: re-running it is a no-op once the table is gone.
+-- Dropping a table also drops its RLS policies.
+--
+-- DO NOT apply this to a database where the singular `wishlist` table holds
+-- real customer data — back it up / migrate its rows into `wishlists` first.
+
+DROP TABLE IF EXISTS public.wishlist;

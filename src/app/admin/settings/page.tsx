@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { getAdminAuthHeaders } from "@/lib/admin-session";
 import {
   Store,
   MessageSquare,
@@ -34,7 +35,7 @@ const tabs: { key: TabKey; label: string; icon: React.ReactNode }[] = [
   { key: "store", label: "Store Settings", icon: <Store className="w-4 h-4" /> },
   { key: "whatsapp", label: "WhatsApp", icon: <MessageSquare className="w-4 h-4" /> },
   { key: "email", label: "Email (SMTP)", icon: <Mail className="w-4 h-4" /> },
-  { key: "payment", label: "Payment Gateway", icon: <CreditCard className="w-4 h-4" /> },
+  { key: "payment", label: "In-Store Payments", icon: <CreditCard className="w-4 h-4" /> },
 ];
 
 const storeFields: SettingField[] = [
@@ -93,21 +94,23 @@ const paymentFields: SettingField[] = [
     key: "payment_gateway",
     label: "Payment Gateway",
     type: "select",
+    description:
+      "Only chooses which credentials a connection test checks. No online checkout is enabled.",
     options: [
       { value: "stripe", label: "Stripe" },
       { value: "bkash", label: "bKash" },
       { value: "nagad", label: "Nagad" },
     ],
   },
-  { key: "stripe_secret_key", label: "Stripe Secret Key", type: "password", placeholder: "sk_live_..." },
-  { key: "stripe_publishable_key", label: "Stripe Publishable Key", type: "text", placeholder: "pk_live_..." },
-  { key: "stripe_webhook_secret", label: "Stripe Webhook Secret", type: "password", placeholder: "whsec_..." },
-  { key: "bkash_api_key", label: "bKash App Key", type: "text", placeholder: "bKash App Key" },
-  { key: "bkash_app_secret", label: "bKash App Secret", type: "password", placeholder: "bKash App Secret" },
-  { key: "bkash_username", label: "bKash Username", type: "text", placeholder: "bKash merchant username" },
-  { key: "bkash_password", label: "bKash Password", type: "password", placeholder: "bKash merchant password" },
-  { key: "nagad_merchant_id", label: "Nagad Merchant ID", type: "text", placeholder: "Nagad Merchant ID" },
-  { key: "nagad_api_key", label: "Nagad API Key", type: "password", placeholder: "Nagad API Key" },
+  { key: "stripe_secret_key", label: "Stripe Secret Key", type: "password", placeholder: "sk_live_...", description: "Not used — RYmos takes no online payments." },
+  { key: "stripe_publishable_key", label: "Stripe Publishable Key", type: "text", placeholder: "pk_live_...", description: "Not used — RYmos takes no online payments." },
+  { key: "stripe_webhook_secret", label: "Stripe Webhook Secret", type: "password", placeholder: "whsec_...", description: "Not used — RYmos takes no online payments." },
+  { key: "bkash_api_key", label: "bKash App Key", type: "text", placeholder: "bKash App Key", description: "In-store / manual payment only — not used for online checkout." },
+  { key: "bkash_app_secret", label: "bKash App Secret", type: "password", placeholder: "bKash App Secret", description: "In-store / manual payment only — not used for online checkout." },
+  { key: "bkash_username", label: "bKash Username", type: "text", placeholder: "bKash merchant username", description: "In-store / manual payment only — not used for online checkout." },
+  { key: "bkash_password", label: "bKash Password", type: "password", placeholder: "bKash merchant password", description: "In-store / manual payment only — not used for online checkout." },
+  { key: "nagad_merchant_id", label: "Nagad Merchant ID", type: "text", placeholder: "Nagad Merchant ID", description: "In-store / manual payment only — not used for online checkout." },
+  { key: "nagad_api_key", label: "Nagad API Key", type: "password", placeholder: "Nagad API Key", description: "In-store / manual payment only — not used for online checkout." },
 ];
 
 const categoryMap: Record<TabKey, string> = {
@@ -138,7 +141,12 @@ export default function AdminSettings() {
     async function loadSettings() {
       setLoading(true);
       try {
-        const res = await fetch("/api/settings");
+        // /api/settings returns secret categories (whatsapp/email/payment)
+        // only to admins — send the session token; without it only the
+        // public store rows come back.
+        const res = await fetch("/api/settings", {
+          headers: await getAdminAuthHeaders(),
+        });
         if (res.ok) {
           const { data } = await res.json();
           const settingsMap: SettingsMap = {};
@@ -172,7 +180,10 @@ export default function AdminSettings() {
 
       const res = await fetch("/api/settings", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(await getAdminAuthHeaders()),
+        },
         body: JSON.stringify({
           settings: updates,
           category: categoryMap[activeTab],
@@ -197,30 +208,46 @@ export default function AdminSettings() {
     setTestResult(null);
 
     try {
+      // Map the stored settings keys to the field names each test route
+      // expects. (Previously the raw settings keys were sent, which none
+      // of the routes accepted, so every test failed at validation.)
       let endpoint = "";
-      const fields = fieldsMap[activeTab];
-      const body: Record<string, string> = {};
+      let body: Record<string, string> = {};
 
-      fields.forEach((field) => {
-        if (settings[field.key] !== undefined) {
-          body[field.key] = settings[field.key];
-        }
-      });
-
-      switch (activeTab) {
-        case "whatsapp":
-          endpoint = "/api/settings/test-whatsapp";
-          break;
-        case "email":
-          endpoint = "/api/settings/test-email";
-          break;
-        case "payment":
-          endpoint = "/api/settings/test-payment";
-          break;
-        default:
-          setTestResult({ success: false, message: "No test available for this section" });
+      if (activeTab === "whatsapp") {
+        endpoint = "/api/settings/test-whatsapp";
+        body = {
+          provider: settings.whatsapp_provider || "",
+          apiKey: settings.whatsapp_api_key || "",
+          senderPhone: settings.whatsapp_sender_phone || "",
+        };
+      } else if (activeTab === "payment") {
+        const gateway = settings.payment_gateway || "";
+        if (gateway === "nagad") {
+          // No Nagad API check is implemented — report that honestly
+          // instead of calling an endpoint that would fake success.
+          setTestResult({
+            success: false,
+            message:
+              "Nagad connection test is not available — no Nagad API check is implemented. Nagad is accepted only as an in-store / manual payment.",
+          });
           setTesting(null);
           return;
+        }
+        endpoint = "/api/settings/test-payment";
+        body = { gateway };
+        if (gateway === "stripe") {
+          body.secretKey = settings.stripe_secret_key || "";
+        } else if (gateway === "bkash") {
+          body.username = settings.bkash_username || "";
+          body.password = settings.bkash_password || "";
+          body.appKey = settings.bkash_api_key || "";
+          body.appSecret = settings.bkash_app_secret || "";
+        }
+      } else {
+        setTestResult({ success: false, message: "No test available for this section" });
+        setTesting(null);
+        return;
       }
 
       const res = await fetch(endpoint, {
@@ -351,7 +378,10 @@ export default function AdminSettings() {
   };
 
   const currentFields = fieldsMap[activeTab];
-  const hasTest = activeTab !== "store";
+  // Only WhatsApp and In-Store Payments have a real connection test.
+  // The email test was removed: it only validated the port number and
+  // never connected to an SMTP server.
+  const hasTest = activeTab === "whatsapp" || activeTab === "payment";
 
   if (loading) {
     return (
@@ -411,6 +441,27 @@ export default function AdminSettings() {
         className="rounded-2xl p-5 sm:p-6 space-y-5"
         style={{ background: "var(--color-bg)", border: "1px solid #e5e5e7" }}
       >
+        {activeTab === "payment" && (
+          <div
+            className="p-3.5 rounded-lg text-sm"
+            style={{ background: "#fff8e1", color: "#7a5c00", border: "1px solid #ffe082" }}
+          >
+            RYmos takes no online payments. Orders are paid by cash on
+            delivery, or in store with bKash, Nagad, Rocket or card. The
+            connection test below only verifies credentials — it does not
+            enable online checkout.
+          </div>
+        )}
+        {activeTab === "email" && (
+          <div
+            className="p-3.5 rounded-lg text-sm"
+            style={{ background: "#fff8e1", color: "#7a5c00", border: "1px solid #ffe082" }}
+          >
+            The app does not send email yet — no order or notification emails
+            are sent. These SMTP details are stored but unused, and there is
+            no connection test for them.
+          </div>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {currentFields.map((field) => renderField(field))}
         </div>

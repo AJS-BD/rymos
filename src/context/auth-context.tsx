@@ -190,44 +190,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     refreshUser();
   }, [refreshUser]);
 
-  const loginWithOtp = useCallback(async (phone: string) => {
-    if (!isConfigured()) {
-      return { error: "Authentication is not configured." };
-    }
-
-    const supabase = getSupabase();
-    const formattedPhone = phone.startsWith("+") ? phone : `+880${phone.replace(/^0/, "")}`;
-    const { error: otpError } = await supabase.auth.signInWithOtp({
-      phone: formattedPhone,
-    });
-
-    if (otpError) {
-      return { error: otpError.message || "Failed to send OTP." };
-    }
-
-    return {};
+  // Phone OTP is NOT available: no SMS provider is configured for this
+  // Supabase project (see docs/PHONE-OTP-SETUP.md). Supabase phone auth
+  // cannot send an SMS without a provider configured in the Supabase
+  // dashboard, so these helpers fail honestly instead of calling
+  // signInWithOtp / verifyOtp and failing cryptically. Re-enable them
+  // (restore the Supabase calls) only after the dashboard setup in
+  // docs/PHONE-OTP-SETUP.md is done and an SMS has been received.
+  const loginWithOtp = useCallback(async () => {
+    return {
+      error:
+        "Phone sign-in is not available yet — please sign in with email. The shop needs to connect an SMS provider in Supabase.",
+    };
   }, []);
 
-  const verifyOtp = useCallback(async (phone: string, otp: string) => {
-    if (!isConfigured()) {
-      return { error: "Authentication is not configured." };
-    }
-
-    const supabase = getSupabase();
-    const formattedPhone = phone.startsWith("+") ? phone : `+880${phone.replace(/^0/, "")}`;
-    const { error: verifyError } = await supabase.auth.verifyOtp({
-      phone: formattedPhone,
-      token: otp,
-      type: "sms",
-    });
-
-    if (verifyError) {
-      return { error: verifyError.message || "Invalid OTP." };
-    }
-
-    await refreshUser();
-    return {};
-  }, [refreshUser]);
+  const verifyOtp = useCallback(async () => {
+    return {
+      error:
+        "Phone sign-in is not available yet — please sign in with email. The shop needs to connect an SMS provider in Supabase.",
+    };
+  }, []);
 
   const login = useCallback(async (email: string, password: string) => {
     if (!isConfigured()) {

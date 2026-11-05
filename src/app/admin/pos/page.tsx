@@ -248,13 +248,33 @@ export default function POSPage() {
       return;
     }
 
-    // Update stock
+    // Update stock atomically: the .gte("stock", qty) guard makes the
+    // update a no-op (0 rows) if another sale took the last units in
+    // between, instead of silently driving stock negative.
+    const stockFailures: string[] = [];
     for (const item of cart) {
-      const { error: stockErr } = await supabase
+      const { data: updated, error: stockErr } = await supabase
         .from("products")
         .update({ stock: item.product.stock - item.quantity })
-        .eq("id", item.product.id);
-      if (stockErr) console.error("POS stock update error:", stockErr);
+        .eq("id", item.product.id)
+        .gte("stock", item.quantity)
+        .select("id");
+      if (stockErr) {
+        console.error("POS stock update error:", stockErr);
+        stockFailures.push(item.product.name);
+      } else if (!updated || updated.length === 0) {
+        console.error(
+          `POS stock update failed for ${item.product.name}: insufficient stock`
+        );
+        stockFailures.push(item.product.name);
+      }
+    }
+    if (stockFailures.length > 0) {
+      alert(
+        "Order created, but stock could not be updated for: " +
+          stockFailures.join(", ") +
+          ". Please check stock levels."
+      );
     }
 
     setCart([]);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
 type Phase = "idle" | "working" | "done" | "error";
@@ -21,11 +21,14 @@ export default function SetupContent() {
   const [detail, setDetail] = useState<string | null>(null);
   const [result, setResult] = useState<SetupResult | null>(null);
 
-  // Restore setup code from localStorage (survives page refresh)
   const [savedCode, setSavedCode] = useState<string | null>(null);
 
+  // Restore setup code from localStorage (survives page refresh).
+  // Intentional mount-only read: SSR-safe localStorage hydration pattern
+  // used elsewhere in the codebase (see auth/cart contexts).
   useEffect(() => {
     const stored = localStorage.getItem("rymos_setup_code");
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (stored) setSavedCode(stored);
   }, []);
 

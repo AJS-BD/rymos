@@ -202,6 +202,29 @@ export default function CustomerOrderDetail({
         <StatusBadge status={order.status} />
       </div>
 
+      {/* Return actions */}
+      {order.status === "delivered" && (
+        <div className="bg-white rounded-xl border p-4 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <p className="text-sm text-gray-600">
+            Something wrong with this order? You can request a return within 7 days of delivery (14 days for defective items).
+          </p>
+          <div className="flex gap-2 flex-shrink-0">
+            <Link
+              href={`/customer/orders/${order.id}/return`}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors whitespace-nowrap"
+            >
+              Request return
+            </Link>
+            <Link
+              href="/customer/returns"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 border rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors whitespace-nowrap"
+            >
+              My returns
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* Status Timeline */}
       {order.status !== "cancelled" && (
         <div className="bg-white rounded-xl border p-5 mb-6">

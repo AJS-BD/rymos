@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/cart-context";
-import { formatBDT, generateOrderNumber, getErrorMessage } from "@/lib/utils";
+import { formatBDT, getErrorMessage } from "@/lib/utils";
 import { getSupabase, isConfigured } from "@/lib/supabase";
 import { motion, AnimatePresence } from "framer-motion";
 import { Truck, Store, CreditCard, MapPin, Loader2 } from "lucide-react";
@@ -23,8 +23,63 @@ export default function CheckoutPage() {
   const [occupation, setOccupation] = useState("");
   const [employer, setEmployer] = useState("");
   const [installmentPeriod, setInstallmentPeriod] = useState("");
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount: number } | null>(null);
+  const [couponMessage, setCouponMessage] = useState("");
+  const [couponChecking, setCouponChecking] = useState(false);
 
-  const total = subtotal;
+  // Preview only: the server re-computes the discount when the order is
+  // placed, so this value is never trusted as the final discount.
+  const discount = appliedCoupon?.discount ?? 0;
+  const total = Math.max(0, subtotal - discount);
+
+  const validateCouponCode = useCallback(async (code: string, amount: number) => {
+    const trimmed = code.trim().toUpperCase();
+    if (!trimmed) {
+      setCouponMessage("Enter a coupon code first.");
+      return;
+    }
+    setCouponChecking(true);
+    setCouponMessage("");
+    try {
+      const res = await fetch(
+        `/api/coupons/validate?code=${encodeURIComponent(trimmed)}&subtotal=${amount}`
+      );
+      const data = await res.json();
+      if (data.valid) {
+        setAppliedCoupon({ code: trimmed, discount: data.discount });
+        sessionStorage.setItem("rymos_coupon_code", trimmed);
+        setCouponMessage(data.message || "Coupon applied.");
+      } else {
+        setAppliedCoupon(null);
+        sessionStorage.removeItem("rymos_coupon_code");
+        setCouponMessage(data.message || "Invalid coupon.");
+      }
+    } catch {
+      setCouponMessage("Could not check the coupon. Please try again.");
+    } finally {
+      setCouponChecking(false);
+    }
+  }, []);
+
+  // Pick up a coupon applied on the cart page, and re-check it against
+  // the current bag (the server re-validates it again at order time).
+  useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- SSR-safe sessionStorage hydration: the cart-page coupon must be read client-side only */
+    const saved = sessionStorage.getItem("rymos_coupon_code");
+    if (saved) {
+      setCouponCode(saved);
+      void validateCouponCode(saved, subtotal);
+    }
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, [validateCouponCode, subtotal]);
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode("");
+    setCouponMessage("");
+    sessionStorage.removeItem("rymos_coupon_code");
+  };
 
   const handlePlaceOrder = async () => {
     setError("");
@@ -178,90 +233,41 @@ export default function CheckoutPage() {
         return;
       }
 
-      const year = new Date().getFullYear();
-      const { count: orderCount } = await supabase
-        .from("orders")
-        .select("*", { count: "exact", head: true })
-        .like("order_number", `RY-${year}-%`);
-
-      const orderNumber = generateOrderNumber((orderCount || 0) + 1);
-
-      const schemaOrderType = orderType === "pickup" ? "shop_pickup" : orderType;
-
-      const orderItems = items.map((item) => ({
-        product_id: item.product.id,
-        name: item.product.name,
-        qty: item.quantity,
-        price: item.product.price,
-      }));
-
-      const shippingAddressObj = orderType === "cod"
-        ? {
-            address: shippingAddress.trim(),
-            type: "delivery",
-          }
-        : null;
-
-      const creditApplication = orderType === "credit"
-        ? {
-            monthly_income: Number(monthlyIncome),
-            occupation: occupation.trim(),
-            employer: employer.trim(),
-            installment_period: Number(installmentPeriod),
-          }
-        : null;
-
-      const { data: insertedOrder, error: insertError } = await supabase.from("orders").insert({
-        order_number: orderNumber,
-        customer_id: customerId,
-        status: "pending",
-        order_type: schemaOrderType,
-        items: orderItems,
-        subtotal: subtotal,
-        total: total,
-        discount: 0,
-        coupon_id: null,
-        coupon_code: null,
-        payment_method: orderType === "credit" ? "credit" : "cod",
-        shipping_address: shippingAddressObj,
-        pickup_note: orderType === "pickup" ? pickupNote.trim() || null : null,
-        credit_application: creditApplication,
-      }).select("id").single();
-
-      if (insertError) throw insertError;
-
-      // If credit order, also create a credit_applications record
-      if (orderType === "credit" && insertedOrder) {
-        const { error: creditAppError } = await supabase.from("credit_applications").insert({
-          customer_id: customerId,
-          order_id: insertedOrder.id,
-          status: "pending",
-          requested_amount: total,
-          proposed_down_payment: 0,
-          proposed_installments: Number(installmentPeriod),
-          monthly_income: Number(monthlyIncome),
-          occupation: occupation.trim(),
-          employer: employer.trim(),
-          application_type: "checkout",
-        });
-
-        if (creditAppError) {
-          console.error("Failed to create credit application:", creditAppError);
-          // Don't throw here - the order was already created successfully
-        }
+      // Prices, stock and coupons are validated server-side:
+      // POST /api/orders/create re-prices every line from the database,
+      // checks stock, validates the coupon and generates the order number.
+      const res = await fetch("/api/orders/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: items.map((item) => ({
+            productId: item.product.id,
+            quantity: item.quantity,
+          })),
+          shippingAddress: orderType === "cod" ? shippingAddress.trim() : null,
+          pickupNote: orderType === "pickup" ? pickupNote.trim() || null : null,
+          orderType: orderType === "pickup" ? "shop_pickup" : orderType,
+          couponCode: appliedCoupon ? appliedCoupon.code : null,
+          customerId,
+          credit:
+            orderType === "credit"
+              ? {
+                  monthlyIncome: Number(monthlyIncome),
+                  occupation: occupation.trim(),
+                  employer: employer.trim(),
+                  installmentPeriod: Number(installmentPeriod),
+                }
+              : null,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to place order. Please try again.");
       }
 
-      // Reduce stock for each item
-      for (const item of items) {
-        const { error: stockError } = await supabase
-          .from("products")
-          .update({ stock: item.product.stock - item.quantity })
-          .eq("id", item.product.id);
-        if (stockError) console.error("Stock update error:", stockError);
-      }
-
+      sessionStorage.removeItem("rymos_coupon_code");
       clearCart();
-      setPlacedOrder({ orderNumber });
+      setPlacedOrder({ orderNumber: data.orderNumber });
     } catch (err) {
       setError(getErrorMessage(err, "Failed to place order. Please try again."));
     } finally {
@@ -392,8 +398,24 @@ export default function CheckoutPage() {
               </AnimatePresence>
             </div>
 
-            {/* Total */}
-            <div className="mt-6 sm:mt-10 pt-4 sm:pt-8 border-t border-[#d2d2d7]">
+            {/* Totals (preview — the server re-computes the final amounts) */}
+            <div className="mt-6 sm:mt-10 pt-4 sm:pt-8 border-t border-[#d2d2d7] space-y-2">
+              <div className="flex justify-between items-baseline">
+                <span className="text-sm sm:text-base lg:text-[19px] text-[#86868b]">Subtotal</span>
+                <span className="text-sm sm:text-base lg:text-[19px] text-[#1d1d1f] tabular-nums">
+                  {formatBDT(subtotal)}
+                </span>
+              </div>
+              {appliedCoupon && (
+                <div className="flex justify-between items-baseline">
+                  <span className="text-sm sm:text-base lg:text-[19px] text-[#86868b]">
+                    Discount ({appliedCoupon.code})
+                  </span>
+                  <span className="text-sm sm:text-base lg:text-[19px] text-green-600 tabular-nums">
+                    −{formatBDT(discount)}
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between items-baseline">
                 <span className="text-sm sm:text-base lg:text-[19px] text-[#1d1d1f]">Total</span>
                 <span className="text-xl sm:text-2xl lg:text-[28px] font-semibold text-[#1d1d1f] tracking-tight tabular-nums">
@@ -403,6 +425,62 @@ export default function CheckoutPage() {
             </div>
           </section>
 
+          {/* Coupon */}
+          <section className="mb-8 sm:mb-12 lg:mb-16">
+            <h2 className="text-xl sm:text-2xl lg:text-[28px] font-semibold tracking-tight text-[#1d1d1f] mb-4 sm:mb-6 lg:mb-8">
+              Coupon
+            </h2>
+            {appliedCoupon ? (
+              <div className="flex items-center justify-between gap-3 p-3 sm:p-4 bg-white border border-[#e8e8ed] rounded-xl sm:rounded-2xl">
+                <p className="text-sm sm:text-base lg:text-[18px] text-[#1d1d1f]">
+                  <span className="font-mono font-medium">{appliedCoupon.code}</span>
+                  <span className="text-[#86868b]"> — {formatBDT(appliedCoupon.discount)} off</span>
+                </p>
+                <button
+                  type="button"
+                  onClick={removeCoupon}
+                  className="text-xs sm:text-sm text-[#86868b] hover:text-red-600 transition-colors flex-shrink-0"
+                >
+                  Remove
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="flex gap-2 sm:gap-3">
+                  <input
+                    type="text"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        void validateCouponCode(couponCode, subtotal);
+                      }
+                    }}
+                    placeholder="Enter coupon code"
+                    className="flex-1 min-w-0 px-4 py-3 sm:py-3.5 text-sm sm:text-base lg:text-[18px] bg-white border border-[#e8e8ed] rounded-xl sm:rounded-2xl focus:outline-none focus:border-[#0071E3] focus:ring-2 focus:ring-[#0071E3]/20 transition-all duration-300 placeholder:text-[#86868b] uppercase font-mono"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => void validateCouponCode(couponCode, subtotal)}
+                    disabled={couponChecking || !couponCode.trim()}
+                    className="px-5 py-3 text-sm sm:text-base font-medium text-white bg-[#1d1d1f] rounded-xl sm:rounded-2xl hover:bg-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                  >
+                    {couponChecking ? "Checking…" : "Apply"}
+                  </button>
+                </div>
+                {couponMessage && (
+                  <p className={`mt-2 text-xs sm:text-sm ${appliedCoupon ? "text-green-600" : "text-red-600"}`}>
+                    {couponMessage}
+                  </p>
+                )}
+              </>
+            )}
+            {appliedCoupon && couponMessage && (
+              <p className="mt-2 text-xs sm:text-sm text-green-600">{couponMessage}</p>
+            )}
+          </section>
+
           {/* Payment Method */}
           <section className="mb-8 sm:mb-12 lg:mb-16">
             <h2 className="text-xl sm:text-2xl lg:text-[28px] font-semibold tracking-tight text-[#1d1d1f] mb-4 sm:mb-6 lg:mb-8">
@@ -410,9 +488,9 @@ export default function CheckoutPage() {
             </h2>
             <div className="space-y-2 sm:space-y-3">
               {[
-                { type: "cod" as const, icon: Truck, title: "Cash on Delivery", subtitle: "Pay when your order arrives" },
-                { type: "pickup" as const, icon: Store, title: "Shop Pickup", subtitle: "Pick up your order from our store" },
-                { type: "credit" as const, icon: CreditCard, title: "Buy on Credit", subtitle: "Pay in easy installments" },
+                { type: "cod" as const, icon: Truck, title: "Cash on Delivery", subtitle: "— pay cash when your order arrives" },
+                { type: "pickup" as const, icon: Store, title: "Shop Pickup", subtitle: "— pay in store with bKash, Nagad, Rocket or card" },
+                { type: "credit" as const, icon: CreditCard, title: "Buy on Credit", subtitle: "— pay instalments with bKash, Nagad, Rocket or card" },
               ].map((option) => (
                 <motion.div
                   key={option.type}

@@ -59,7 +59,7 @@ const returnSteps = [
     step: "1",
     title: "Request a Return",
     description:
-      "Go to 'My Orders' in your account, select the order, and click 'Request Return'. Or contact us via WhatsApp with your order number.",
+      "Sign in, go to 'My Orders' in your account, select the delivered order, and click 'Request Return'. Pick the items, tell us the reason, and submit — you can track the request under 'My Returns'. Or contact us via WhatsApp with your order number.",
   },
   {
     step: "2",
@@ -77,7 +77,7 @@ const returnSteps = [
     step: "4",
     title: "Receive Refund",
     description:
-      "Once we receive and inspect the item, your refund is processed within 3-5 business days to your original payment method.",
+      "Once we receive and inspect the item, your refund is paid within 3-5 business days in cash, or via bKash, Nagad, Rocket or card — in store or on delivery. We do not process refunds online.",
   },
 ];
 
@@ -167,25 +167,33 @@ export default function ReturnsPage() {
               Refund Methods
             </h2>
             <div className="bg-[var(--color-bg-alt)] rounded-xl p-6">
+              <p className="text-sm text-[var(--color-text-muted)] mb-4">
+                RYmos does not take payments online, and refunds are never sent
+                through an online payment gateway. Every refund is paid in
+                person — in cash, or via bKash, Nagad, Rocket or card — at our
+                store or when we collect the returned item on delivery.
+                Processing time is 3-5 business days after we receive and
+                inspect the returned item.
+              </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <h3 className="font-medium text-[var(--color-text)] mb-2">
                     For COD Orders
                   </h3>
                   <p className="text-sm text-[var(--color-text-muted)]">
-                    Refunds are issued via bank transfer or mobile banking (bKash,
-                    Nagad). You&apos;ll need to provide your account details when
-                    requesting the return.
+                    Refunds are paid in cash at the store, or via bKash, Nagad
+                    or Rocket. You&apos;ll need to provide your mobile banking
+                    account details when requesting the return.
                   </p>
                 </div>
                 <div>
                   <h3 className="font-medium text-[var(--color-text)] mb-2">
-                    For Prepaid Orders
+                    For Shop Pickup Orders
                   </h3>
                   <p className="text-sm text-[var(--color-text-muted)]">
-                    Refunds go back to the original payment method — your
-                    mobile banking account or card. Processing time is 3-5
-                    business days.
+                    Refunds are paid at the store in cash or by card, or via
+                    bKash, Nagad or Rocket. Processing time is 3-5 business
+                    days.
                   </p>
                 </div>
               </div>
@@ -257,20 +265,28 @@ export default function ReturnsPage() {
             <Package className="h-12 w-12 mx-auto mb-4" />
             <h2 className="text-2xl font-bold mb-3">Need to Return Something?</h2>
             <p className="text-gray-300 mb-6">
-              Our support team is ready to help you with your return or exchange.
+              Signed in? Request a return from your delivered order in a few
+              clicks, and track it under My Returns. Our support team is also
+              ready to help.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
-                href="/contact"
+                href="/customer/orders"
                 className="inline-flex items-center justify-center gap-2 bg-white text-[var(--color-dark-banner)] px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
               >
-                Contact Support
+                Request a Return
               </Link>
               <Link
-                href="/customer/orders"
+                href="/customer/returns"
                 className="inline-flex items-center justify-center gap-2 border border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white/10 transition-colors"
               >
-                View My Orders
+                Track My Returns
+              </Link>
+              <Link
+                href="/contact"
+                className="inline-flex items-center justify-center gap-2 border border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white/10 transition-colors"
+              >
+                Contact Support
               </Link>
             </div>
           </div>

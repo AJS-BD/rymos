@@ -23,11 +23,11 @@ const faqCategories = [
     questions: [
       {
         q: "How do I place an order?",
-        a: "Browse our products, add items to your cart, and proceed to checkout. You can pay via cash on delivery (COD), mobile banking, or apply for our buy-on-credit program.",
+        a: "Browse our products, add items to your cart, and proceed to checkout. You can pay cash on delivery (COD), pay in store with bKash, Nagad, Rocket or card when you pick up your order, or apply for our buy-on-credit program.",
       },
       {
         q: "What payment methods do you accept?",
-        a: "We accept Cash on Delivery (COD), bKash, Nagad, Rocket, bank transfers, and credit card payments. We also offer a buy-on-credit program for eligible customers.",
+        a: "We accept Cash on Delivery (COD) — pay in cash when your order arrives. If you pick up from our Dhaka store, you can pay in store with bKash, Nagad, Rocket or card. We do not take online payments. We also offer a buy-on-credit program for eligible customers, and instalments are paid in store or by bKash, Nagad, Rocket or card.",
       },
       {
         q: "Can I modify or cancel my order?",
@@ -35,7 +35,7 @@ const faqCategories = [
       },
       {
         q: "How do I track my order?",
-        a: "Once your order is shipped, you'll receive a tracking link via SMS and email. You can also check your order status in the 'My Orders' section of your account dashboard.",
+        a: "You can check your order status in the 'My Orders' section of your account dashboard, or on the Track Order page using your order number.",
       },
     ],
   },
@@ -75,7 +75,7 @@ const faqCategories = [
       },
       {
         q: "How long do refunds take?",
-        a: "Refunds are processed within 3-5 business days after we receive the returned item. For COD orders, refunds are issued via bank transfer or mobile banking. For prepaid orders, refunds go back to the original payment method.",
+        a: "Refunds are processed within 3-5 business days after we receive the returned item. Refunds are paid by bank transfer or mobile banking (bKash, Nagad, Rocket) to the account details you provide, or as cash in store.",
       },
       {
         q: "Can I exchange a product instead of returning it?",
@@ -119,7 +119,7 @@ const faqCategories = [
       },
       {
         q: "Can I reserve a product that's out of stock?",
-        a: "Yes! You can join the waitlist for out-of-stock products. We'll notify you via email and SMS when the item is back in stock, giving you priority access before general availability.",
+        a: "We don't have a waitlist yet. Please ask in store or contact us via WhatsApp or the contact form, and we'll let you know when the item is back in stock.",
       },
       {
         q: "Do you price match?",

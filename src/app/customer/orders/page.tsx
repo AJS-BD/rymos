@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { getSupabase, isConfigured } from "@/lib/supabase";
 import { formatBDT, getErrorMessage } from "@/lib/utils";
 import {
@@ -42,6 +43,7 @@ interface Order {
 }
 
 export default function CustomerOrders() {
+  const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -110,9 +112,18 @@ export default function CustomerOrders() {
   return (
     <main className="flex-1 pt-16 sm:pt-20">
         <div className="max-w-4xl mx-auto px-4 py-8">
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-900">My Orders</h1>
-            <p className="text-gray-500">{orders.length} orders placed</p>
+          <div className="mb-6 flex items-start justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">My Orders</h1>
+              <p className="text-gray-500">{orders.length} orders placed</p>
+            </div>
+            <Link
+              href="/customer/returns"
+              className="inline-flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors whitespace-nowrap"
+            >
+              <Package className="w-4 h-4" />
+              My Returns
+            </Link>
           </div>
 
       {error && (
@@ -168,6 +179,19 @@ export default function CustomerOrders() {
                   <span className="font-semibold text-gray-900">
                     {formatBDT(order.total)}
                   </span>
+                  {order.status === "delivered" && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        router.push(`/customer/orders/${order.id}/return`);
+                      }}
+                      className="hidden sm:inline-flex items-center px-3 py-1.5 border rounded-lg text-xs font-medium hover:bg-gray-50 transition-colors whitespace-nowrap"
+                    >
+                      Request return
+                    </button>
+                  )}
                   <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors" />
                 </div>
               </div>

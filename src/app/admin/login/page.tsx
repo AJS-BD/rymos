@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAdminAuth } from "@/context/admin-auth-context";
 import { getSupabase } from "@/lib/supabase";
+import { syncAdminSession } from "@/lib/admin-session";
 import { ArrowLeft } from "lucide-react";
 
 export default function AdminLoginPage() {
@@ -15,8 +16,35 @@ export default function AdminLoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [setupMode, setSetupMode] = useState(false);
   const [setupCode, setSetupCode] = useState("");
+  const [postLoginPath, setPostLoginPath] = useState("/admin/dashboard");
   const { adminLogin } = useAdminAuth();
   const router = useRouter();
+
+  // Surface redirects from the server proxy / admin gate (?error=...) and
+  // honour a safe post-login destination (?next=/admin/...). Read from
+  // window.location (not useSearchParams) so no Suspense boundary is needed.
+  useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- mount-only read of the redirect query params into state */
+    const params = new URLSearchParams(window.location.search);
+    const err = params.get("error");
+    if (err === "admin-setup-incomplete") {
+      setError(
+        "Admin setup is incomplete — run the one-time database setup (/setup) and try again."
+      );
+    } else if (err === "not-admin") {
+      setError("This account does not have admin access.");
+    }
+    const next = params.get("next");
+    if (
+      next &&
+      next.startsWith("/admin/") &&
+      !next.includes("\\") &&
+      !next.includes("//")
+    ) {
+      setPostLoginPath(next);
+    }
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,7 +110,18 @@ export default function AdminLoginPage() {
         return;
       }
 
-      router.push("/admin/dashboard");
+      // First admin now exists — copy the session into the admin cookie so
+      // the server proxy (src/proxy.ts) lets the dashboard navigation through.
+      const synced = await syncAdminSession();
+      if (!synced) {
+        setError(
+          "Admin created, but the admin session could not be established. Please sign in normally."
+        );
+        setSubmitting(false);
+        return;
+      }
+
+      router.push(postLoginPath);
       return;
     }
 
@@ -94,7 +133,7 @@ export default function AdminLoginPage() {
       return;
     }
 
-    router.push("/admin/dashboard");
+    router.push(postLoginPath);
   };
 
   return (
